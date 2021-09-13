@@ -12,7 +12,7 @@ using System.Threading;
 
 namespace QuestAppVersionSwitcher
 {
-    public class QPWebserver
+    public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };

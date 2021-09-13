@@ -18,7 +18,7 @@ namespace QuestAppVersionSwitcher.Core
     {
         public static AssetManager assetManager = null;
         public static WebView browser = null;
-        public static QPWebserver qPWebserver = new QPWebserver();
+        public static QAVSWebserver qPWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
         public static Context context = null;

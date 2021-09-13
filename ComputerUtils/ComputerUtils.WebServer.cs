@@ -192,7 +192,7 @@ namespace ComputerUtils.Webserver
             {
                 string file = folderPath + ServerRequest.path.Substring(path.Length + 1).Replace("/", "\\");
                 //Logger.Log(file);
-                if (QPWebserver.DoesAssetExist(file)) ServerRequest.SendFile(file);
+                if (QAVSWebserver.DoesAssetExist(file)) ServerRequest.SendFile(file);
                 else ServerRequest.Send404();
                 return true;
             }), true, ignoreCase, ignoreEnd);
@@ -442,22 +442,22 @@ namespace ComputerUtils.Webserver
 
         public void SendFile(string file, string contentType = "", int statusCode = 200, bool closeRequest = true, Dictionary<string, string> headers = null)
         {
-            if (!QPWebserver.DoesAssetExist(file))
+            if (!QAVSWebserver.DoesAssetExist(file))
             {
                 Send404();
                 return;
             }
-            SendData(QPWebserver.GetAssetBytes(file), contentType == "" ? HttpServer.GetContentTpe(file) : contentType, Encoding.UTF8, statusCode, closeRequest, headers);
+            SendData(QAVSWebserver.GetAssetBytes(file), contentType == "" ? HttpServer.GetContentTpe(file) : contentType, Encoding.UTF8, statusCode, closeRequest, headers);
         }
 
         public void SendFile(string file, Dictionary<string, string> replace, string contentType = "", int statusCode = 200, bool closeRequest = true, Dictionary<string, string> headers = null)
         {
-            if (!QPWebserver.DoesAssetExist(file))
+            if (!QAVSWebserver.DoesAssetExist(file))
             {
                 Send404();
                 return;
             }
-            string toSend = QPWebserver.GetAssetString(file);
+            string toSend = QAVSWebserver.GetAssetString(file);
             foreach (KeyValuePair<string, string> key in replace) toSend = toSend.Replace(key.Key, key.Value);
             SendString(toSend, contentType == "" ? HttpServer.GetContentTpe(file) : contentType, statusCode, closeRequest, headers);
         }
