@@ -1,0 +1,435 @@
+﻿<html>
+    <head>
+        <title>Quest App Version Switcher - Main</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        <div class="menuContainer">
+            <div class="sidebar">
+                <div class="header">
+                    <div style="width: 100%;">Welcome to Quest App Version Switcher</div>
+                    <div style="font-size: 80%; width: 100%;">
+                        Backing <div class="inline packageName">some game</div> up
+                    </div>
+                </div>
+                <div class="menuItem" section="backup">Backup</div>
+                <div class="menuItem selected" section="tools">Tools & Options</div>
+            </div>
+            <div class="content">
+                <div class="contentItem hidden" id="backup">
+                    <div class="contentHeader">
+                        Backup
+                        <div class="contentHeaderDescription">Backup your game and restore backups</div>
+                    </div>
+                    <div>Backups of <div class="inline packageName">some game</div></div>
+                    <div class="smallListContainer">
+                        <div id="backupList" class="list">
+                        </div>
+                    </div>
+                    
+
+                    <div class="contentHeader headerMargin">
+                        Restore backups
+                        <div class="contentHeaderDescription">Restores the Backup selected above</div>
+                        <div class="buttonContainer">
+                            <div class="button" id="restoreBackup">Restore Backup</div>
+                            <div class="buttonLabel">Restores the selected Backup</div>
+                        </div>
+                        <div id="restoreTextBox" class="textBox"></div>
+                    </div>
+
+                    <div class="contentHeader headerMargin">
+                        Create backups
+                        <div class="contentHeaderDescription">Change the app in <code>Tools & Options</code></div>
+                    </div>
+                    <div>
+                        <input type="text" placeholder="Backup Name" id="backupname">
+                        <div class="buttonContainer">
+                            <div class="button" id="createBackup">Create Backup</div>
+                            <div class="buttonLabel">Creates a backup of <div class="inline packageName">some game</div></div>
+                        </div>
+                        <div id="backupTextBox" class="textBox"></div>
+                    </div>
+                </div>
+                <div class="contentItem" id="tools">
+                    <div class="contentHeader">
+                        Tools
+                        <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
+                    </div>
+                    <div class="buttonContainer">
+                        <div class="button" id="uninstall">Uninstall app</div>
+                        <div class="buttonLabel">Uninstalls the app you selected (needs to be confirmed on android device)</div>
+                    </div>
+                    <div class="buttonContainer">
+                        <div class="button" id="changeApp">Change app</div>
+                        <div class="buttonLabel">Change the app you want to manage</div>
+                    </div>
+                    <div class="about">
+                        Quest App Version Switcher Version <div id="version" class="inline"></div>
+                        Accessible via browser at:
+                        <div id="ips">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="listContainer darken hidden" id="restoreContainer">
+                <div id="step1" class="restoreStep">
+                    <div class="contentHeader headerMargin">
+                        Step 1
+                    </div>
+                    <div><b>If you want to return to this version you <u>must</u> backup it first.<br>To do this abort the restore process and create a backup.</b></div>
+                    <br>
+                    <b>Selected backup:</b> <div class="selectedBackupName inline"></div> of <div class="inline packageName">some game</div>
+                    <br>
+                    As a first step of the restore process you need to uninstall the current installation of this app (<div class="inline packageName">some game</div>).
+                    <br>
+                    <br>
+                    <i>The restore Process has to be done in headset</i>
+                    <div id="step1box" class="textBox"></div>
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="abort">Abort Restore</div>
+                        </div>
+                        <div class="buttonContainer buttonMargin">
+                            <div class="button" id="uninstall2">Start uninstall</div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div id="step2" class="restoreStep hidden">
+                    <div class="contentHeader headerMargin">
+                        Step 1.1
+                    </div>
+                    After the uninstall completed please press the continue button
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="confirm1">Continue</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="step3" class="restoreStep hidden">
+                    <div class="contentHeader headerMargin">
+                        Step 2
+                    </div>
+                    Now that you got the old verion uninstalled we can restore your backup!
+                    <br>
+                    We are going to install the apk (your app).
+                    <br>Press the install button to start the installation.
+                    <br>If your Quest says <code>Package Installer isn't responding</code> simply press <code>close</code>
+                    <div id="step3box" class="textBox"></div>
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="install">Install app</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="step4" class="restoreStep hidden">
+                    <div class="contentHeader headerMargin">
+                        Step 2.1
+                    </div>
+                    After the install completed please press the restore App Data button.
+                    <br>
+                    This will restore the app data you backed up. If you wish to not restore App Data simply press the skip button
+                    <div id="step4box" class="textBox"></div>
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="restoreappdata">Restore App Data</div>
+                        </div>
+                        <div class="buttonContainer buttonMargin">
+                            <div class="button" id="skip">Skip</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="step5" class="restoreStep hidden">
+                    <div class="contentHeader headerMargin">
+                        Finished!
+                    </div>
+                    You restored the backup <div class="slectedBackupName inline"></div> of <div class="inline packageName">some game</div>
+                    <div id="step4box" class="textBox"></div>
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer buttonMargin">
+                            <div class="button" id="abort2">Close</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="listContainer hidden" id="appListContainer">
+                <div id="appList" class="list hidden">
+                </div>
+            </div>
+        </div>
+        <script>
+            UpdateUI()
+            var config = {}
+            var loadingBackups = false
+            var selectedBackup = ""
+
+            var undefinedLoader = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`
+
+            function UpdateUI() {
+                fetch("questappversionswitcher/config").then(res => res.json().then(res => {
+                    config = res
+                    Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
+                        e.innerHTML = config.currentApp
+                    })
+                    fetch("backups?package=" + config.currentApp).then(res => res.json().then(res => {
+                        document.getElementById("backupList").innerHTML = ""
+                        if(res.backups) {
+                            res.backups.forEach(backup => {
+                                document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName}</div>`
+                            })
+                        }
+                        if(document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
+                        Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
+                            i.onclick = function() {
+                                selectedBackup = i.getAttribute("value")
+                                UpdateUI()
+                            }
+                        })
+                        loadingBackups = false
+                    }))
+                }))
+                fetch("questappversionswitcher/about").then(res => res.json().then(res => {
+                    document.getElementById("version").innerHTML = res.version
+                    document.getElementById("ips").innerHTML = ""
+                    res.browserIPs.forEach(i => 
+                    {
+                        console.log(i)
+                        document.getElementById("ips").innerHTML += i + "<br>"
+                    })
+                }))
+                Array.prototype.forEach.call(document.getElementsByClassName("selectedBackupName"), i => {
+                    i.innerHTML = selectedBackup
+                })
+                
+                document.getElementById("appList").className = "list hidden"
+                document.getElementById("appListContainer").className = "listContainer hidden"
+            }
+
+            function ShowAppList() {
+                document.getElementById("appList").innerHTML = undefinedLoader
+                document.getElementById("appList").className = "list"
+                document.getElementById("appListContainer").className = "listContainer"
+                fetch("android/installedapps").then(res => res.json().then(res => {
+                    document.getElementById("appList").innerHTML = ""
+                    res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
+                    res.forEach(app => {
+                        document.getElementById("appList").innerHTML += `<div class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
+                    })
+                    Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
+                        i.onclick = function() {
+                            loadingBackups = true
+                            fetch("questappversionswitcher/changeapp", {
+                                method: "POST",
+                                body: i.getAttribute("value")
+                            }).then(() => UpdateUI())
+                            UpdateUI()
+                        }
+                    })
+                }))
+            }
+
+            document.getElementById("appListContainer").onclick = () => UpdateUI()
+
+            Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), i => {
+                i.onclick = function() {
+                    Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
+                        e.className = "menuItem" + (e.getAttribute("section") == this.getAttribute("section") ? " selected" : "")
+                    })
+                    Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
+                        e.className = "contentItem" + (e.id == this.getAttribute("section") ? "" : " hidden")
+                    })
+                }
+            })
+
+            var backupInProgress = false
+
+            document.getElementById("createBackup").onclick = () => {
+                if(backupInProgress) {
+                    TextBoxError("backupTextBox", "A Backup is being created right now. Please wait until it has finished")
+                    return
+                }
+                backupInProgress = true
+                TextBoxText("backupTextBox", "Please wait while the Backup is being created. This can take a few minutes")
+                fetch("backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value, {
+                    method: "POST"
+                }).then(res => {
+                    res.text().then(text => {
+                        if(res.status == 202) {
+                            TextBoxText("backupTextBox", text)
+                            var i = setInterval(() => {
+                            fetch("backup").then(res => {
+                                res.text().then(text => {
+                                    if(res.status == 202) {
+                                        TextBoxText("backupTextBox", text)
+                                    } else if(res.status == 200) {
+                                        TextBoxGood("backupTextBox", text)
+                                        clearInterval(i)
+                                        backupInProgress = false
+                                        UpdateUI()
+                                    } else {
+                                        TextBoxError("backupTextBox", text)
+                                        clearInterval(i)
+                                        backupInProgress = false
+                                        UpdateUI()
+                                    }
+                                })
+                            })
+                        }, 500);
+                        } else {
+                            TextBoxError("backupTextBox", text)
+                            backupInProgress = false
+                        }
+                        UpdateUI()
+                    })
+                    
+                    
+                })
+            }
+
+            document.getElementById("changeApp").onclick = () => ShowAppList()
+
+            document.getElementById("abort").onclick = () => CloseRestorePopup()
+
+            document.getElementById("abort2").onclick = () => CloseRestorePopup()
+
+            function CloseRestorePopup() {
+                document.getElementById("restoreContainer").className = "listContainer darken hidden"
+                HideTextBox("step1box")
+                HideTextBox("step3box")
+                HideTextBox("step4box")
+                GotoStep(1)
+            }
+
+            function OpenRestorePopup() {
+                CloseRestorePopup()
+                document.getElementById("restoreContainer").className = "listContainer darken"
+            }
+
+            document.getElementById("uninstall").onclick = () => {
+                fetch(`android/uninstallpackage?package=${config.currentApp}`, {
+                    method: "POST"
+                }).then(res => {
+                    GotoStep(2)
+                })
+            }
+
+            document.getElementById("uninstall2").onclick = () => {
+                fetch(`android/uninstallpackage?package=${config.currentApp}`, {
+                    method: "POST"
+                }).then(res => {
+                    GotoStep(2)
+                })
+            }
+
+            document.getElementById("confirm1").onclick = () => {
+                fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
+                    res.text().then(text => {
+                        if(text == "False") GotoStep(3)
+                        else {
+                            TextBoxError("step1box", config.currentApp + " is still installed. Please uninstall it.")
+                            GotoStep(1)
+                        }
+                    })
+                })
+            }
+
+            document.getElementById("install").onclick = () => {
+                fetch("restoreapp?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+                    method: "POST"
+                }).then(res => {
+                    res.text().then(text => {
+                        if(res.status == 200) GotoStep(4)
+                        else TextBoxError("step3box", text)
+                    })
+                    
+                })
+            }
+
+            document.getElementById("restoreappdata").onclick = () => {
+                fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
+                    res.text().then(text => {
+                        if(text == "True")
+                        {
+                            TextBoxText("step4box", "Restoring game data. Please wait")
+                            fetch("restoregamedata?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+                                method: "POST"
+                            }).then(res => {
+                                res.text().then(text => {
+                                    if(res.status == 200) GotoStep(5)
+                                    else {
+                                        TextBoxError("step4box", text)
+                                    }
+                                })
+                            }).catch(err => {
+                                GotoStep(5)
+                            })
+                        }
+                        else {
+                            TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
+                            GotoStep(3)
+                        }
+                    })
+                })
+            }
+
+            document.getElementById("skip").onclick = () => {
+                fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
+                    res.text().then(text => {
+                        if(text == "True") GotoStep(5)
+                        else {
+                            TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
+                            GotoStep(3)
+                        }
+                    })
+                })
+            }
+
+            document.getElementById("restoreBackup").onclick = () => {
+                if(backupInProgress) {
+                    TextBoxError("restoreTextBox", "Can not restore a backup while one is being created")
+                    return
+                }
+                if(selectedBackup == "") {
+                    TextBoxError("restoreTextBox", "You have to select a Backup from the list above")
+                    return
+                }
+                OpenRestorePopup()
+            }
+
+            function GotoStep(step) {
+                Array.prototype.forEach.call(document.getElementsByClassName("restoreStep"), e => {
+                    e.className = `restoreStep${ e.id == "step" + step ? "" : " hidden"}`
+                })
+            }
+        
+
+
+            function TextBoxError(id, text) {
+                ChangeTextBoxProperty(id, "#EE0000", text)
+            }
+
+            function TextBoxText(id, text) {
+                ChangeTextBoxProperty(id, "#03cffc", text)
+            }
+
+            function TextBoxGood(id, text) {
+                ChangeTextBoxProperty(id, "#00EE00", text)
+            }
+
+            function HideTextBox(id) {
+                document.getElementById(id).style.visibility = "hidden"
+            }
+
+            function ChangeTextBoxProperty(id, color, innerHtml) {
+                var text = document.getElementById(id)
+                text.style.visibility = "visible"
+                text.style.border = color + " 1px solid"
+                text.innerHTML = innerHtml
+            }
+        </script>
+    </body>
+</html>
