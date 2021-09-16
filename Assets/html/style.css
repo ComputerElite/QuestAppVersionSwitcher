@@ -201,6 +201,9 @@ code {
   width: 100%;
 }
 
+.space {
+    margin-top: 40px;
+}
 
 .lds-ellipsis {
   display: inline-block;

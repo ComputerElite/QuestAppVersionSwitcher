@@ -6,6 +6,27 @@ namespace ComputerUtils.FileManaging
 {
     public class FileManager
     {
+        public static long GetDirSize(string dir)
+        {
+            return GetDirSize(new DirectoryInfo(dir));
+        }
+
+        public static long GetDirSize(DirectoryInfo d)
+        {
+            long size = 0;
+            FileInfo[] fis = d.GetFiles();
+            foreach (FileInfo fi in fis)
+            {
+                size += fi.Length;
+            }
+            DirectoryInfo[] dis = d.GetDirectories();
+            foreach (DirectoryInfo di in dis)
+            {
+                size += GetDirSize(di);
+            }
+            return size;
+        }
+
         public static string GetParentDirIfExisting(string dir)
         {
             try

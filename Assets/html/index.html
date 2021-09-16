@@ -22,7 +22,7 @@
                         Backup
                         <div class="contentHeaderDescription">Backup your game and restore backups</div>
                     </div>
-                    <div>Backups of <div class="inline packageName">some game</div></div>
+                    <div>Backups of <div class="inline packageName">some game</div> (<div id="size" class="inline"></div>)</div>
                     <div class="smallListContainer">
                         <div id="backupList" class="list">
                         </div>
@@ -35,6 +35,10 @@
                         <div class="buttonContainer">
                             <div class="button" id="restoreBackup">Restore Backup</div>
                             <div class="buttonLabel">Restores the selected Backup</div>
+                        </div>
+                        <div class="buttonContainer">
+                            <div class="button" id="deleteBackup">Delete Backup</div>
+                            <div class="buttonLabel">Deletes the selected Backup</div>
                         </div>
                         <div id="restoreTextBox" class="textBox"></div>
                     </div>
@@ -65,11 +69,33 @@
                         <div class="button" id="changeApp">Change app</div>
                         <div class="buttonLabel">Change the app you want to manage</div>
                     </div>
+                    <div class="space">
+                        All Backups together take up <b class="inline totalSize"></b> of space on your Device.
+                        <br>
+                        You can delete Backups in the Backup section
+                    </div>
                     <div class="about">
                         Quest App Version Switcher Version <div id="version" class="inline"></div>
                         Accessible via browser at:
                         <div id="ips">
 
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="listContainer darken hidden" id="deleteContainer">
+                <div class="restoreStep" id="step6">
+                    <div class="contentHeader headerMargin">
+                        Confirm
+                    </div>
+                    Do you really want to delete <div class="selectedBackupName inline"></div> of <div class="inline packageName">some game</div>?
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="abortDelete">No! Abort!</div>
+                        </div>
+                        <div class="buttonContainer buttonMargin">
+                            <div class="button" id="delete">Yes. Delete the Backup</div>
                         </div>
                     </div>
                 </div>
@@ -177,9 +203,10 @@
                     })
                     fetch("backups?package=" + config.currentApp).then(res => res.json().then(res => {
                         document.getElementById("backupList").innerHTML = ""
+                        document.getElementById("size").innerHTML = res.backupsSizeString
                         if(res.backups) {
                             res.backups.forEach(backup => {
-                                document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName}</div>`
+                                document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString})</div>`
                             })
                         }
                         if(document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
@@ -192,6 +219,13 @@
                         loadingBackups = false
                     }))
                 }))
+                fetch("allbackups").then(res => {
+                    res.text().then(text =>{
+                        Array.prototype.forEach.call(document.getElementsByClassName("totalSize"), i => {
+                            i.innerHTML = text
+                        })
+                    })
+                })
                 fetch("questappversionswitcher/about").then(res => res.json().then(res => {
                     document.getElementById("version").innerHTML = res.version
                     document.getElementById("ips").innerHTML = ""
@@ -404,6 +438,42 @@
                 Array.prototype.forEach.call(document.getElementsByClassName("restoreStep"), e => {
                     e.className = `restoreStep${ e.id == "step" + step ? "" : " hidden"}`
                 })
+            }
+
+            function CloseDeletePopup() {
+                document.getElementById("deleteContainer").className = "listContainer darken hidden"
+                GotoStep(6)
+            }
+
+            function OpenDeletePopup() {
+                CloseDeletePopup()
+                document.getElementById("deleteContainer").className = "listContainer darken"
+            }
+
+            document.getElementById("deleteBackup").onclick = () => {
+                OpenDeletePopup()
+            }
+
+            document.getElementById("delete").onclick = () => {
+                CloseDeletePopup()
+                TextBoxText("restoreTextBox", "Deleting Backup. Please wait.")
+                fetch("/backup?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+                    method: "DELETE"
+                }).then(res => {
+                    res.text().then(text => {
+                        if(res.status == 200) {
+                            TextBoxGood("restoreTextBox", text)
+                            UpdateUI()
+                        } else {
+                            TextBoxError("restoreTextBox", text)
+                            UpdateUI()
+                        }
+                    })
+                })
+            }
+
+            document.getElementById("abortDelete").onclick = () => {
+                CloseDeletePopup()
             }
         
 

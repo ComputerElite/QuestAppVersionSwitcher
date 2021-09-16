@@ -177,7 +177,11 @@ namespace QuestAppVersionSwitcher
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
                 try
                 {
+                    text = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
+                    code = 202;
                     File.Copy(apkDir, backupDir + "app.apk");
+                    text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
+                    code = 202;
                     FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
                 } catch (Exception e)
                 {
@@ -192,6 +196,29 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/backup", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString(text, "text/plain", code);
+                return true;
+            }));
+            server.AddRoute("DELETE", "/backup", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                if (serverRequest.queryString.Get("backupname") == null)
+                {
+                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                string backupname = serverRequest.queryString.Get("backupname");
+                string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
+                if (!Directory.Exists(backupDir))
+                {
+                    serverRequest.SendString("The Backup you want to delete doesn't exist.", "text/plain", 400);
+                }
+                Directory.Delete(backupDir, true);
+                serverRequest.SendString("Deleted " + backupname + " of " + package);
                 return true;
             }));
             server.AddRoute("POST", "/restoreapp", new Func<ServerRequest, bool>(serverRequest =>
@@ -222,6 +249,11 @@ namespace QuestAppVersionSwitcher
                 if (!Directory.Exists(backupDir))
                 {
                     serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    return true;
+                }
+                if(!File.Exists(backupDir + "app.apk"))
+                {
+                    serverRequest.SendString("Critical: APK doesn't exist in Backup. This Backup is useless. Please restart the app and choose a different one.", "text/plain", 500);
                     return true;
                 }
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
@@ -264,6 +296,11 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
+                if(!Directory.Exists(backupDir + package))
+                {
+                    serverRequest.SendString("This backup doesn't contain a game data backup. Please skip this step", "text/plain", 400);
+                    return true;
+                }
                 try
                 {
                     FileManager.DirectoryCopy(backupDir + package, gameDataDir, true);
@@ -274,6 +311,11 @@ namespace QuestAppVersionSwitcher
                 }
                 
                 serverRequest.SendString("Game data restored", "text/plain", 200);
+                return true;
+            }));
+            server.AddRoute("GET", "/allbackups", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                serverRequest.SendString(ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
                 return true;
             }));
             server.AddRouteFile("/facts.png", "facts.png");
@@ -288,10 +330,27 @@ namespace QuestAppVersionSwitcher
             BackupList backups = new BackupList();
             foreach (string d in Directory.GetDirectories(backupDir))
             {
-                backups.backups.Add(new AppBackup(Path.GetFileName(d), Directory.Exists(d + "/GameData"), d));
+                long size = FileManager.GetDirSize(d);
+                backups.backupsSize += size;
+                backups.backups.Add(new AppBackup(Path.GetFileName(d), Directory.Exists(d + "/GameData"), d, size, ByteSizeToString(size)));
             }
             if (File.Exists(backupDir + "lastRestored.txt")) backups.lastRestored = File.ReadAllText(backupDir + "lastRestored.txt");
+            backups.backupsSizeString = ByteSizeToString(backups.backupsSize);
             return backups;
+        }
+
+        public string ByteSizeToString(long input, int decimals = 2)
+        {
+            // TB
+            if (input > 1099511627776) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1099511627776.0) + " TB";
+            // GB
+            else if (input > 1073741824) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1073741824.0) + " GB";
+            // MB
+            else if (input > 1048576) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1048576.0) + " MB";
+            // KB
+            else if (input > 1024) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1024.0) + " KB";
+            // Bytes
+            else return input + " Bytes";
         }
 
         public bool IsNameFileNameSafe(string name)
@@ -307,7 +366,6 @@ namespace QuestAppVersionSwitcher
         {
             return server.ips;
         }
-
         public static byte[] GetAssetBytes(string assetName)
         {
             MemoryStream ms = new MemoryStream();
@@ -331,10 +389,10 @@ namespace QuestAppVersionSwitcher
             List<string> files = new List<string>();
             if (!folder.EndsWith("/")) folder += "/";
             if (folder == "/") folder = "";
-            foreach(string s in CoreService.assetManager.List(folder))
+            foreach (string s in CoreService.assetManager.List(folder))
             {
                 files.Add(folder + s);
-                foreach(string ss in GetAllFiles(folder + s)) files.Add(ss);
+                foreach (string ss in GetAllFiles(folder + s)) files.Add(ss);
             }
             return files;
         }
@@ -343,5 +401,6 @@ namespace QuestAppVersionSwitcher
         {
             return new List<string>(CoreService.assetManager.List(assetFolder));
         }
+
     }
 }
