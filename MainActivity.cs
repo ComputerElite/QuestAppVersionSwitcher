@@ -7,7 +7,8 @@ using Android.Webkit;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
-using ComputerUtils.Logging;
+using ComputerUtils.Android;
+using ComputerUtils.Android.Logging;
 using Google.Android.Material.Snackbar;
 using QuestAppVersionSwitcher.Core;
 
@@ -26,10 +27,10 @@ namespace QuestAppVersionSwitcher
             //Get webView WebView from Main Layout  
             webView = FindViewById<WebView>(Resource.Id.webView);
             CoreService.browser = webView;
-            CoreService.context = this;
+            AndroidCore.context = this;
+            AndroidCore.assetManager = this.Assets;
 
             // Start all services
-            CoreService.assetManager = this.Assets;
             CoreService core = new CoreService();
             core.Start();
         }
