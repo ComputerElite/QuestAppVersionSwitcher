@@ -1,6 +1,7 @@
 ﻿using Android.Content.Res;
-using ComputerUtils.Android.Logging;
-using ComputerUtils.Android.Webserver;
+using ComputerUtils.FileManaging;
+using ComputerUtils.Logging;
+using ComputerUtils.Webserver;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
 using System;
@@ -8,8 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-using ComputerUtils.Android.AndroidTools;
-using ComputerUtils.Android.FileManaging;
 
 namespace QuestAppVersionSwitcher
 {
@@ -93,10 +92,6 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("POST", "/android/installapk", new Func<ServerRequest, bool>(serverRequest =>
             {
-                serverRequest.SendString("This Endpoint has been deactivated", "text/plain", 503);
-                return true;
-
-                // Deactivated
                 if (serverRequest.queryString.Get("path") == null)
                 {
                     serverRequest.SendString("path key needed", "text/plain", 400);
@@ -188,19 +183,10 @@ namespace QuestAppVersionSwitcher
                     text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
                     code = 202;
                     FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
-
-                    if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
-                    {
-                        text = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
-                        code = 202;
-                        Directory.CreateDirectory(backupDir + "obb/" + package);
-                        FileManager.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package, true);
-                    }
                 } catch (Exception e)
                 {
                     text = "Backup failed: " + e.Message;
                     code = 500;
-                    return true;
                 }
                 
                 text = "Backup of " + package + " with the name " + backupname + " finished";
@@ -323,12 +309,7 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("Game data of " + package + " was unable to be restored: " + e.Message, "text/plain", 500);
                     return true;
                 }
-
-                if (Directory.Exists(backupDir + "obb/" + package))
-                {
-                    FileManager.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package, true);
-                }
-
+                
                 serverRequest.SendString("Game data restored", "text/plain", 200);
                 return true;
             }));
@@ -385,5 +366,41 @@ namespace QuestAppVersionSwitcher
         {
             return server.ips;
         }
+        public static byte[] GetAssetBytes(string assetName)
+        {
+            MemoryStream ms = new MemoryStream();
+            CoreService.assetManager.Open(assetName).CopyTo(ms);
+            return ms.ToArray();
+        }
+
+        public static string GetAssetString(string assetName)
+        {
+            return new StreamReader(CoreService.assetManager.Open(assetName)).ReadToEnd();
+        }
+
+        public static bool DoesAssetExist(string assetName)
+        {
+            //GetAllFiles("").ForEach(e => Logger.Log(e, LoggingType.Debug));
+            return GetAllFiles("").Contains(assetName);
+        }
+
+        public static List<string> GetAllFiles(string folder)
+        {
+            List<string> files = new List<string>();
+            if (!folder.EndsWith("/")) folder += "/";
+            if (folder == "/") folder = "";
+            foreach (string s in CoreService.assetManager.List(folder))
+            {
+                files.Add(folder + s);
+                foreach (string ss in GetAllFiles(folder + s)) files.Add(ss);
+            }
+            return files;
+        }
+
+        public static List<string> GetAssetFolderFileList(string assetFolder)
+        {
+            return new List<string>(CoreService.assetManager.List(assetFolder));
+        }
+
     }
 }

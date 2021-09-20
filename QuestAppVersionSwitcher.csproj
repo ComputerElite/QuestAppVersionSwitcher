@@ -70,7 +70,12 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidTools.cs" />
     <Compile Include="ClientModels.cs" />
+    <Compile Include="ComputerUtils\ComputerUtils.FileManaging.cs" />
+    <Compile Include="ComputerUtils\ComputerUtils.Logging.cs" />
+    <Compile Include="ComputerUtils\ComputerUtils.RegexStuff.cs" />
+    <Compile Include="ComputerUtils\ComputerUtils.WebServer.cs" />
     <Compile Include="Core\CoreService.cs" />
     <Compile Include="Core\CoreVars.cs" />
     <Compile Include="MainActivity.cs" />
@@ -134,12 +139,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj">
-      <Project>{d4b84f1a-a999-482f-8253-d6761aa93e24}</Project>
-      <Name>ComputerUtils.Android</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
