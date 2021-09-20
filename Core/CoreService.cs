@@ -4,7 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Webkit;
 using AndroidX.Core.App;
-using ComputerUtils.Logging;
+using ComputerUtils.Android.Logging;
 using System;
 using System.IO;
 using System.Reflection;
@@ -16,12 +16,10 @@ namespace QuestAppVersionSwitcher.Core
 {
     public class CoreService
     {
-        public static AssetManager assetManager = null;
         public static WebView browser = null;
         public static QAVSWebserver qPWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
-        public static Context context = null;
         public void Start()
         {
             // Check permissions and request if needed
