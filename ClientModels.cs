@@ -33,4 +33,35 @@ namespace QuestAppVersionSwitcher.ClientModels
         public long backupsSize { get; set; } = 0;
         public string backupsSizeString { get; set; } = "";
     }
+
+    public class TokenRequest
+    {
+        public string token { get; set; } = "";
+        public string password { get; set; } = "";
+    }
+
+    public class DownloadRequest
+    {
+        public long binaryId { get; set; } = 0;
+        public string password { get; set; } = "";
+        public string version { get; set; } = "";
+        public string app { get; set; } = "";
+    }
+
+    public class DownloadProgress
+    {
+        public double percentage { get; set; } = 0.0;
+        public string percentageString { get; set; } = "";
+        public long done { get; set; } = 0;
+        public long total { get; set; } = 0;
+        public long speed { get; set; } = 0;
+        public long eTASeconds { get; set; } = 0;
+        public string doneString { get; set; } = "0 Bytes";
+        public string totalString { get; set; } = "0 Bytes";
+        public string speedString { get; set; } = "0 Bytes/s";
+        public string eTAString { get; set; } = "";
+        public string name { get; set; } = "";
+        public string backupName { get; set; } = "";
+        public string textColor { get; set; } = "#EEEEEE";
+    }
 }

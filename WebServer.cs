@@ -10,6 +10,10 @@ using System.Text.Json;
 using System.Threading;
 using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.FileManaging;
+using ComputerUtils.Android.VarUtils;
+using ComputerUtils.Android.Encryption;
+using QuestPatcher.Axml;
+using System.IO.Compression;
 
 namespace QuestAppVersionSwitcher
 {
@@ -17,10 +21,12 @@ namespace QuestAppVersionSwitcher
     {
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
+        public List<DownloadManager> managers = new List<DownloadManager>();
 
         public void Start()
         {
             server.AddRouteFile("/", "html/index.html");
+            server.AddRouteFile("/downgrade.html", "html/downgrade.html");
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
             {
@@ -334,13 +340,68 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("GET", "/allbackups", new Func<ServerRequest, bool>(serverRequest =>
             {
-                serverRequest.SendString(ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
+                serverRequest.SendString(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
+                return true;
+            }));
+            server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
+                CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
+                CoreService.coreVars.Save();
+                serverRequest.SendString("Set token");
+                return true;
+            }));
+            server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
+                DownloadManager m = new DownloadManager();
+                m.StartDownload(r.binaryId, r.password, r.version, r.app);
+                m.DownloadFinishedEvent += DownloadCompleted;
+                managers.Add(m);
+                serverRequest.SendString("Added to downloads");
+                return true;
+            }));
+            server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                List<DownloadProgress> progress = new List<DownloadProgress>();
+                foreach(DownloadManager m in managers)
+                {
+                    progress.Add(m);
+                }
+                serverRequest.SendString(JsonSerializer.Serialize(progress));
                 return true;
             }));
             server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(50001);
             Thread.Sleep(1000);
             CoreService.browser.LoadUrl("http://127.0.0.1:50001/");
+        }
+
+        public void DownloadCompleted(DownloadManager m)
+        {
+            MemoryStream manifestStream = new MemoryStream();
+            ZipArchive apkArchive = ZipFile.OpenRead(m.tmpPath);
+            apkArchive.GetEntry("AndroidManifest.xml").Open().CopyTo(manifestStream);
+            manifestStream.Position = 0;
+            AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
+            string packageName = "";
+            foreach (AxmlAttribute a in manifest.Attributes)
+            {
+                if (a.Name == "package")
+                {
+                    //Console.WriteLine("\nAPK Version is " + a.Value);
+                    Logger.Log("package is " + a.Value);
+                    packageName = a.Value.ToString();
+                }
+            }
+            foreach(char r in ReservedChars)
+            {
+                m.name = m.name.Replace(r, ' ');
+            }
+            string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + m.backupName + "/";
+            FileManager.RecreateDirectoryIfExisting(backupDir);
+            File.Move(m.tmpPath, backupDir + "app.apk");
+            Logger.Log("Moved apk");
         }
 
         public BackupList GetBackups(string package)
@@ -351,25 +412,11 @@ namespace QuestAppVersionSwitcher
             {
                 long size = FileManager.GetDirSize(d);
                 backups.backupsSize += size;
-                backups.backups.Add(new AppBackup(Path.GetFileName(d), Directory.Exists(d + "/GameData"), d, size, ByteSizeToString(size)));
+                backups.backups.Add(new AppBackup(Path.GetFileName(d), Directory.Exists(d + "/GameData"), d, size, SizeConverter.ByteSizeToString(size)));
             }
             if (File.Exists(backupDir + "lastRestored.txt")) backups.lastRestored = File.ReadAllText(backupDir + "lastRestored.txt");
-            backups.backupsSizeString = ByteSizeToString(backups.backupsSize);
+            backups.backupsSizeString = SizeConverter.ByteSizeToString(backups.backupsSize);
             return backups;
-        }
-
-        public string ByteSizeToString(long input, int decimals = 2)
-        {
-            // TB
-            if (input > 1099511627776) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1099511627776.0) + " TB";
-            // GB
-            else if (input > 1073741824) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1073741824.0) + " GB";
-            // MB
-            else if (input > 1048576) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1048576.0) + " MB";
-            // KB
-            else if (input > 1024) return String.Format("{0:0." + new string('#', decimals) + "}", input / 1024.0) + " KB";
-            // Bytes
-            else return input + " Bytes";
         }
 
         public bool IsNameFileNameSafe(string name)

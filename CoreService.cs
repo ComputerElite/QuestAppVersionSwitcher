@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Content.Res;
 using Android.Webkit;
 using AndroidX.Core.App;
+using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using System;
 using System.IO;
@@ -17,7 +18,7 @@ namespace QuestAppVersionSwitcher.Core
     public class CoreService
     {
         public static WebView browser = null;
-        public static QAVSWebserver qPWebserver = new QAVSWebserver();
+        public static QAVSWebserver qAVSWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
         public void Start()
@@ -45,16 +46,12 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.UseWideViewPort = true;
 
             // Create all directories and files
-            if (!Directory.Exists(coreVars.QAVSDir)) Directory.CreateDirectory(coreVars.QAVSDir);
-            if (!Directory.Exists(coreVars.QAVSBackupDir)) Directory.CreateDirectory(coreVars.QAVSBackupDir);
-            if (File.Exists(coreVars.QAVSConfigLocation))
-            {
-                coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
-            } else
-            {
-                File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
-            }
-            qPWebserver.Start();
+            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
+            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
+            FileManager.RecreateDirectoryIfExisting(coreVars.QAVDTmpDowngradeDir);
+            if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
+            coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
+            qAVSWebserver.Start();
         }
     }
 }

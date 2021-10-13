@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Oculus API App Versions</title>
+        <meta property="og:site_name" content="ComputerElite">
+        <meta property="og:title" content="Oculus API App Versions" />
+        <meta property="og:description" content="A page to get downloads for various Oculus apps" />
+        <meta property="og:url" content="https://computerelite.github.io/tools/Oculus/AppVersions.html" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+        <link href="https://computerelite.github.io/css/standard.css" type="text/css" rel="stylesheet">
+        <link rel="icon" href="https://computerelite.github.io/assets/CE_64px.png" type="image/x-icon">
+        <style>
+            td {
+                padding: 10px;
+            }
+
+            html {
+                background-color: #111111;
+            }
+
+            .item {
+                flex: 1;
+                width: 25%;
+                word-wrap: break-word;
+                padding: 3px;
+            }
+
+            hr {
+                border-color: #2c2c2c;
+            }
+        </style>
+    </head>
+    <body onmousemove="UpdateMousePos(event)">
+        <div style="flex: 1; padding: 10px;" class="bigBox">
+            <div style="font-size: 24px; text-align: center;">Oculus API App Versions</div>
+            <div style="font-size: 15px; text-align: center; color: #888;">
+                Download all Oculus Quest APKs if you own the game - Experimental Quest Version
+            </div>
+
+            <table style="padding: 10px; width: 700px; margin: auto; margin-top: 40px;">
+                <tr>
+                    <td>
+                        Search term for app
+                    </td>
+                    <td>
+                        <input type="text" value="Beat Saber" id="searchTerm" spellcheck="false" onkeydown='if(event.keyCode == 13) Search()'>
+                    </td>
+                    <td>
+                        <input type="button" value="Search" onclick="Search()">
+                    </td>
+                </tr>
+            </table>
+            <div id="notesContainer" style="margin-bottom: 50px;">
+
+            </div>
+            <div id="resultContainer">
+                <div style="display: flex; flex-wrap: wrap;">
+                    <div style="flex: 1; font-size: 18px; padding: 5px; margin: 5px;">
+                        <table style="width: fit-content; margin: auto;">
+                            <tr><td><img src="https://computerelite.github.io/assets/CE_512px.png" width="100px" height="100px"></td><td>Please search</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contextMenu" class="contextMenu">
+                <div class="contextMenuItem" onclick="navigator.clipboard.writeText(forClipboard)">Copy id</div>
+                <div class="contextMenuItem" onclick="SetClipboardLink()">Copy link</div>
+            </div>
+            <div id="tooltip" class="tooltip">
+                tooltip
+            </div>
+            <div class="guideHeader">How do I use this?</div>
+            <div class="guideSteps" id="instructions">
+                Heck wait until I wrote the instructions or even finished the backend you fucking idiot
+            </div>
+            <div class="guideHeader">Is this legal?</div>
+            <div class="guideSteps">
+                I cannot give an 100% correct answer on that. But it uses Oculus public API and official download servers (for which you need to own the app and be logged in on <a href="https://www.oculus.com/">oculus.com</a> to download the app) to get all the information.
+                <br/>
+                So if you ask me I'd say yes, it is legal.
+            </div>
+            <br/>
+            
+            <div class="attention" style="margin-top: 20px; width: fit-content; font-size: 14px;">
+                <div class="attentionHeader" style="font-size: 16px;">
+                    What to do when getting <code>An Error occured</code>
+                </div>
+                    Try again in 10 minutes or so. If the issue still persists contact ComputerElite via Discord.
+            </div>
+            <div class="tip" style="margin-top: 20px; width: fit-content;">
+                <div class="tipHeader">
+                    Why do I get <code>Request to Oculus failed</code>
+                </div>
+                This is not your fault. This shown up when my proxy server (which makes you able to do requests to Oculus) is shut down. Currently it has reached the maximum runtime for this month. While this happens all cached data will be used so you can continue to use this site.
+            </div>
+            <div style="text-align: center; font-size: 11px; color: #888;">
+                API found by nyamimi, requests found by Lillie, page by ComputerElite
+            </div>
+        </div>
+        <script src="https://computerelite.github.io/js/standard.js"></script>
+        <script src="https://computerelite.github.io/js/jszip.js"></script>
+        <script>
+            var noProxyEmulation = false
+            var menu = document.getElementById("contextMenu")
+            var progressBar = document.getElementById("progressBar")
+            var progressText = document.getElementById("file")
+            var tooltip = document.getElementById("tooltip")
+            var showingVersions = false
+            var showedid = ""
+            var requestUrl = "https://cors-anywhere-computerelite.herokuapp.com/https://graph.oculus.com/graphql"
+            //var setDNT = "1"
+            const versionSkeleton = `<div style="font-size: 22px; text-align: center; font-weight: bold;" id="versionHeader">Versions</div>
+                    <div style="font-size: 18px; color: #EEEEEE; text-align: center; display: flex; justify-content: center; width: 100%;">
+                        <div class="item">Version</div>
+                        <div class="item">Changelog</div>
+                        <div class="item">id</div>
+                    </div>
+                    <div id="versions" style="display: flex; color: #EEEEEE; width: 100%; justify-content: space-evenly; flex-direction: column;">
+                    </div>
+                    
+                    <div style="font-size: 22px; text-align: center; font-weight: bold;" id="dlcsHeader">DLCs</div>
+                    <div style="display: flex; flex-wrap: wrap;" id="dlcs">
+                    </div>`
+            const storeSkeleton =  `<div style="display: flex; flex-wrap: wrap; justify-content: flex-start;" id="apps">
+                                    </div>
+                                    <div id="appsinfo" style="font-size: 22px; text-align: center; font-weight: bold;">
+                                    </div>`
+
+            const loader = `<div class="loader" style="width: 50px; height: 50px; margin: auto;"></div>`
+            const ErrorMSG = `<div style='font-size: 24px; text-align: center; flex: 1;'>An error occured. Check below for more info</div>`
+            const RequestFailedError = `<div class="tip" style="margin-top: 20px; width: fit-content; margin-bottom: 20px;">
+                                            <div class="tipHeader">
+                                                Why do I get <code>Request to Oculus failed</code>
+                                            </div>
+                                            This is not your fault. This shown up when my proxy server (which makes you able to do requests to Oculus) is shut down. Currently it has reached the maximum runtime for this month. While this happens all cached data will be used so you can continue to use this site.
+                                        </div>`
+            var access_token = "OC|752908224809889|"
+
+            var url = new URL(window.location.href);
+            var id = url.searchParams.get("id");
+
+            if(id != undefined && id != "") {
+                SearchVersions(id)
+            }
+
+            var query = url.searchParams.get("query");
+
+            if(query != undefined && query != "") {
+                document.getElementById("searchTerm").value = query
+                Search()
+            }
+
+            var menuOpen = false;
+
+            document.onclick = (e) => {
+                menu.style.display = "none"
+            }
+
+            var forClipboard = ""
+            var isVersion = false;
+
+            function SetClipboardLink() {
+                navigator.clipboard.writeText(isVersion ? GetDownloadLink(forClipboard) : window.location.href.split('?')[0] + "?id=" + forClipboard)
+            }
+
+            function SetupContextMenu(e, id, version) {
+                if(menuOpen && forClipboard == id) {
+                    menuOpen = false
+                    menu.style.display = "none"
+                } else {
+                    isVersion = version
+                    forClipboard = id
+                    menuOpen = true
+                    menu.style.display = "block"
+                    menu.style.top = mouseY(event) + 'px';  
+                    menu.style.left = mouseX(event) + 'px';
+                    return false
+                }
+                
+            }
+
+            var x = 0
+            var y = 0
+            var inElement = false
+            var lastText = "";
+            function ShowTooltip(e, text) {
+                inElement = true;
+                lastText = text
+                mouseX(e)
+                setTimeout(() => {
+                    if(inElement && lastText == text) {
+                        tooltip.innerHTML = text
+                        tooltip.style.display = "block"
+                        tooltip.style.top = y + 'px';  
+                        tooltip.style.left = (x + 15) + 'px';
+                    }
+                }, 500)
+            }
+
+            function UpdateMousePos(e) {
+                x = mouseX(e)
+                y = mouseY(e)
+            }
+
+            function HideTooltip(e, text) {
+                inElement = false;
+                tooltip.style.display = "none"
+            }
+
+            function Search() {
+                document.getElementById("notesContainer").innerHTML = "";
+                showingVersions = false;
+                document.getElementById("resultContainer").innerHTML = storeSkeleton
+                document.getElementById("apps").innerHTML = loader
+                var searchTerm = document.getElementById("searchTerm").value
+                PostRequest(requestUrl, `access_token=${access_token}&variables={"query":"${searchTerm}","hmdType":"MONTEREY","firstSearchResultItems":100}&doc_id=4446310405385365`).then((res) => {
+                    /*
+                    document.getElementById("apps").innerHTML = ""
+                    res.data.application_search.results.edges.forEach(element => {
+                            document.getElementById("apps").innerHTML += GetResultFormatted({
+                                imgsrc: element.node.cover_square_image.uri,
+                                name: element.node.display_name,
+                                id: element.node.id
+                            })
+                    })
+                    if(document.getElementById("apps").innerHTML == "") {
+                        document.getElementById("apps").innerHTML = "<div style='font-size: 24px; text-align: center; flex: 1;'>Nothing found</div>"
+                    }
+                    */
+                    document.getElementById("apps").innerHTML = ""
+                    res.data.viewer.contextual_search.all_category_results.forEach(cat => {
+                        if(cat.name == "APPS" || cat.name == "CONCEPT") {
+                            cat.search_results.nodes.forEach(element => {
+                                document.getElementById("apps").innerHTML += GetResultFormatted({
+                                    imgsrc: element.target_object.cover_landscape_image.uri,
+                                    name: element.target_object.display_name,
+                                    id: element.target_object.id
+                                })
+                            })
+                        }
+                    })
+                    if(document.getElementById("apps").innerHTML == "") {
+                        document.getElementById("apps").innerHTML = "<div style='font-size: 24px; text-align: center; flex: 1;'>Nothing found</div>"
+                    }
+                }).catch(err => {
+                    MakeJSONGetRequestAsync("OlderAppVersions/index.json").then(res => {
+                        document.getElementById("appsinfo").innerHTML = `<div>Request to Oculus failed. <i>(Basic)</i> Search has run on cached apps</div>` + RequestFailedError
+                        document.getElementById("apps").innerHTML = ""
+                        res.forEach(element => {
+                            if(element.headset != "MONTEREY" || !element.name.toLowerCase().includes(searchTerm.toLowerCase())) return
+                                document.getElementById("apps").innerHTML += GetResultFormatted({
+                                    imgsrc: element.img,
+                                    name: element.name,
+                                    id: element.id
+                                })
+                            })
+                    }).catch(err => {
+                        document.getElementById("apps").innerHTML = ErrorMSG
+                    })
+                    ReportIssue()
+                })
+            }
+
+            function GetDownloadLink(id) {
+                return "https://securecdn.oculus.com/binaries/download/?id=" + id
+            }
+
+            var versions = []
+            var finished = 0
+            var required = 3;
+            var failed = false
+
+            function SearchVersions(id) {
+                var headset = "MONTEREY"
+                failed = false
+                document.getElementById("notesContainer").innerHTML = "";
+                showedid = id
+                showingVersions = true;
+                document.getElementById("resultContainer").innerHTML = versionSkeleton
+                document.getElementById("versions").innerHTML = loader
+                document.getElementById("dlcs").innerHTML = loader
+                versions = []
+                finished = 0
+                required = 3
+                var loop = setInterval(() => {
+                        //////CACHE
+                        if(finished == required - 1) {
+                            MakeJSONGetRequestAsync("https://computerelite.github.io/tools/Oculus/OlderAppVersions/index.json").then(res => {
+                                var contained = false
+                                for(let i = 0; i < res.length; i++)
+                                {
+                                    if(res[i].id == id) {
+                                        contained = true
+                                        break;
+                                    }
+                                }
+                                if(contained) {
+                                    console.log("Requesting cached data for " + id)
+                                    MakeJSONGetRequestAsync(`https://computerelite.github.io/tools/Oculus/OlderAppVersions/${id}.json`).then(res => {
+                                        if(failed) document.getElementById("versionHeader").innerHTML = "Versions for " + res.data.node.appName
+                                        res.data.node.binaries.edges.forEach(element => {
+                                            var contained = false;
+                                            versions.forEach(e => {
+                                                if(e.id == element.node.id) {
+                                                    contained = true;
+                                                }
+                                            })
+                                            if(!contained) {
+                                                versions.push({
+                                                    version: element.node.version,
+                                                    changelog: element.node.change_log,
+                                                    id: element.node.id,
+                                                    code: element.node.version_code,
+                                                    channelname: "From cache",
+                                                    createdate: element.node.created_date,
+                                                    appid: id
+                                                })
+                                            }
+                                        })
+                                        UpdateVersions(true, headset)
+                                    })
+                                } else {
+                                    UpdateVersions(true, headset)
+                                }
+                            }).catch(err => UpdateVersions(true, headset))
+                            clearInterval(loop)
+                        } else {
+                            console.log("Delaying cache request until remaining completed")
+                        }
+                    }, 10)
+                PostRequest(requestUrl, `access_token=${access_token}&variables={"id":"${id}"}&doc_id=1586217024733717`).then((res) => {
+                    res.data.node.supportedBinaries.edges.forEach(element => {
+                        versions.push({
+                            version: element.node.version,
+                            changelog: element.node.changeLog,
+                            id: element.node.id,
+                            code: element.node.versionCode,
+                            channelname: "From cache",
+                            createdate: 0,
+                            appid: id
+                        })
+                    })
+                    document.getElementById("versionHeader").innerHTML = "Versions for " + res.data.node.displayName
+
+                    //////BETA
+                    console.log("Adding betas")
+                    PostRequest(requestUrl, `access_token=OC|1317831034909742|&variables={"itemId":"${id}","first":5,"last":null,"after":null,"before":null,"forward":true,"ordering":null,"ratingScores":null,"hmdType":"MONTEREY" }&doc_id=5373392672732392`).then((res) => {
+                        res.data.node.release_channels.nodes.forEach(element => {
+                            var contained = false;
+                            versions.forEach(e => {
+                                if(e.id == element.latest_supported_binary.id) {
+                                    contained = true;
+                                }
+                            })
+                            if(!contained) {
+                                versions.unshift({
+                                    version: "[" + element.channel_name + "] " + element.latest_supported_binary.version,
+                                    changelog: "Changelog not available",
+                                    id: element.latest_supported_binary.id,
+                                    code: element.latest_supported_binary.versionCode,
+                                    appid: id
+                                })
+                            }
+                        })
+                        UpdateVersions(true, headset)
+                    }).catch(err => UpdateVersions(true, headset))
+                   UpdateVersions(true, headset)
+                }).catch(err => {
+                    document.getElementById("versions").innerHTML = ErrorMSG
+                    console.log(err)
+                    failed = true
+                    finished = required - 1
+                    ReportIssue()
+                })
+                var dlcs = document.getElementById("dlcs")
+                PostRequest(requestUrl, `access_token=${access_token}&variables={"id":"${id}","first": 100}&doc_id=3998937106836519`).then((res) => {
+                    dlcs.innerHTML = ""
+                    res.data.node.latest_supported_binary.firstIapItems.edges.forEach(dlc => {
+                        if(dlc.node.latest_supported_asset_file != undefined) {
+                            dlcs.innerHTML += GetDlcFormatted({
+                                id: dlc.node.latest_supported_asset_file.id,
+                                name: dlc.node.display_name
+                            }, headset == "RIFT")
+                        }
+                        
+                    })
+                    if(dlcs.innerHTML == "") dlcs.innerHTML = "<div style='flex:1;'>None</div>"
+                }).catch(err => {
+                    dlcs.innerHTML = `<div style="font-size: 22px; text-align: center; font-weight: bold; width: 100%; margin-bottom: 30px;">Request to Oculus failed. DLCs haven't been cached</div>`
+                })
+
+                //BETA
+                /*
+                PostRequest("https://cors-anywhere-computerelite.herokuapp.com/https://graph.oculus.com/graphql", `access_token=${access_token}&variables={"itemId":"${id}","first":5,"last":null,"after":null,"before":null,"forward":true,"ordering":null,"ratingScores":null,"hmdType":"MONTEREY" }&doc_id=5373392672732392`).then((res) => {
+                    res.data.node.release_channels.nodes.forEach(element => {
+                        var contained = false;
+                        console.log(element.channel_name)
+                        versions.forEach(e => {
+                            if(e.id == element.latest_supported_binary.id) {
+                                contained = true;
+                            }
+                        })
+                        if(!contained) {
+                            versions.push({
+                                version: element.latest_supported_binary.version,
+                                changelog: "N/A build from " + element.channel_name,
+                                id: element.latest_supported_binary.id,
+                                code: element.node.versionCode,
+                                channelname: element.channel_name,
+                                createdate: 0
+                            })
+                        }
+                    })
+                    UpdateVersions(true, headset)
+                }).catch(err => UpdateVersions(true, headset))
+                */
+
+
+                //Request extra app info
+                MakeJSONGetRequestAsync("https://computerelite.github.io/tools/Oculus/AppNotes/index.json").then(res => {
+                    if(res.includes(id)) {
+                        MakeTextGetRequestAsync(`https://computerelite.github.io/tools/Oculus/AppNotes/${id}.html`).then(res => {
+                            document.getElementById("notesContainer").innerHTML = res
+                        })
+                    }
+                })
+            }
+
+            function SortByVersion(versions) {
+                var outp = []
+                var c = {}
+                var ite = versions.length
+                for(let it = 0; it < ite; it++) {
+                    c = versions[0]
+                    var ci = 0
+                    for(let i = 0; i < versions.length; i++) {
+                        try {
+                            if(c.code > versions[i].code) {
+                                c = versions[i]
+                                ci = i
+                            }
+                        } catch (err) {console.log(err)}
+                    }
+                    versions.splice(ci, 1)
+                    outp.unshift(c)
+                }
+                return outp
+            }
+
+            function UpdateVersions(add = true, HeadsetName) {
+                if(add) finished++
+                console.log(finished + " out of " + required + " tasks finished")
+                versions = SortByVersion(versions)
+                document.getElementById("versions").innerHTML = finished < required ? loader : ""
+                versions.forEach(e => {
+                    document.getElementById("versions").innerHTML += GetFormatted(e, HeadsetName == "RIFT")
+                })
+                document.getElementById("versions").innerHTML += finished < required ? "" : (failed ? "<div style='font-size: 24px; text-align: center; flex: 1;'>Request to Oculus failed cached data is being shown.</div>" + RequestFailedError : "")
+                if(document.getElementById("versions").innerHTML == "") {
+                    document.getElementById("versions").innerHTML = "<div style='font-size: 24px; text-align: center; flex: 1;'>Nothing found" + (failed ? ". Request to Oculus failed and no cached data does exist." : "") + "</div>"
+                }
+            }
+
+            function DownloadBytes(url) {
+                return new Promise((resolve, reject) => {
+                    var request = new XMLHttpRequest();
+                    request.open('GET', url, false);
+                    request.onreadystatechange = (e) => {
+                        console.log(request.readyState)
+                        if(request.readyState === XMLHttpRequest.DONE) {
+                            if (request.status == 200) {
+                                resolve(request.response);
+                            } else {
+                                reject("Something went wrong: " + request.status);
+                            }
+                        }
+                    }
+                    request.send(null);
+                })
+            }
+
+            function Download(id, isRift, appid, versioncode, version) {
+                var password = prompt("Enter your password you set when you entered your token")
+                fetch("/download", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        password: password,
+                        binaryId: id,
+                        version: version,
+                        app: document.getElementById("versionHeader").innerHTML.replace("Versions for ", "")
+                    })
+                }).then(res => {
+                    alert("Added to download queue. Check downloads tab for more info")
+                })
+                //window.top.postMessage(, "*");
+            }
+
+            function GetFormatted(element, isRift) {
+                return `<a style="font-size: 16px; color: #EEEEEE; text-align: center; display: flex; width: 100%; cursor: pointer;" onclick="Download(${element.id}, ${isRift}, ${element.appid}, ${element.code}, '${element.version}')" oncontextmenu="return SetupContextMenu(event, '${element.id}', true)" download>
+                            <div class="item" onmouseover="UpdateMousePos(event)" onmouseupdate onmouseleave="HideTooltip()" onmouseenter="ShowTooltip(event, 'Version code: ${element.code}<br/>upload date: ${element.createdate ? UnixToDataAndTime(element.createdate) : "N/A"}')">${element.version}</div>
+                            <div class="item">${element.changelog == "N/A" ? "Changelog not available" : element.changelog.replace("\n", "<br/>")}</div>
+                            <div class="item">${element.id}</div>
+                        </a>
+                        <div style='width: 90%; margin-left: auto; margin-right: auto;'><hr></div>`
+            }
+
+            function GetResultFormatted(element) {
+                return `<a class="darken" style="flex: 0; background-color: #22222200; font-size: 18px; padding: 5px; margin: 5px; cursor: pointer; text-align: left;" onclick="SearchVersions('${element.id}')" oncontextmenu="return SetupContextMenu(event, '${element.id}', false);">
+                            <table style="width: fit-content; margin: auto;" class="defTextColor">
+                                <tr><td><img src="${element.imgsrc}" style="max-height: 250px; max-width: 600px;" onerror="if (this.src != '../../assets/ImageNotAvailable.png') this.src = '../../assets/ImageNotAvailable.png'"></td></tr><tr><td>${element.name}</td></tr>
+                            </table>
+                        </a>`
+            }
+
+            function GetDlcFormatted(element, isRift) {
+                return `<a class="zoom defTextColor" style="flex: 1; background-color: #222222; font-size: 18px; padding: 5px; margin: 5px; cursor: pointer;" onclick="Download(${element.id}, ${isRift})" oncontextmenu="return SetupContextMenu(event, '${element.id}', true);">
+                            ${element.name}
+                        </a>`
+            }
+
+
+            var issueReported = false
+            function ReportIssue() {
+                if(issueReported) return;
+                
+                    PostRequest("https://cors-anywhere-computerelite.herokuapp.com/postissue", "").then(res => {
+                        console.log(res.msg)
+                        alert(res.msg)
+                    }).catch(res => {
+                        //alert("Reporting to Server failed! It may have stopped working.")
+                        console.log("Reporting to Server failed! It may have stopped working.")
+                    })
+                
+                issueReported = true;
+                
+            }
+
+            function PostRequest(url, body) {
+                return new Promise((resolve, reject) => {
+                    if(noProxyEmulation) reject("")
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", url, true);
+                    xhr.onerror = (err) => {
+                        reject(err)
+                    }
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState == XMLHttpRequest.DONE) {
+                            if(xhr.status == 200) {
+                                resolve(JSON.parse(xhr.responseText))
+                            } else {
+                                reject(xhr.responseText)
+                            }
+                        }
+                    }
+                    //xhr.setRequestHeader('setdnt', setDNT)
+                    //xhr.setRequestHeader('TE', 'Trailers')
+                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                    xhr.send(body);
+                })
+            }
+        </script>
+    </body>
+</html>
