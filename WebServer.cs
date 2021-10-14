@@ -14,6 +14,8 @@ using ComputerUtils.Android.VarUtils;
 using ComputerUtils.Android.Encryption;
 using QuestPatcher.Axml;
 using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace QuestAppVersionSwitcher
 {
@@ -22,6 +24,7 @@ namespace QuestAppVersionSwitcher
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public List<DownloadManager> managers = new List<DownloadManager>();
+        public SHA256 hasher = SHA256.Create();
 
         public void Start()
         {
@@ -347,6 +350,8 @@ namespace QuestAppVersionSwitcher
             {
                 TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
+                SHA256 s = SHA256.Create();
+                CoreService.coreVars.password = GetSHA256OfString(r.password);
                 CoreService.coreVars.Save();
                 serverRequest.SendString("Set token");
                 return true;
@@ -354,11 +359,16 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
             {
                 DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
+                if(GetSHA256OfString(r.password) != CoreService.coreVars.password)
+                {
+                    serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
+                    return true;
+                }
                 DownloadManager m = new DownloadManager();
                 m.StartDownload(r.binaryId, r.password, r.version, r.app);
                 m.DownloadFinishedEvent += DownloadCompleted;
                 managers.Add(m);
-                serverRequest.SendString("Added to downloads");
+                serverRequest.SendString("Added to downloads. Check download progress tab. Pop up will close in 5 seconds");
                 return true;
             }));
             server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
@@ -375,6 +385,11 @@ namespace QuestAppVersionSwitcher
             server.StartServer(50001);
             Thread.Sleep(1000);
             CoreService.browser.LoadUrl("http://127.0.0.1:50001/");
+        }
+
+        public string GetSHA256OfString(string input)
+        {
+            return BitConverter.ToString(hasher.ComputeHash(Encoding.UTF8.GetBytes(input))).Replace("-", "");
         }
 
         public void DownloadCompleted(DownloadManager m)

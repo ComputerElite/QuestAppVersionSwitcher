@@ -73,7 +73,10 @@
             </div>
             <div class="guideHeader">How do I use this?</div>
             <div class="guideSteps" id="instructions">
-                Heck wait until I wrote the instructions or even finished the backend you fucking idiot
+                Type in your token and a password in the <code>Tools & Options</code> section (Open the app on your PC. You can find the adress you need to type in in the <code>Tools & Options</code> section). After you did that simply search the app and click the version you want to download.
+                <br>
+                You can then check the progress in the <code>Download progress</code> section.
+                <b>While downloading do NOT close the app</b>
             </div>
             <div class="guideHeader">Is this legal?</div>
             <div class="guideSteps">
@@ -118,10 +121,6 @@
                         <div class="item">id</div>
                     </div>
                     <div id="versions" style="display: flex; color: #EEEEEE; width: 100%; justify-content: space-evenly; flex-direction: column;">
-                    </div>
-                    
-                    <div style="font-size: 22px; text-align: center; font-weight: bold;" id="dlcsHeader">DLCs</div>
-                    <div style="display: flex; flex-wrap: wrap;" id="dlcs">
                     </div>`
             const storeSkeleton =  `<div style="display: flex; flex-wrap: wrap; justify-content: flex-start;" id="apps">
                                     </div>
@@ -280,7 +279,6 @@
                 showingVersions = true;
                 document.getElementById("resultContainer").innerHTML = versionSkeleton
                 document.getElementById("versions").innerHTML = loader
-                document.getElementById("dlcs").innerHTML = loader
                 versions = []
                 finished = 0
                 required = 3
@@ -374,22 +372,6 @@
                     finished = required - 1
                     ReportIssue()
                 })
-                var dlcs = document.getElementById("dlcs")
-                PostRequest(requestUrl, `access_token=${access_token}&variables={"id":"${id}","first": 100}&doc_id=3998937106836519`).then((res) => {
-                    dlcs.innerHTML = ""
-                    res.data.node.latest_supported_binary.firstIapItems.edges.forEach(dlc => {
-                        if(dlc.node.latest_supported_asset_file != undefined) {
-                            dlcs.innerHTML += GetDlcFormatted({
-                                id: dlc.node.latest_supported_asset_file.id,
-                                name: dlc.node.display_name
-                            }, headset == "RIFT")
-                        }
-                        
-                    })
-                    if(dlcs.innerHTML == "") dlcs.innerHTML = "<div style='flex:1;'>None</div>"
-                }).catch(err => {
-                    dlcs.innerHTML = `<div style="font-size: 22px; text-align: center; font-weight: bold; width: 100%; margin-bottom: 30px;">Request to Oculus failed. DLCs haven't been cached</div>`
-                })
 
                 //BETA
                 /*
@@ -482,19 +464,11 @@
             }
 
             function Download(id, isRift, appid, versioncode, version) {
-                var password = prompt("Enter your password you set when you entered your token")
-                fetch("/download", {
-                    method: "POST",
-                    body: JSON.stringify({
-                        password: password,
-                        binaryId: id,
-                        version: version,
-                        app: document.getElementById("versionHeader").innerHTML.replace("Versions for ", "")
-                    })
-                }).then(res => {
-                    alert("Added to download queue. Check downloads tab for more info")
-                })
-                //window.top.postMessage(, "*");
+                window.top.postMessage(JSON.stringify({
+                    binaryId: id,
+                    version: version,
+                    app: document.getElementById("versionHeader").innerHTML.replace("Versions for ", "")
+                }), "*") 
             }
 
             function GetFormatted(element, isRift) {
@@ -511,12 +485,6 @@
                             <table style="width: fit-content; margin: auto;" class="defTextColor">
                                 <tr><td><img src="${element.imgsrc}" style="max-height: 250px; max-width: 600px;" onerror="if (this.src != '../../assets/ImageNotAvailable.png') this.src = '../../assets/ImageNotAvailable.png'"></td></tr><tr><td>${element.name}</td></tr>
                             </table>
-                        </a>`
-            }
-
-            function GetDlcFormatted(element, isRift) {
-                return `<a class="zoom defTextColor" style="flex: 1; background-color: #222222; font-size: 18px; padding: 5px; margin: 5px; cursor: pointer;" onclick="Download(${element.id}, ${isRift})" oncontextmenu="return SetupContextMenu(event, '${element.id}', true);">
-                            ${element.name}
                         </a>`
             }
 

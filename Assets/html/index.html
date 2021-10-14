@@ -62,7 +62,7 @@
                     <iframe src="downgrade.html" style="width: 100%; height: 100%; border: none; overflow-y: visible;"></iframe>
                 </div>
                 <div class="contentItem hidden" id="download">
-                    <div id="progressBarContainers">
+                    <div id="progressBarContainers" style="width: 95%;">
 
                     </div>
                     
@@ -111,6 +111,27 @@
                         Accessible via browser at:
                         <div id="ips">
 
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="listContainer darken hidden" id="getPasswordContainer">
+                <div class="restoreStep" id="step7">
+                    <div class="contentHeader headerMargin">
+                        Password needed
+                    </div>
+                    Please enter the password you set when settings your oculus token. If you didn't set one or forgot your password abort the download and head to the <code>Tools & Options</code> section to set your token and password.
+                    <br>
+                    Check the <code>download progress</code> section to see if the download was successful. (There will be no indecation if the password you )
+                    <input type="password" id="passwordConfirm" placeholder="password">
+                    <div id="step7box" class="textBox"></div>
+                    <div class="buttonSelectionContainer">
+                        <div class="buttonContainer">
+                            <div class="button" id="abortPassword">Abort Download</div>
+                        </div>
+                        <div class="buttonContainer buttonMargin">
+                            <div class="button" id="confirmPassword">Start dowload</div>
                         </div>
                     </div>
                 </div>
@@ -296,6 +317,10 @@
             }
 
             setInterval(() => {
+                UpdateUI()
+            }, 10000)
+
+            setInterval(() => {
                 fetch("/downloads").then(res => {
                     res.json().then(json => {
                         document.getElementById("progressBarContainers").innerHTML = ""
@@ -310,6 +335,7 @@
                                                                                         </div>`
                         })
                     })
+                    if(document.getElementById("progressBarContainers").innerHTML == "") document.getElementById("progressBarContainers").innerHTML = "No downloads running"
                 })
             }, 500)
 
@@ -520,8 +546,41 @@
                 document.getElementById("deleteContainer").className = "listContainer darken"
             }
 
-            document.getElementById("deleteBackup").onclick = () => {
-                OpenDeletePopup()
+            function CloseGetPasswordPopup() {
+                document.getElementById("getPasswordContainer").className = "listContainer darken hidden"
+                HideTextBox("step7box")
+                GotoStep(7)
+            }
+
+            function OpenGetPasswordPopup() {
+                CloseGetPasswordPopup()
+                document.getElementById("getPasswordContainer").className = "listContainer darken"
+            }
+            var options = {}
+            window.onmessage = (e) => {
+                options = JSON.parse(e.data)
+                OpenGetPasswordPopup()
+            }
+            document.getElementById("abortPassword").onclick = () => {
+                CloseGetPasswordPopup()
+            }
+            document.getElementById("confirmPassword").onclick = () => {
+                options.password = document.getElementById("passwordConfirm").value
+                fetch("/download", {
+                    method: "POST",
+                    body: JSON.stringify(options)
+                }).then(res => {
+                    res.text().then(text => {
+                        if(res.status == 403) {
+                            TextBoxError("step7box", text)
+                        } else if(res.status == 200) {
+                            TextBoxGood("step7box", text)
+                            setTimeout(() => {
+                                CloseGetPasswordPopup()
+                            }, 5000)
+                        }
+                    })
+                })
             }
 
             document.getElementById("delete").onclick = () => {
