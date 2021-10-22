@@ -159,7 +159,7 @@
                     <div class="contentHeader headerMargin">
                         Step 1
                     </div>
-                    <div><b>If you want to return to this version you <u>must</u> backup it first.<br>To do this abort the restore process and create a backup.</b></div>
+                    <div><b>Restoring a backup will overwrite your current installation. If you do not want to loose your current installtion you <u>must</u> backup it first.<br>To do this abort the restore process and create a backup.</b></div>
                     <br>
                     <b>Selected backup:</b> <div class="selectedBackupName inline"></div> of <div class="inline packageName">some game</div>
                     <br>
@@ -183,6 +183,9 @@
                         Step 1.1
                     </div>
                     After the uninstall completed please press the continue button
+                    <br>
+                    <br>
+                    <i>If you didn't get a prompt then press continue as well</i>
                     <div class="buttonSelectionContainer">
                         <div class="buttonContainer">
                             <div class="button" id="confirm1">Continue</div>
@@ -243,12 +246,11 @@
         <script>
             UpdateUI()
             var config = {}
-            var loadingBackups = false
             var selectedBackup = ""
 
             var undefinedLoader = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`
 
-            function UpdateUI() {
+            function UpdateUI(closeLists = false) {
                 fetch("questappversionswitcher/config").then(res => res.json().then(res => {
                     config = res
                     Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
@@ -269,7 +271,6 @@
                                 UpdateUI()
                             }
                         })
-                        loadingBackups = false
                     }))
                 }))
                 fetch("allbackups").then(res => {
@@ -284,16 +285,18 @@
                     document.getElementById("ips").innerHTML = ""
                     res.browserIPs.forEach(i => 
                     {
-                        console.log(i)
                         document.getElementById("ips").innerHTML += i + "<br>"
                     })
                 }))
                 Array.prototype.forEach.call(document.getElementsByClassName("selectedBackupName"), i => {
                     i.innerHTML = selectedBackup
                 })
+                if(closeLists) {
+                    document.getElementById("appList").className = "list hidden"
+                    document.getElementById("appListContainer").className = "listContainer hidden"
+                    document.getElementById("appList").innerHTML = ""
+                }
                 
-                document.getElementById("appList").className = "list hidden"
-                document.getElementById("appListContainer").className = "listContainer hidden"
             }
 
             document.getElementById("saveToken").onclick = () => {
@@ -343,26 +346,26 @@
                 document.getElementById("appList").innerHTML = undefinedLoader
                 document.getElementById("appList").className = "list"
                 document.getElementById("appListContainer").className = "listContainer"
-                fetch("android/installedapps").then(res => res.json().then(res => {
+                fetch("android/installedappsandbackups").then(res => res.json().then(res => {
                     document.getElementById("appList").innerHTML = ""
                     res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
                     res.forEach(app => {
-                        document.getElementById("appList").innerHTML += `<div class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
-                    })
-                    Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
-                        i.onclick = function() {
-                            loadingBackups = true
-                            fetch("questappversionswitcher/changeapp", {
-                                method: "POST",
-                                body: i.getAttribute("value")
-                            }).then(() => UpdateUI())
-                            UpdateUI()
-                        }
+                        document.getElementById("appList").innerHTML += `<div onclick="ChangeApp(this.getAttribute('value'))" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
                     })
                 }))
             }
 
-            document.getElementById("appListContainer").onclick = () => UpdateUI()
+            function ChangeApp(package) {
+                fetch("questappversionswitcher/changeapp", {
+                    method: "POST",
+                    body: package
+                }).then(() => UpdateUI(true))
+                UpdateUI(true)
+            }
+
+            document.getElementById("appListContainer").onclick = (event) => {
+                if(event.target.id == 'appListContainer') UpdateUI(true)
+            }
 
             Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), i => {
                 i.onclick = function() {
@@ -472,7 +475,19 @@
                     method: "POST"
                 }).then(res => {
                     res.text().then(text => {
-                        if(res.status == 200) GotoStep(4)
+                        if(res.status == 200) {
+                            fetch("containsgamedata?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+                                method: "POST"
+                            }).then(res => {
+                                res.text(text => {
+                                    if(text == "False") {
+                                        GotoStep(5)
+                                    } else {
+                                        GotoStep(4)
+                                    }
+                                })
+                            })
+                        }
                         else TextBoxError("step3box", text)
                     })
                     

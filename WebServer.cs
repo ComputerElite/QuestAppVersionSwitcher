@@ -16,6 +16,7 @@ using QuestPatcher.Axml;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Linq;
 
 namespace QuestAppVersionSwitcher
 {
@@ -34,6 +35,20 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/android/installedappsandbackups", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                List<App> apps = AndroidService.GetInstalledApps();
+
+                foreach(string f in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
+                {
+                    if(apps.FirstOrDefault(x => x.PackageName == Path.GetFileName(f)) == null)
+                    {
+                        apps.Add(new App("unknown", Path.GetFileName(f)));
+                    }
+                }
+                serverRequest.SendString(JsonSerializer.Serialize(apps), "application/json");
                 return true;
             }));
             server.AddRoute("GET", "/android/getpackagelocation", new Func<ServerRequest, bool>(serverRequest =>
@@ -62,8 +77,11 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                AndroidService.InitiateUninstallPackage(package);
-                serverRequest.SendString("Uninstall request sent");
+                if (!AndroidService.IsPackageInstalled(package))
+                {
+                    AndroidService.InitiateUninstallPackage(package);
+                    serverRequest.SendString("Uninstall request sent");
+                }
                 return true;
             }));
             server.AddRoute("GET", "/android/ispackageinstalled", new Func<ServerRequest, bool>(serverRequest =>
@@ -79,15 +97,9 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("POST", "/questappversionswitcher/changeapp", new Func<ServerRequest, bool>(serverRequest =>
             {
-                if(AndroidService.IsPackageInstalled(serverRequest.bodyString))
-                {
-                    CoreService.coreVars.currentApp = serverRequest.bodyString;
-                    CoreService.coreVars.Save();
-                    serverRequest.SendString("App changed to " + serverRequest.bodyString);
-                } else
-                {
-                    serverRequest.SendString("The package " + serverRequest.bodyString + " isn't installed", "text/plain", 400);
-                }
+                CoreService.coreVars.currentApp = serverRequest.bodyString;
+                CoreService.coreVars.Save();
+                serverRequest.SendString("App changed to " + serverRequest.bodyString);
                 return true;
             }));
             server.AddRoute("GET", "/questappversionswitcher/config", new Func<ServerRequest, bool>(serverRequest =>
@@ -102,10 +114,10 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("POST", "/android/installapk", new Func<ServerRequest, bool>(serverRequest =>
             {
-                serverRequest.SendString("This Endpoint has been deactivated", "text/plain", 503);
+                serverRequest.SendString("This Endpoint has been deactivated because of security concerns", "text/plain", 503);
                 return true;
 
-                // Deactivated
+                // Deactivated cause of security resons
                 if (serverRequest.queryString.Get("path") == null)
                 {
                     serverRequest.SendString("path key needed", "text/plain", 400);
@@ -281,6 +293,40 @@ namespace QuestAppVersionSwitcher
                 }
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
                 serverRequest.SendString("Started apk install", "text/plain", 200);
+                return true;
+            }));
+            server.AddRoute("POST", "/containsgamedata", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                if (serverRequest.queryString.Get("backupname") == null)
+                {
+                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                string backupname = serverRequest.queryString.Get("backupname");
+                if (!IsNameFileNameSafe(backupname))
+                {
+                    serverRequest.SendString("You Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    return true;
+                }
+                if (!IsNameFileNameSafe(package))
+                {
+                    serverRequest.SendString("You package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    return true;
+                }
+                string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
+                if (!Directory.Exists(backupDir))
+                {
+                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    return true;
+                }
+                string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
+                serverRequest.SendString(Directory.Exists(backupDir + package).ToString(), "text/plain", 200);
                 return true;
             }));
             server.AddRoute("POST", "/restoregamedata", new Func<ServerRequest, bool>(serverRequest =>
