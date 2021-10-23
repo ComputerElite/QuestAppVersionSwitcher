@@ -79,9 +79,11 @@ namespace QuestAppVersionSwitcher
                 string package = serverRequest.queryString.Get("package");
                 if (!AndroidService.IsPackageInstalled(package))
                 {
-                    AndroidService.InitiateUninstallPackage(package);
-                    serverRequest.SendString("Uninstall request sent");
+                    serverRequest.SendString("App is already uninstalled", "text/plain", 230);
+                    return true;
                 }
+                AndroidService.InitiateUninstallPackage(package);
+                serverRequest.SendString("Uninstall request sent");
                 return true;
             }));
             server.AddRoute("GET", "/android/ispackageinstalled", new Func<ServerRequest, bool>(serverRequest =>
