@@ -139,7 +139,7 @@
                                             </div>
                                             This is not your fault. This shown up when my proxy server (which makes you able to do requests to Oculus) is shut down. Currently it has reached the maximum runtime for this month. While this happens all cached data will be used so you can continue to use this site.
                                         </div>`
-            var access_token = "OC|752908224809889|"
+            var access_token = "OC|1317831034909742|"
 
             var url = new URL(window.location.href);
             var id = url.searchParams.get("id");
@@ -218,7 +218,7 @@
                 document.getElementById("resultContainer").innerHTML = storeSkeleton
                 document.getElementById("apps").innerHTML = loader
                 var searchTerm = document.getElementById("searchTerm").value
-                PostRequest(requestUrl, `access_token=${access_token}&variables={"query":"${searchTerm}","hmdType":"MONTEREY","firstSearchResultItems":100}&doc_id=4446310405385365`).then((res) => {
+                PostRequest(requestUrl, `access_token=${access_token}&variables={"query":"${searchTerm}","hmdType":"MONETERY","firstSearchResultItems":100}&doc_id=3928907833885295`).then((res) => {
                     /*
                     document.getElementById("apps").innerHTML = ""
                     res.data.application_search.results.edges.forEach(element => {
@@ -244,11 +244,21 @@
                             })
                         }
                     })
-                    if(document.getElementById("apps").innerHTML == "") {
-                        document.getElementById("apps").innerHTML = "<div style='font-size: 24px; text-align: center; flex: 1;'>Nothing found</div>"
-                    }
+                    MakeJSONGetRequestAsync("https://computerelite.github.io/tools/Oculus/OlderAppVersions/index.json").then(res => {
+                        res.forEach(element => {
+                            if(element.headset != "MONTEREY" || !element.name.toLowerCase().includes(searchTerm.toLowerCase())) return
+                                document.getElementById("apps").innerHTML += GetResultFormatted({
+                                    imgsrc: element.img,
+                                    name: element.name,
+                                    id: element.id
+                                })
+                            })
+                        if(document.getElementById("apps").innerHTML == "") {
+                            document.getElementById("apps").innerHTML = "<div style='font-size: 24px; text-align: center; flex: 1;'>Nothing found</div>"
+                        }
+                    })
                 }).catch(err => {
-                    MakeJSONGetRequestAsync("OlderAppVersions/index.json").then(res => {
+                    MakeJSONGetRequestAsync("https://computerelite.github.io/tools/Oculus/OlderAppVersions/index.json").then(res => {
                         document.getElementById("appsinfo").innerHTML = `<div>Request to Oculus failed. <i>(Basic)</i> Search has run on cached apps</div>` + RequestFailedError
                         document.getElementById("apps").innerHTML = ""
                         res.forEach(element => {
@@ -487,7 +497,7 @@
             function GetResultFormatted(element) {
                 return `<a class="darken" style="flex: 0; background-color: #22222200; font-size: 18px; padding: 5px; margin: 5px; cursor: pointer; text-align: left;" onclick="SearchVersions('${element.id}')" oncontextmenu="return SetupContextMenu(event, '${element.id}', false);">
                             <table style="width: fit-content; margin: auto;" class="defTextColor">
-                                <tr><td><img src="${element.imgsrc}" style="max-height: 250px; max-width: 600px;" onerror="if (this.src != '../../assets/ImageNotAvailable.png') this.src = '../../assets/ImageNotAvailable.png'"></td></tr><tr><td>${element.name}</td></tr>
+                                <tr><td><img src="${element.imgsrc}" style="max-height: 250px; max-width: 600px;" onerror="if (this.src != 'https://computerelite.github.io/assets/ImageNotAvailable.png') this.src = 'https://computerelite.github.io/assets/ImageNotAvailable.png'"></td></tr><tr><td>${element.name}</td></tr>
                             </table>
                         </a>`
             }
