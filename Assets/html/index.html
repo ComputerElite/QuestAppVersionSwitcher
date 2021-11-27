@@ -349,15 +349,25 @@
                 fetch("android/installedappsandbackups").then(res => res.json().then(res => {
                     document.getElementById("appList").innerHTML = ""
                     res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
-                    var apps = ""
-                    res.forEach(app => {
-                        apps += `<div onclick="ChangeApp(this.getAttribute('value'))" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
-                    })
-                    document.getElementById("appList").innerHTML = apps
+                    const interval = 20
+                    var target = 0
+                    var current = 0
+                    var i = setInterval(() => {
+                        target = res.length < target + interval ? res.length : target + interval
+                        var apps = ""
+                        while(current < target) {
+                            var app = res[current]
+                            apps += `<div onclick="ChangeApp('${app.PackageName}')" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
+                            current++
+                        }
+                        document.getElementById("appList").innerHTML += apps
+                        if(current == res.length) clearInterval(i)
+                    }, 50)
                 }))
             }
 
             function ChangeApp(package) {
+                console.log("Changing app to " + package)
                 fetch("questappversionswitcher/changeapp", {
                     method: "POST",
                     body: package
