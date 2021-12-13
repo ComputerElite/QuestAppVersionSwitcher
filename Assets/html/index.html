@@ -349,7 +349,7 @@
                 fetch("android/installedappsandbackups").then(res => res.json().then(res => {
                     document.getElementById("appList").innerHTML = ""
                     res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
-                    const interval = 20
+                    const interval = 10
                     var target = 0
                     var current = 0
                     var i = setInterval(() => {
@@ -362,7 +362,7 @@
                         }
                         document.getElementById("appList").innerHTML += apps
                         if(current == res.length) clearInterval(i)
-                    }, 50)
+                    }, 200)
                 }))
             }
 
@@ -569,7 +569,7 @@
                 document.getElementById("deleteContainer").className = "listContainer darken hidden"
                 GotoStep(6)
             }
-
+            document.getElementById("deleteBackup").onclick = () => OpenDeletePopup();
             function OpenDeletePopup() {
                 CloseDeletePopup()
                 document.getElementById("deleteContainer").className = "listContainer darken"
