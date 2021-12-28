@@ -55,6 +55,7 @@
                         <div class="button" id="createBackup">Create Backup</div>
                         <div class="buttonLabel">Creates a backup of <div class="inline packageName">some game</div></div>
                     </div>
+                    <label><input type="checkbox" id="appdata" value="only backup app data" style="width: auto;">Only backup app data</label>
                     <div id="backupTextBox" class="textBox"></div>
                 </div>
             </div>
@@ -402,9 +403,10 @@
                 TextBoxError("backupTextBox", "A Backup is being created right now. Please wait until it has finished")
                 return
             }
+            var onlyAppData = document.getElementById("appdata").checked
             backupInProgress = true
             TextBoxText("backupTextBox", "Please wait while the Backup is being created. This can take a few minutes")
-            fetch("backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value, {
+            fetch("backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value + (onlyAppData ? "&onlyappdata=true" : "") , {
                 method: "POST"
             }).then(res => {
                 res.text().then(text => {
@@ -469,12 +471,21 @@
         }
 
         document.getElementById("uninstall2").onclick = () => {
-            fetch(`android/uninstallpackage?package=${config.currentApp}`, {
-                method: "POST"
-            }).then(res => {
-                if (res.status == 230) GotoStep(3)
-                else GotoStep(2)
+            fetch(`isonlyappdata?package=${config.currentApp}&backupname=${selectedBackup}`).then(res => {
+                res.text().then(text => {
+                    if(text == "true") {
+                        GotoStep(4)
+                    } else {
+                        fetch(`android/uninstallpackage?package=${config.currentApp}`, {
+                            method: "POST"
+                        }).then(res => {
+                            if (res.status == 230) GotoStep(3)
+                            else GotoStep(2)
+                        })
+                    }
+                })
             })
+            
         }
 
         document.getElementById("confirm1").onclick = () => {

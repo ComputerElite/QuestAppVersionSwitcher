@@ -17,7 +17,6 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
-using OculusGraphQLApiLib;
 
 namespace QuestAppVersionSwitcher
 {
@@ -206,11 +205,19 @@ namespace QuestAppVersionSwitcher
                 }
                 string apkDir = AndroidService.FindAPKLocation(package);
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
+                
+
                 try
                 {
-                    text = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
-                    code = 202;
-                    File.Copy(apkDir, backupDir + "app.apk");
+                    if (serverRequest.queryString.Get("onlyappdata") == null)
+                    {
+                        text = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
+                        code = 202;
+                        File.Copy(apkDir, backupDir + "app.apk");
+                    } else
+                    {
+                        File.WriteAllText(backupDir + "onlyappdata.txt", "This backup only contains app data.");
+                    }
                     text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
                     code = 202;
                     FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
@@ -232,6 +239,44 @@ namespace QuestAppVersionSwitcher
 
                 text = "Backup of " + package + " with the name " + backupname + " finished";
                 code = 200;
+                return true;
+            }));
+            server.AddRoute("GET", "/isonlyappdata", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                if (serverRequest.queryString.Get("backupname") == null)
+                {
+                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                string backupname = serverRequest.queryString.Get("backupname");
+                if (!IsNameFileNameSafe(backupname))
+                {
+                    serverRequest.SendString("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    return true;
+                }
+                if (!IsNameFileNameSafe(package))
+                {
+                    serverRequest.SendString("Your package contains a forbidden character. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    return true;
+                }
+                if (backupname == "")
+                {
+                    serverRequest.SendString("The backup has to have a name. Please add one.", "text/plain", 400);
+                    return true;
+                }
+                string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
+                if (!Directory.Exists(backupDir))
+                {
+                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    return true;
+                }
+                serverRequest.SendString(File.Exists(backupDir + "onlyappdata.txt").ToString().ToLower());
                 return true;
             }));
             server.AddRoute("GET", "/backup", new Func<ServerRequest, bool>(serverRequest =>
@@ -402,7 +447,21 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
             {
                 TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
-                string error = TokenTools
+                if (r.token.Contains("%"))
+                {
+                    serverRequest.SendString("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", "text/plain", 400);
+                    return true;
+                }
+                if (!r.token.StartsWith("OC"))
+                {
+                    serverRequest.SendString("Tokens must start with 'OC'. Please get a new one", "text/plain", 400);
+                    return true;
+                }
+                if (r.token.Contains("|"))
+                {
+                    serverRequest.SendString("You seem to have entered a token of an application. Please get YOUR token. Usually this can be done by using another request in the network tab.", "text/plain", 400);
+                    return true;
+                }
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
                 SHA256 s = SHA256.Create();
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
