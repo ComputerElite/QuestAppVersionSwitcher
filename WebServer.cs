@@ -17,6 +17,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
+using OculusGraphQLApiLib;
 
 namespace QuestAppVersionSwitcher
 {
@@ -41,9 +42,9 @@ namespace QuestAppVersionSwitcher
             {
                 List<App> apps = AndroidService.GetInstalledApps();
 
-                foreach(string f in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
+                foreach (string f in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
                 {
-                    if(apps.FirstOrDefault(x => x.PackageName == Path.GetFileName(f)) == null)
+                    if (apps.FirstOrDefault(x => x.PackageName == Path.GetFileName(f)) == null)
                     {
                         apps.Add(new App("unknown", Path.GetFileName(f)));
                     }
@@ -60,10 +61,11 @@ namespace QuestAppVersionSwitcher
                 }
                 string package = serverRequest.queryString.Get("package");
                 string location = AndroidService.FindAPKLocation(package);
-                if(location == null)
+                if (location == null)
                 {
                     serverRequest.SendString("package not found", "text/plain", 400);
-                } else
+                }
+                else
                 {
                     serverRequest.SendString(location);
                 }
@@ -146,9 +148,10 @@ namespace QuestAppVersionSwitcher
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/";
                 if (Directory.Exists(backupDir))
                 {
-                    
+
                     serverRequest.SendString(JsonSerializer.Serialize(GetBackups(package)), "application/json");
-                } else
+                }
+                else
                 {
                     serverRequest.SendString("{}", "application/json");
                 }
@@ -170,7 +173,7 @@ namespace QuestAppVersionSwitcher
                 }
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
-                if(!IsNameFileNameSafe(backupname))
+                if (!IsNameFileNameSafe(backupname))
                 {
                     serverRequest.SendString("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
                     return true;
@@ -180,7 +183,7 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("Your package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
                     return true;
                 }
-                if(backupname == "")
+                if (backupname == "")
                 {
                     serverRequest.SendString("Your backup has to have a name. Please add one.", "text/plain", 400);
                     return true;
@@ -195,7 +198,7 @@ namespace QuestAppVersionSwitcher
                 text = "Creating Backup. Please wait until it has finished. This can take up to 2 minutes";
                 code = 202;
                 Directory.CreateDirectory(backupDir);
-                if(!AndroidService.IsPackageInstalled(package))
+                if (!AndroidService.IsPackageInstalled(package))
                 {
                     text = package + " is not installed. Please select a different app.";
                     code = 400;
@@ -219,13 +222,14 @@ namespace QuestAppVersionSwitcher
                         Directory.CreateDirectory(backupDir + "obb/" + package);
                         FileManager.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package, true);
                     }
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     text = "Backup failed: " + e.Message;
                     code = 500;
                     return true;
                 }
-                
+
                 text = "Backup of " + package + " with the name " + backupname + " finished";
                 code = 200;
                 return true;
@@ -288,7 +292,7 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
                     return true;
                 }
-                if(!File.Exists(backupDir + "app.apk"))
+                if (!File.Exists(backupDir + "app.apk"))
                 {
                     serverRequest.SendString("Critical: APK doesn't exist in Backup. This Backup is useless. Please restart the app and choose a different one.", "text/plain", 500);
                     return true;
@@ -367,7 +371,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
-                if(!Directory.Exists(backupDir + package))
+                if (!Directory.Exists(backupDir + package))
                 {
                     serverRequest.SendString("This backup doesn't contain a game data backup. Please skip this step", "text/plain", 400);
                     return true;
@@ -375,7 +379,8 @@ namespace QuestAppVersionSwitcher
                 try
                 {
                     FileManager.DirectoryCopy(backupDir + package, gameDataDir, true);
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     serverRequest.SendString("Game data of " + package + " was unable to be restored: " + e.Message, "text/plain", 500);
                     return true;
@@ -397,6 +402,7 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
             {
                 TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
+                string error = TokenTools
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
                 SHA256 s = SHA256.Create();
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
@@ -407,7 +413,7 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
             {
                 DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
-                if(GetSHA256OfString(r.password) != CoreService.coreVars.password)
+                if (GetSHA256OfString(r.password) != CoreService.coreVars.password)
                 {
                     serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
                     return true;
@@ -422,7 +428,7 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
             {
                 List<DownloadProgress> progress = new List<DownloadProgress>();
-                foreach(DownloadManager m in managers)
+                foreach (DownloadManager m in managers)
                 {
                     progress.Add(m);
                 }
@@ -457,7 +463,7 @@ namespace QuestAppVersionSwitcher
                     packageName = a.Value.ToString();
                 }
             }
-            foreach(char r in ReservedChars)
+            foreach (char r in ReservedChars)
             {
                 m.name = m.name.Replace(r, ' ');
             }
@@ -484,7 +490,7 @@ namespace QuestAppVersionSwitcher
 
         public bool IsNameFileNameSafe(string name)
         {
-            foreach(char c in ReservedChars)
+            foreach (char c in ReservedChars)
             {
                 if (name.Contains(c)) return false;
             }
