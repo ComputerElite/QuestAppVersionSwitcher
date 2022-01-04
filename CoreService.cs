@@ -23,6 +23,7 @@ namespace QuestAppVersionSwitcher.Core
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
         public void Start()
         {
+
             // Check permissions and request if needed
             if (Permissions.CheckStatusAsync<Permissions.StorageWrite>().Result != PermissionStatus.Granted)
             {

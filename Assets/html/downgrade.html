@@ -55,6 +55,13 @@
                     </td>
                 </tr>
             </table>
+            <div style="position: fixed; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #00000099; visibility: hidden; top: 0; left: 0" id="popupContainer" onclick="if(event.target.id == 'popupContainer') document.getElementById('popupContainer').style.visibility = 'hidden'">
+                <div style="background-color: #222222; padding: 10px;">
+                    <div style="display: flex; justify-content: center; flex-direction: column; align-items: center;" id="popup">
+
+                    </div>
+                </div>
+            </div>
             <div id="notesContainer" style="margin-bottom: 50px;">
 
             </div>
@@ -143,6 +150,9 @@
 
             var url = new URL(window.location.href);
             var id = url.searchParams.get("id");
+            var query = url.searchParams.get("query");
+            var downloadId = url.searchParams.get("downloadid");
+            var downloadVersion = url.searchParams.get("downloadversion");
 
             if(id != undefined && id != "") {
                 SearchVersions(id)
@@ -153,6 +163,23 @@
             if(query != undefined && query != "") {
                 document.getElementById("searchTerm").value = query
                 Search()
+            }
+            if(downloadId) {
+                setTimeout(() => {
+                    var a = document.createElement("a")
+                    a.href = GetDownloadLink(downloadId)
+                    a.target = "_blank"
+                    a.click()
+                }, 100)
+            }
+            if(downloadVersion) {
+                if(!id)
+                {
+                    downloadVersion = ""    
+                    alert("id query parameter must be set to an app")
+                } else {
+                    SearchVersions(id)
+                }
             }
 
             var menuOpen = false;
@@ -419,6 +446,12 @@
                     if(res.includes(id)) {
                         MakeTextGetRequestAsync(`https://computerelite.github.io/tools/Oculus/AppNotes/${id}.html`).then(res => {
                             document.getElementById("notesContainer").innerHTML = res
+                            Array.prototype.forEach.call(document.getElementById("notesContainer").getElementsByTagName("script"), e => {
+                                console.log(e)
+                                s = document.createElement("script")
+                                s.innerHTML = e.innerHTML
+                                document.head.appendChild(s)
+                            })
                         })
                     }
                 })
@@ -452,6 +485,20 @@
                 document.getElementById("versions").innerHTML = finished < required ? loader : ""
                 versions.forEach(e => {
                     document.getElementById("versions").innerHTML += GetFormatted(e, HeadsetName == "RIFT")
+                    if(finished >= required && downloadVersion && e.version == downloadVersion) {
+                        name = document.getElementById("versionHeader").innerHTML.replace("Versions for ", "")
+                        document.getElementById("popupContainer").style.visibility = "visible"
+                        document.getElementById("popup").innerHTML = `
+                        <div style="font-size: 1.3em;">
+                            <div>Do you want to Download ${name} version ${downloadVersion}. If the download doesn't start log in on oculus.com</div>
+                            <div style="display: flex;">
+                                <div class="customButton" onclick="Download(${e.id}, false, ${e.appid}, ${e.code})">Yes</div>
+                                <div class="customButton" style="margin-left: 10px;" onclick="document.getElementById('popupContainer').style.visibility = 'hidden'">No</div>
+                            </div>
+                        </div>
+                        `
+                        downloadVersion = ""
+                    }
                 })
                 document.getElementById("versions").innerHTML += finished < required ? "" : (failed ? "<div style='font-size: 24px; text-align: center; flex: 1;'>Request to Oculus failed cached data is being shown.</div>" + RequestFailedError : "")
                 if(document.getElementById("versions").innerHTML == "") {
