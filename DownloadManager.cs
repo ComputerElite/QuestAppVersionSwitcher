@@ -79,6 +79,10 @@ namespace QuestAppVersionSwitcher
                 {
                     DownloadFinishedEvent(this);
                     this.backupName = "Done: restore " + backupName + " to downgrade your game any time";
+                    this.done = this.total;
+                    this.doneString = this.totalString;
+                    this.percentage = 1.0;
+                    this.percentageString = "100%";
                     this.textColor = "#30e34b";
                 }
             };
