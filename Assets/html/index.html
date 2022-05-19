@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="contentItem hidden" id="downgrade" style="padding: 0px;">
-                <iframe src="downgrade.html" style="width: 100%; height: 100%; border: none; overflow-y: visible;"></iframe>
+                <iframe src="https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD" style="width: 100%; height: 100%; border: none; overflow-y: visible;"></iframe>
             </div>
             <div class="contentItem hidden" id="download">
                 <div id="progressBarContainers" style="width: 95%;">
@@ -88,18 +88,27 @@
                         <div class="contentHeaderDescription">Set your token for downgrading games</div>
                     </div>
                     <div class="buttonContainer">
-                        <div>Oculus Token <a style="text-weight: bold;" href="https://computerelite.github.io/tools/Oculus/ObtainToken.html">Guide to get the token</a></div>
-                        <input type="password" placeholder="Token" id="token" class="buttonLabel" style="width: 600px;">
-                    </div>
-                    <div class="buttonContainer">
-                        <div>Password for encryption (This password will encrypt your token. Make sure you've used it nowhere else)</div>
-                        <input type="password" placeholder="Password" id="password" class="buttonLabel" style="width: 600px;">
-                    </div>
-                    <div class="buttonContainer">
-                        <div class="button" id="saveToken">Save Token</div>
-                        <div class="buttonLabel">Saves the token so you can downgrade games</div>
+                        <div class="button" id="login">Login</div>
+                        <div class="buttonLabel">Log in with your Oculus/Facebook account to downgrade games (<b>ONLY WORKS ON QUEST, NOT ON PC</b>)</div>
                     </div>
                     <div id="tokenTextBox" class="textBox"></div>
+                </div>
+
+                <div class="space">
+                    <div class="contentHeader">
+                        Server control
+                        <div class="contentHeaderDescription">Configure the QuestAppVersionSwitcher WebServer</div>
+                    </div>
+                    <div class="buttonContainer">
+                        <div class="button" id="exit">Exit</div>
+                        <div class="buttonLabel">Exists QuestAppVersionSwitcher</div>
+                    </div>
+                    <div class="buttonContainer">
+                        <input type="number" placeholder="50001" id="port" class="buttonLabel" value="50001" style="width: 100px;">
+                        <div class="button" id="confirmPort">Change port</div>
+                        <div class="buttonLabel">Changes the WebServer port</div>
+                    </div>
+                    <div id="serverTextBox" class="textBox"></div>
                 </div>
 
                 <div class="space">
@@ -133,6 +142,22 @@
                     </div>
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="confirmPassword">Start dowload</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="listContainer darken hidden" id="tokenPasswordContainer">
+            <div class="restoreStep" id="step8">
+                <div class="contentHeader headerMargin">
+                    Password needed
+                </div>
+                Please enter a password to encrypt your login information (token). You can change this password any time by simply pressing the login button again in the tools & options tab.
+                <input type="password" id="passwordToken" placeholder="password">
+                <div id="step8box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="tokenPassword">Confirm password</div>
                     </div>
                 </div>
             </div>
@@ -246,6 +271,7 @@
     </div>
     <script>
         UpdateUI()
+        const params = new URLSearchParams(window.location.search)
         var config = {}
         var selectedBackup = ""
 
@@ -299,30 +325,12 @@
 
         }
 
-        document.getElementById("saveToken").onclick = () => {
-            if (!document.getElementById("token").value.startsWith("OC")) {
-                TextBoxError("tokenTextBox", "Please copy your token again. It is not valid")
-                return
-            }
-            if (document.getElementById("password").value.length < 8) {
-                TextBoxError("tokenTextBox", "Password must be at least 8 characters long")
-                return
-            }
-            fetch("/token", {
-                method: "POST",
-                body: JSON.stringify({
-                    token: document.getElementById("token").value,
-                    password: document.getElementById("password").value
-                })
-            }).then(res => {
-                res.text().then(text => {
-                    if(res.status == 200) {
-                        TextBoxGood("tokenTextBox", text)
-                    } else {
-                        TextBoxError("tokenTextBox", text)
-                    }
-                })
-            })
+        if(params.get("token")) {
+            OpenTokenPasswordPopup()
+        }
+
+        document.getElementById("login").onclick = () => {
+            location = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fwww.oculus.com%2Fexperiences%2Fquest%2F"
         }
 
         setInterval(() => {
@@ -379,6 +387,26 @@
                 body: package
             }).then(() => UpdateUI(true))
             UpdateUI(true)
+        }
+
+        document.getElementById("exit").onclick = () => {
+            fetch("questappversionswitcher/kill", {
+                method: "POST"
+            })
+        }
+        document.getElementById("confirmPort").onclick = () => {
+            fetch("questappversionswitcher/changeport", {
+                method: "POST",
+                body: document.getElementById("port").value
+            }).then(res => {
+                res.text().then(text => {
+                    if(res.status == 200) {
+                        TextBoxGood("serverTextBox", text)
+                    } else {
+                        TextBoxError("serverTextBox", text)
+                    }
+                })
+            })
         }
 
         document.getElementById("appListContainer").onclick = (event) => {
@@ -590,6 +618,16 @@
             document.getElementById("deleteContainer").className = "listContainer darken"
         }
 
+        function CloseTokenPasswordPopup() {
+            document.getElementById("tokenPasswordContainer").className = "listContainer darken hidden"
+            GotoStep(8)
+        }
+
+        function OpenTokenPasswordPopup() {
+            CloseTokenPasswordPopup()
+            document.getElementById("tokenPasswordContainer").className = "listContainer darken"
+        }
+
         function CloseGetPasswordPopup() {
             document.getElementById("getPasswordContainer").className = "listContainer darken hidden"
             HideTextBox("step7box")
@@ -610,6 +648,7 @@
         }
         document.getElementById("confirmPassword").onclick = () => {
             options.password = document.getElementById("passwordConfirm").value
+            options.app = options.parentName
             fetch("/download", {
                 method: "POST",
                 body: JSON.stringify(options)
@@ -619,6 +658,29 @@
                         TextBoxError("step7box", text)
                     } else if (res.status == 200) {
                         TextBoxGood("step7box", text)
+                        setTimeout(() => {
+                            CloseGetPasswordPopup()
+                        }, 5000)
+                    }
+                })
+            })
+        }
+
+        document.getElementById("tokenPassword").onclick = () => {
+            options.password = document.getElementById("passwordConfirm").value
+            options.app = options.parentName
+            fetch("/token", {
+                method: "POST",
+                body: JSON.stringify({
+                    token: params.get("token"),
+                    password: document.getElementById("passwordToken").value
+                })
+            }).then(res => {
+                res.text().then(text => {
+                    if (res.status == 403) {
+                        TextBoxError("step8box", text)
+                    } else if (res.status == 200) {
+                        TextBoxGood("step8box", text)
                         setTimeout(() => {
                             CloseGetPasswordPopup()
                         }, 5000)

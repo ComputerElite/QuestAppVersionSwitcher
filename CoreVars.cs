@@ -6,6 +6,7 @@ namespace QuestAppVersionSwitcher.Core
     public class CoreVars // aka config
     {
         public string currentApp { get; set; } = "";
+        public int serverPort { get; set; } = 50001;
         public string token { get; set; } = "";
         public string password { get; set; } = "";
         public readonly string QAVSDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/";

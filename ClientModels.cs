@@ -42,7 +42,7 @@ namespace QuestAppVersionSwitcher.ClientModels
 
     public class DownloadRequest
     {
-        public long binaryId { get; set; } = 0;
+        public string binaryId { get; set; } = "";
         public string password { get; set; } = "";
         public string version { get; set; } = "";
         public string app { get; set; } = "";

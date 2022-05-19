@@ -17,9 +17,22 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
+using Android.Webkit;
+using Xamarin.Essentials;
 
 namespace QuestAppVersionSwitcher
 {
+    public class QAVSWebViewClient : WebViewClient
+    {
+        // Grab token
+        public override void OnPageFinished(WebView view, string url)
+        {
+            if(url.Contains("oculus.com"))
+            {
+                view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
+            }
+        }
+    }
     public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
@@ -29,6 +42,36 @@ namespace QuestAppVersionSwitcher
 
         public void Start()
         {
+            WebViewClient client = new WebViewClient();
+
+            CoreService.browser.SetWebViewClient(new QAVSWebViewClient());
+            server.onWebsocketConnectRequest = new Action<string>(uRL =>
+            {
+                if (uRL.Length <= 10) return;
+                string token = uRL.Substring(1);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
+                });
+            });
+            server.AddRoute("POST", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
+            {
+                Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                return true;
+            }));
+            server.AddRoute("POST", "/questappversionswitcher/changeport", new Func<ServerRequest, bool>(request =>
+            {
+                int port = Convert.ToInt32(request.bodyString);
+                if(port < 50000)
+                {
+                    request.SendString("Port must be greater than 50000!", "text/plain", 400);
+                    return true;
+                }
+                CoreService.coreVars.serverPort = port;
+                CoreService.coreVars.Save();
+                request.SendString("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.");
+                return true;
+            }));
             server.AddRouteFile("/", "html/index.html");
             server.AddRouteFile("/downgrade.html", "html/downgrade.html");
             server.AddRouteFile("/style.css", "html/style.css");
@@ -495,9 +538,9 @@ namespace QuestAppVersionSwitcher
                 return true;
             }));
             server.AddRouteFile("/facts.png", "facts.png");
-            server.StartServer(50001);
-            Thread.Sleep(1000);
-            CoreService.browser.LoadUrl("http://127.0.0.1:50001/");
+            server.StartServer(CoreService.coreVars.serverPort);
+            Thread.Sleep(1500);
+            CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
         }
 
         public string GetSHA256OfString(string input)

@@ -17,7 +17,7 @@ namespace QuestAppVersionSwitcher
         public event DownloadFinished DownloadFinishedEvent;
         public string tmpPath = "";
 
-        public void StartDownload(long binaryid, string password, string version, string app)
+        public void StartDownload(string binaryid, string password, string version, string app)
         {
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
             WebClient downloader = new WebClient();
