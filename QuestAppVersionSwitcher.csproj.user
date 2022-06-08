@@ -3,7 +3,7 @@
   <PropertyGroup>
     <SelectedDevice>Oculus Quest</SelectedDevice>
     <ActiveDebugProfile>Oculus Quest</ActiveDebugProfile>
-    <DefaultDevice>q1</DefaultDevice>
+    <DefaultDevice>Pixel_5_API_30</DefaultDevice>
     <AndroidDesignerPreferredTheme>AppTheme</AndroidDesignerPreferredTheme>
     <AndroidDesignerPreferredDevice>Nexus 4</AndroidDesignerPreferredDevice>
     <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>

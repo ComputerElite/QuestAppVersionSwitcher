@@ -62,7 +62,6 @@ namespace QuestAppVersionSwitcher
             }
             if(request.Method == "POST")
             {
-                string cookie = CookieManager.Instance.GetCookie(request.Url.ToString()).Replace("datr=", "_js_datr=").Replace("os=", "_js_os=");
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
             }
