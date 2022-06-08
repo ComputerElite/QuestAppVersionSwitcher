@@ -19,6 +19,10 @@ using System.Text;
 using System.Linq;
 using Android.Webkit;
 using Xamarin.Essentials;
+using System.Net.Http;
+using Java.Net;
+using Java.Interop;
+using CookieManager = Android.Webkit.CookieManager;
 
 namespace QuestAppVersionSwitcher
 {
@@ -31,6 +35,67 @@ namespace QuestAppVersionSwitcher
             {
                 view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
             }
+            if(url.Contains("login-without-facebook"))
+            {
+                view.EvaluateJavascript("alert(\"Accept the cookies. You'll be redirected to the login in 10 seconds\"); setTimeout(() => {location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F'}, 10000)", null);
+            }
+        }
+
+        public static Dictionary<string, string> headers = new Dictionary<string, string>
+        {
+            ["sec-fetch-mode"] = "navigate",
+            ["sec-fetch-site"] = "same-origin",
+            ["sec-fetch-dest"] = "document",
+            ["sec-ch-ua-platform"] = "\"Windows\"",
+            ["sec-ch-ua"] = "\" Not A; Brand\";v=\"99\", \"Chromium\";v=\"102\", \"Microsoft Edge\";v=\"102\"",
+            ["sec-ch-ua-mobile"] = "?0",
+            ["sec-fetch-user"] = "?1"
+        };
+
+        public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
+        {
+            
+            foreach (KeyValuePair<string, string> p in QAVSWebViewClient.headers)
+            {
+                if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
+                else request.RequestHeaders[p.Key] = p.Value;
+            }
+            if(request.Method == "POST")
+            {
+                string cookie = CookieManager.Instance.GetCookie(request.Url.ToString()).Replace("datr=", "_js_datr=").Replace("os=", "_js_os=");
+                request.RequestHeaders["sec-fetch-mode"] = "cors";
+                request.RequestHeaders["sec-fetch-dest"] = "empty";
+            }
+            if(request.Url.Path.Contains("consent"))
+            {
+                Logger.Log("FUCK YOU FACEBOOK");
+                foreach(KeyValuePair<string, string> p in request.RequestHeaders)
+                {
+                    Logger.Log(p.Key + ": " + p.Value);
+                }
+            }
+            return base.ShouldInterceptRequest(view, request);
+        }
+
+        public Dictionary<string, string> GetHeaders(IDictionary<string, IList<string>> h)
+        {
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            foreach (KeyValuePair<string, IList<string>> p in h)
+            {
+                Logger.Log("8");
+                if (p.Value.Count > 0)
+                {
+                    Logger.Log("9: " + p.Key);
+                    if(p.Key != null) headers.Add(p.Key.ToLower(), p.Value[0]);
+                }
+            }
+            return headers;
+        }
+
+        public override bool ShouldOverrideUrlLoading(WebView view, string url)
+        {
+            view.LoadUrl(url, headers);
+            return true;
         }
     }
     public class QAVSWebserver
@@ -54,14 +119,14 @@ namespace QuestAppVersionSwitcher
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
             });
-            server.AddRoute("POST", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("GET", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
             {
                 Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
                 return true;
             }));
-            server.AddRoute("POST", "/questappversionswitcher/changeport", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("GET", "/questappversionswitcher/changeport", new Func<ServerRequest, bool>(request =>
             {
-                int port = Convert.ToInt32(request.bodyString);
+                int port = Convert.ToInt32(request.queryString.Get("body"));
                 if(port < 50000)
                 {
                     request.SendString("Port must be greater than 50000!", "text/plain", 400);
@@ -113,7 +178,7 @@ namespace QuestAppVersionSwitcher
                 }
                 return true;
             }));
-            server.AddRoute("POST", "/android/uninstallpackage", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/android/uninstallpackage", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -141,9 +206,9 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(AndroidService.IsPackageInstalled(package).ToString());
                 return true;
             }));
-            server.AddRoute("POST", "/questappversionswitcher/changeapp", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/questappversionswitcher/changeapp", new Func<ServerRequest, bool>(serverRequest =>
             {
-                CoreService.coreVars.currentApp = serverRequest.bodyString;
+                CoreService.coreVars.currentApp = serverRequest.queryString.Get("body");
                 CoreService.coreVars.Save();
                 serverRequest.SendString("App changed to " + serverRequest.bodyString);
                 return true;
@@ -158,7 +223,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(JsonSerializer.Serialize(new About { browserIPs = server.ips, version = CoreService.version.ToString() }));
                 return true;
             }));
-            server.AddRoute("POST", "/android/installapk", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/android/installapk", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString("This Endpoint has been deactivated because of security concerns", "text/plain", 503);
                 return true;
@@ -201,7 +266,7 @@ namespace QuestAppVersionSwitcher
             }));
             int code = 202;
             string text = "";
-            server.AddRoute("POST", "/backup", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/backup", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -350,7 +415,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Deleted " + backupname + " of " + package);
                 return true;
             }));
-            server.AddRoute("POST", "/restoreapp", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/restoreapp", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -389,7 +454,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Started apk install", "text/plain", 200);
                 return true;
             }));
-            server.AddRoute("POST", "/containsgamedata", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/containsgamedata", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -423,7 +488,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(Directory.Exists(backupDir + package).ToString(), "text/plain", 200);
                 return true;
             }));
-            server.AddRoute("POST", "/restoregamedata", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/restoregamedata", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -487,9 +552,9 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
                 return true;
             }));
-            server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/token", new Func<ServerRequest, bool>(serverRequest =>
             {
-                TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
+                TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.queryString.Get("body"));
                 if (r.token.Contains("%"))
                 {
                     serverRequest.SendString("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", "text/plain", 400);
@@ -512,9 +577,9 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Set token");
                 return true;
             }));
-            server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/download", new Func<ServerRequest, bool>(serverRequest =>
             {
-                DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
+                DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.queryString.Get("body"));
                 if (GetSHA256OfString(r.password) != CoreService.coreVars.password)
                 {
                     serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);

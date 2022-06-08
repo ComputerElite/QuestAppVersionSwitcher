@@ -20,7 +20,7 @@ namespace QuestAppVersionSwitcher
         WebView webView;
         protected override void OnCreate(Bundle savedInstanceState)
         {
-
+            Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
