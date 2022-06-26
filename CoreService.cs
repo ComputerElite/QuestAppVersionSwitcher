@@ -21,18 +21,19 @@ namespace QuestAppVersionSwitcher.Core
         public static QAVSWebserver qAVSWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
-        public void Start()
+        public async void Start()
         {
 
             // Check permissions and request if needed
-            if (Permissions.CheckStatusAsync<Permissions.StorageWrite>().Result != PermissionStatus.Granted)
+            if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                if (Permissions.RequestAsync<Permissions.StorageWrite>().Result != PermissionStatus.Granted) return;
+                if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted) return;
             }
-            if (Permissions.CheckStatusAsync<Permissions.StorageRead>().Result != PermissionStatus.Granted)
+            if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() != PermissionStatus.Granted)
             {
-                if (Permissions.RequestAsync<Permissions.StorageRead>().Result != PermissionStatus.Granted) return;
+                if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
             }
+            
             //Set webbrowser settings
             browser.SetWebChromeClient(new WebChromeClient());
             browser.Settings.JavaScriptEnabled = true;

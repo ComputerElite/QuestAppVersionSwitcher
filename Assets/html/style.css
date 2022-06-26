@@ -5,6 +5,16 @@
     line-height: 1.3;
 }
 
+#downgradeLoginMsg {
+    position: fixed;
+    padding: 10px;
+    border-radius: 5px;
+    top: 50vh;
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    background-color: #000000EE;
+}
+
 .menuContainer {
     background-color: #414141;
     width: 100%;

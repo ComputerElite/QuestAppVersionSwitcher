@@ -23,21 +23,47 @@ using System.Net.Http;
 using Java.Net;
 using Java.Interop;
 using CookieManager = Android.Webkit.CookieManager;
+using Android.Content;
+using Android.App;
+using ComputerUtils.Android;
 
 namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
+        public bool wasOnFacebook = false;
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
-            if(url.Contains("oculus.com"))
+            Logger.Log(url);
+            if (url.Split("?")[0].Contains("oculus.com"))
             {
+                if (wasOnFacebook)
+                {
+                    // Restart app here
+                    CoreService.coreVars.openLoginInstantly = true;
+                    CoreService.coreVars.Save();
+                    Thread t = new Thread(() =>
+                    {
+                        Thread.Sleep(1500);
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true");
+                        });
+                    });
+                    t.Start();
+                   
+                    wasOnFacebook = false;
+                }
                 view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
             }
-            if(url.Contains("login-without-facebook"))
+            if (url.Split("?")[0].Contains("facebook.com"))
             {
-                view.EvaluateJavascript("alert(\"Accept the cookies. You'll be redirected to the login in 10 seconds\"); setTimeout(() => {location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F'}, 10000)", null);
+                wasOnFacebook = true;
+            }
+            if (url.Contains("login-without-facebook"))
+            {
+                //view.EvaluateJavascript("alert(\"Accept the cookies. You'll be redirected to the login in 10 seconds\"); setTimeout(() => {location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F'}, 10000)", null);
             }
         }
 
@@ -64,11 +90,21 @@ namespace QuestAppVersionSwitcher
             {
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
+                string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
+                if (cookie != null) request.RequestHeaders["cookie"] = cookie;
             }
-            if(request.Url.Path.Contains("consent"))
+            if(request.Url.Path.Contains("consent") && request.Url.Host.Contains("oculus"))
             {
-                Logger.Log("FUCK YOU FACEBOOK");
-                foreach(KeyValuePair<string, string> p in request.RequestHeaders)
+                Thread t = new Thread(() =>
+                {
+                    Thread.Sleep(1000);
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        view.LoadUrl(CoreVars.oculusLoginUrl);
+                    });
+                });
+                t.Start();
+                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
                 {
                     Logger.Log(p.Key + ": " + p.Value);
                 }
@@ -97,12 +133,25 @@ namespace QuestAppVersionSwitcher
             return true;
         }
     }
+    public enum LoggedInStatus
+    {
+        NotLoggedIn = 0,
+        SessionInvalid = 1,
+        LoggedIn = 2
+    }
     public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public List<DownloadManager> managers = new List<DownloadManager>();
         public SHA256 hasher = SHA256.Create();
+
+        public LoggedInStatus GetLoggedInStatus()
+        {
+            if(CoreService.coreVars.token == "") return LoggedInStatus.NotLoggedIn;
+            return LoggedInStatus.LoggedIn;
+        }
+
 
         public void Start()
         {
@@ -121,6 +170,11 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
             {
                 Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                return true;
+            }));
+            server.AddRoute("GET", "/questappversionswitcher/loggedinstatus", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(((int)GetLoggedInStatus()).ToString());
                 return true;
             }));
             server.AddRoute("GET", "/questappversionswitcher/changeport", new Func<ServerRequest, bool>(request =>
@@ -604,7 +658,13 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
             Thread.Sleep(1500);
-            CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+            if (CoreService.coreVars.openLoginInstantly)
+            {
+                CoreService.coreVars.openLoginInstantly = false;
+                CoreService.coreVars.Save();
+                CoreService.browser.LoadUrl(CoreVars.oculusLoginUrl);
+            }
+            else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
         }
 
         public string GetSHA256OfString(string input)

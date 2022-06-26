@@ -13,16 +13,20 @@
                     Backing <div class="inline packageName">some game</div> up
                 </div>
             </div>
-            <div class="menuItem" section="backup">Backup</div>
+            <div class="menuItem selected" section="backup">Backup</div>
             <div class="menuItem" section="downgrade">Downgrade</div>
             <div class="menuItem" section="download">Download progress</div>
-            <div class="menuItem selected" section="tools">Tools & Options</div>
+            <div class="menuItem" section="tools">Tools & Options</div>
         </div>
         <div class="content">
-            <div class="contentItem hidden" id="backup">
+            <div class="contentItem" id="backup">
                 <div class="contentHeader">
                     Backup
                     <div class="contentHeaderDescription">Backup your game and restore backups</div>
+                </div>
+                <div class="buttonContainer">
+                    <div class="button" id="changeApp2">Change app</div>
+                    <div class="buttonLabel">Change the app you want to manage</div>
                 </div>
                 <div>Backups of <div class="inline packageName">some game</div> (<div id="size" class="inline"></div>)</div>
                 <div class="smallListContainer">
@@ -60,6 +64,7 @@
                 </div>
             </div>
             <div class="contentItem hidden" id="downgrade" style="padding: 0px;">
+                <b style="font-size: 4em;" id="downgradeLoginMsg">To downgrade you must first log in in the tools & options tab!</b>
                 <iframe src="https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD&isqavs=true" style="width: 100%; height: 100%; border: none; overflow-y: visible;"></iframe>
             </div>
             <div class="contentItem hidden" id="download">
@@ -68,7 +73,7 @@
                 </div>
 
             </div>
-            <div class="contentItem" id="tools">
+            <div class="contentItem hiddeb" id="tools">
                 <div class="contentHeader">
                     Tools
                     <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
@@ -87,6 +92,7 @@
                         Token Section
                         <div class="contentHeaderDescription">Set your token for downgrading games</div>
                     </div>
+                    <b id="loggedInMsg">You are logged in. You can login again if you want</b>
                     <div class="buttonContainer">
                         <div class="button" id="login">Login</div>
                         <div class="buttonLabel">Log in with your Oculus/Facebook account to downgrade games (<b>ONLY WORKS ON QUEST, NOT ON PC</b>)</div>
@@ -104,7 +110,7 @@
                         <div class="buttonLabel">Exists QuestAppVersionSwitcher</div>
                     </div>
                     <div class="buttonContainer">
-                        <input type="number" placeholder="50001" id="port" class="buttonLabel" value="50001" style="width: 100px;">
+                        <input type="number" placeholder="50002" id="port" class="buttonLabel" value="50002" style="width: 100px;">
                         <div class="button" id="confirmPort">Change port</div>
                         <div class="buttonLabel">Changes the WebServer port</div>
                     </div>
@@ -142,6 +148,33 @@
                     </div>
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="confirmPassword">Start dowload</div>
+                    </div>
+                </div>
+            </div>
+            <div class="restoreStep" id="step9">
+                <div class="contentHeader headerMargin">
+                    Login info
+                </div>
+                To login we'll open oculus.com for you. Accept the cookies when Oculus ask you to. We'll then redirect you to the login. Consenting to cookies is needed so you are allowed to log in.
+                <div id="step9box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer">
+                        <div class="button" id="confirmLogin">Login</div>
+                    </div>
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="abortLogin">Abort Login</div>
+                    </div>
+                </div>
+            </div>
+            <div class="restoreStep" id="step10">
+                <div class="contentHeader headerMargin">
+                    Almost there
+                </div>
+                To finish logging in you must restart QuestAppVersionSwitcher. Do that now.
+                <div id="step10box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer">
+                        <div class="button" id="closeApp">Close App</div>
                     </div>
                 </div>
             </div>
@@ -270,6 +303,19 @@
         </div>
     </div>
     <script>
+        fetch("/questappversionswitcher/loggedinstatus").then(res => {
+            res.text().then(res => {
+                if(res == "2") {
+                    // Logged in#
+                    document.getElementById("loggedInMsg").style.visibility = "visible"
+                    document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
+                } else {
+                    // Not logged in
+                    document.getElementById("loggedInMsg").style.visibility = "hidden"
+                    document.getElementById("downgradeLoginMsg").style.visibility = "visible"
+                }
+            })
+        })
         UpdateUI()
         const params = new URLSearchParams(window.location.search)
         var config = {}
@@ -329,8 +375,14 @@
             OpenTokenPasswordPopup()
         }
 
+        if(params.get("restart")) {
+            OpenGetPasswordPopup()
+            GotoStep(10)
+        }
+
         document.getElementById("login").onclick = () => {
-            location = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
+            OpenGetPasswordPopup()
+            GotoStep(9)
         }
 
         setInterval(() => {
@@ -387,6 +439,9 @@
         }
 
         document.getElementById("exit").onclick = () => {
+            fetch("questappversionswitcher/kill")
+        }
+        document.getElementById("closeApp").onclick = () => {
             fetch("questappversionswitcher/kill")
         }
         document.getElementById("confirmPort").onclick = () => {
@@ -461,6 +516,7 @@
         }
 
         document.getElementById("changeApp").onclick = () => ShowAppList()
+        document.getElementById("changeApp2").onclick = () => ShowAppList()
 
         document.getElementById("abort").onclick = () => CloseRestorePopup()
 
@@ -642,6 +698,13 @@
                     }
                 })
             })
+        }
+
+        document.getElementById("abortLogin").onclick = () => {
+            CloseGetPasswordPopup()
+        }
+        document.getElementById("confirmLogin").onclick = () => {
+            location = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
         }
 
         document.getElementById("tokenPassword").onclick = () => {
