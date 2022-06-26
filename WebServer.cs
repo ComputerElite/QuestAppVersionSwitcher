@@ -35,6 +35,7 @@ namespace QuestAppVersionSwitcher
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
+            CookieManager.Instance.Flush();
             Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
