@@ -48,7 +48,7 @@ namespace QuestAppVersionSwitcher
                         Thread.Sleep(1500);
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
-                            CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true");
+                            view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
                         });
                     });
                     t.Start();
@@ -440,7 +440,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(File.Exists(backupDir + "onlyappdata.txt").ToString().ToLower());
                 return true;
             }));
-            server.AddRoute("GET", "/backup", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/backupstatus", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString(text, "text/plain", code);
                 return true;

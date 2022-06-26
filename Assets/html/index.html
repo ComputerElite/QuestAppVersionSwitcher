@@ -73,7 +73,7 @@
                 </div>
 
             </div>
-            <div class="contentItem hiddeb" id="tools">
+            <div class="contentItem hidden" id="tools">
                 <div class="contentHeader">
                     Tools
                     <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
@@ -474,6 +474,10 @@
         var backupInProgress = false
 
         document.getElementById("createBackup").onclick = () => {
+            if (!config.currentApp) {
+                TextBoxError("backupTextBox", "Please select an app first via the change app button above")
+                return
+            }
             if (backupInProgress) {
                 TextBoxError("backupTextBox", "A Backup is being created right now. Please wait until it has finished")
                 return
@@ -481,12 +485,12 @@
             var onlyAppData = document.getElementById("appdata").checked
             backupInProgress = true
             TextBoxText("backupTextBox", "Please wait while the Backup is being created. This can take a few minutes")
-            fetch("backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value + (onlyAppData ? "&onlyappdata=true" : "")).then(res => {
+            fetch("/backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value + (onlyAppData ? "&onlyappdata=true" : "")).then(res => {
                 res.text().then(text => {
                     if (res.status == 202) {
                         TextBoxText("backupTextBox", text)
                         var i = setInterval(() => {
-                            fetch("backup").then(res => {
+                            fetch("/backupstatus").then(res => {
                                 res.text().then(text => {
                                     if (res.status == 202) {
                                         TextBoxText("backupTextBox", text)
