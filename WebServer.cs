@@ -169,6 +169,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
             {
+                CookieManager.Instance.Flush();
                 Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
                 return true;
             }));
