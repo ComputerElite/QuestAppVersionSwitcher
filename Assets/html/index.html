@@ -151,6 +151,19 @@
                     </div>
                 </div>
             </div>
+            <div class="restoreStep" id="step8">
+                <div class="contentHeader headerMargin">
+                    Password needed
+                </div>
+                Please enter a password to encrypt your login information (token). You can change this password any time by simply pressing the login button again in the tools & options tab.
+                <input type="password" id="passwordToken" placeholder="password">
+                <div id="step8box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="tokenPassword">Confirm password</div>
+                    </div>
+                </div>
+            </div>
             <div class="restoreStep" id="step9">
                 <div class="contentHeader headerMargin">
                     Login info
@@ -175,22 +188,6 @@
                 <div class="buttonSelectionContainer">
                     <div class="buttonContainer">
                         <div class="button" id="closeApp">Close App</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="listContainer darken hidden" id="tokenPasswordContainer">
-            <div class="restoreStep" id="step8">
-                <div class="contentHeader headerMargin">
-                    Password needed
-                </div>
-                Please enter a password to encrypt your login information (token). You can change this password any time by simply pressing the login button again in the tools & options tab.
-                <input type="password" id="passwordToken" placeholder="password">
-                <div id="step8box" class="textBox"></div>
-                <div class="buttonSelectionContainer">
-                    <div class="buttonContainer buttonMargin">
-                        <div class="button" id="tokenPassword">Confirm password</div>
                     </div>
                 </div>
             </div>
@@ -303,25 +300,30 @@
         </div>
     </div>
     <script>
-        fetch("/questappversionswitcher/loggedinstatus").then(res => {
-            res.text().then(res => {
-                if(res == "2") {
-                    // Logged in#
-                    document.getElementById("loggedInMsg").style.visibility = "visible"
-                    document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
-                } else {
-                    // Not logged in
-                    document.getElementById("loggedInMsg").style.visibility = "hidden"
-                    document.getElementById("downgradeLoginMsg").style.visibility = "visible"
-                }
-            })
-        })
+        
         UpdateUI()
+        const oculusLink = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
         const params = new URLSearchParams(window.location.search)
         var config = {}
         var selectedBackup = ""
 
         var undefinedLoader = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`
+
+        function TokenUIUpdate() {
+            fetch("/questappversionswitcher/loggedinstatus").then(res => {
+                res.text().then(res => {
+                    if(res == "2") {
+                        // Logged in#
+                        document.getElementById("loggedInMsg").style.visibility = "visible"
+                        document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
+                    } else {
+                        // Not logged in
+                        document.getElementById("loggedInMsg").style.visibility = "hidden"
+                        document.getElementById("downgradeLoginMsg").style.visibility = "visible"
+                    }
+                })
+            })
+        }
 
         function UpdateUI(closeLists = false) {
             fetch("questappversionswitcher/config").then(res => res.json().then(res => {
@@ -378,6 +380,10 @@
         if(params.get("restart")) {
             OpenGetPasswordPopup()
             GotoStep(10)
+        }
+
+        if(params.get("loadoculus")) {
+            location = oculusLink
         }
 
         document.getElementById("login").onclick = () => {
@@ -442,6 +448,9 @@
             fetch("questappversionswitcher/kill")
         }
         document.getElementById("closeApp").onclick = () => {
+            fetch("questappversionswitcher/kill")
+        }
+        document.getElementById("closeApp2").onclick = () => {
             fetch("questappversionswitcher/kill")
         }
         document.getElementById("confirmPort").onclick = () => {
@@ -659,14 +668,14 @@
         }
 
         function CloseTokenPasswordPopup(done = false) {
-            document.getElementById("tokenPasswordContainer").className = "listContainer darken hidden"
+            document.getElementById("getPasswordContainer").className = "listContainer darken hidden"
             GotoStep(8)
             if (!done) CloseTokenPasswordPopup(true)
         }
 
         function OpenTokenPasswordPopup() {
             CloseTokenPasswordPopup()
-            document.getElementById("tokenPasswordContainer").className = "listContainer darken"
+            document.getElementById("getPasswordContainer").className = "listContainer darken"
         }
 
         function CloseGetPasswordPopup() {
@@ -708,7 +717,8 @@
             CloseGetPasswordPopup()
         }
         document.getElementById("confirmLogin").onclick = () => {
-            location = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
+            TextBoxGood("step9box", "One sec...")
+            location = oculusLink
         }
 
         document.getElementById("tokenPassword").onclick = () => {
@@ -724,6 +734,7 @@
                     } else if (res.status == 200) {
                         TextBoxGood("step8box", text)
                         setTimeout(() => {
+                            TokenUIUpdate()
                             CloseGetPasswordPopup()
                         }, 5000)
                     }

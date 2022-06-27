@@ -39,14 +39,22 @@ namespace QuestAppVersionSwitcher
             Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
+                if(CoreService.coreVars.loginStep == 2)
+                {
+                    //Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        //view.EvaluateJavascript("document.body.innerHTML += `<div style=\"display: flex; align - items: center; justify - content: center; width: 100 %; height: 100vh; top: 0; left: 0; position: fixed; background - color: #000000aa;\" id=\"popup\"><div style=\"padding: 10px;border-radius: 5px;background-color: #424546;\"><div style=\"font-size: 130%;margin-bottom: 30px;margin-top: 40px;\">Almost there</div>Click the X in the bottom left to restart QuestAppVersionSwitcher a final time. After you restarted press the blue continue as ... button to log in</div></div>`", null);
+                    });
+                }
                 if (wasOnFacebook)
                 {
                     // Restart app here
-                    CoreService.coreVars.openLoginInstantly = true;
+                    CoreService.coreVars.loginStep = 1;
                     CoreService.coreVars.Save();
                     Thread t = new Thread(() =>
                     {
-                        Thread.Sleep(1500);
+                        //Thread.Sleep(1500);
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
                             view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
@@ -61,10 +69,6 @@ namespace QuestAppVersionSwitcher
             if (url.Split("?")[0].Contains("facebook.com"))
             {
                 wasOnFacebook = true;
-            }
-            if (url.Contains("login-without-facebook"))
-            {
-                //view.EvaluateJavascript("alert(\"Accept the cookies. You'll be redirected to the login in 10 seconds\"); setTimeout(() => {location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F'}, 10000)", null);
             }
         }
 
@@ -87,12 +91,13 @@ namespace QuestAppVersionSwitcher
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
                 else request.RequestHeaders[p.Key] = p.Value;
             }
-            if(request.Method == "POST")
+            string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
+            if (cookie != null) request.RequestHeaders["cookie"] = cookie;
+            if (request.Method == "POST")
             {
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
-                string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
-                if (cookie != null) request.RequestHeaders["cookie"] = cookie;
+                
             }
             if(request.Url.Path.Contains("consent") && request.Url.Host.Contains("oculus"))
             {
@@ -660,11 +665,19 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
             Thread.Sleep(1500);
-            if (CoreService.coreVars.openLoginInstantly)
+            if (CoreService.coreVars.loginStep == 1)
             {
-                CoreService.coreVars.openLoginInstantly = false;
+                CoreService.coreVars.loginStep = 2;
+                CoreService.coreVars.Save();
+                //CoreService.browser.LoadUrl(CoreVars.oculusLoginUrl);
+                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
+            }
+            else if (CoreService.coreVars.loginStep == 2)
+            {
+                CoreService.coreVars.loginStep = 0;
                 CoreService.coreVars.Save();
                 CoreService.browser.LoadUrl(CoreVars.oculusLoginUrl);
+                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
         }

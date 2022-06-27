@@ -8,7 +8,7 @@ namespace QuestAppVersionSwitcher.Core
         public string currentApp { get; set; } = "";
         public int serverPort { get; set; } = 50002;
         public string token { get; set; } = "";
-        public bool openLoginInstantly { get; set; } = false;
+        public int loginStep { get; set; } = 0;
         public string password { get; set; } = "";
         public readonly string QAVSDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/";
         public readonly string QAVDTmpDowngradeDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/tmpDowngrade/";
