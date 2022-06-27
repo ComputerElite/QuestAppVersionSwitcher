@@ -39,14 +39,6 @@ namespace QuestAppVersionSwitcher
             Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
-                if(CoreService.coreVars.loginStep == 2)
-                {
-                    //Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        //view.EvaluateJavascript("document.body.innerHTML += `<div style=\"display: flex; align - items: center; justify - content: center; width: 100 %; height: 100vh; top: 0; left: 0; position: fixed; background - color: #000000aa;\" id=\"popup\"><div style=\"padding: 10px;border-radius: 5px;background-color: #424546;\"><div style=\"font-size: 130%;margin-bottom: 30px;margin-top: 40px;\">Almost there</div>Click the X in the bottom left to restart QuestAppVersionSwitcher a final time. After you restarted press the blue continue as ... button to log in</div></div>`", null);
-                    });
-                }
                 if (wasOnFacebook)
                 {
                     // Restart app here
@@ -667,17 +659,9 @@ namespace QuestAppVersionSwitcher
             Thread.Sleep(1500);
             if (CoreService.coreVars.loginStep == 1)
             {
-                CoreService.coreVars.loginStep = 2;
-                CoreService.coreVars.Save();
-                //CoreService.browser.LoadUrl(CoreVars.oculusLoginUrl);
-                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
-            }
-            else if (CoreService.coreVars.loginStep == 2)
-            {
                 CoreService.coreVars.loginStep = 0;
                 CoreService.coreVars.Save();
-                CoreService.browser.LoadUrl(CoreVars.oculusLoginUrl);
-                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
         }
