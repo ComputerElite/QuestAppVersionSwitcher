@@ -285,10 +285,21 @@
             </div>
             <div id="step5" class="restoreStep hidden">
                 <div class="contentHeader headerMargin">
+                    Step 2.1
+                </div>
+                Press continue after the installation finished. We'll then validate if the backup was successfully restored.
+                <div id="step5box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="skip2">continue</div>
+                    </div>
+                </div>
+            </div>
+            <div id="step6" class="restoreStep hidden">
+                <div class="contentHeader headerMargin">
                     Finished!
                 </div>
                 You restored the backup <div class="slectedBackupName inline"></div> of <div class="inline packageName">some game</div>
-                <div id="step4box" class="textBox"></div>
                 <div class="buttonSelectionContainer">
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="abort2">Close</div>
@@ -619,13 +630,13 @@
                         TextBoxText("step4box", "Restoring game data. Please wait")
                         fetch("restoregamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                             res.text().then(text => {
-                                if (res.status == 200) GotoStep(5)
+                                if (res.status == 200) GotoStep(6)
                                 else {
                                     TextBoxError("step4box", text)
                                 }
                             })
                         }).catch(err => {
-                            GotoStep(5)
+                            GotoStep(6)
                         })
                     }
                     else {
@@ -639,7 +650,19 @@
         document.getElementById("skip").onclick = () => {
             fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
                 res.text().then(text => {
-                    if (text == "True") GotoStep(5)
+                    if (text == "True") GotoStep(6)
+                    else {
+                        TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
+                        GotoStep(3)
+                    }
+                })
+            })
+        }
+
+        document.getElementById("skip2").onclick = () => {
+            fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
+                res.text().then(text => {
+                    if (text == "True") GotoStep(6)
                     else {
                         TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
                         GotoStep(3)

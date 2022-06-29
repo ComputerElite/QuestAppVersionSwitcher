@@ -375,7 +375,7 @@ namespace QuestAppVersionSwitcher
                     }
                     text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
                     code = 202;
-                    FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
+                    if(Directory.Exists(gameDataDir)) FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
 
                     if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
                     {
