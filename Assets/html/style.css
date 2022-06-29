@@ -121,6 +121,11 @@
     user-select: none;
 }
 
+.notActive {
+    background-color: #333333 !important;
+    color: #888888 !important;
+}
+
 .button:hover {
     background-color: #505050;
 }

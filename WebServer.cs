@@ -44,15 +44,10 @@ namespace QuestAppVersionSwitcher
                     // Restart app here
                     CoreService.coreVars.loginStep = 1;
                     CoreService.coreVars.Save();
-                    Thread t = new Thread(() =>
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        //Thread.Sleep(1500);
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
-                        });
+                        view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
                     });
-                    t.Start();
                    
                     wasOnFacebook = false;
                 }

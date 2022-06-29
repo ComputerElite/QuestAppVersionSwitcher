@@ -38,6 +38,8 @@
                 <div class="contentHeader headerMargin">
                     Restore backups
                     <div class="contentHeaderDescription">Restores the Backup selected above</div>
+                    <br>
+                    <b class="hidden" id="onPcInfo">You can only restore backups in headset</b>
                     <div class="buttonContainer">
                         <div class="button" id="restoreBackup">Restore Backup</div>
                         <div class="buttonLabel">Restores the selected Backup</div>
@@ -300,7 +302,16 @@
         </div>
     </div>
     <script>
-        
+        function IsOnQuest() {
+            return location.host.startsWith("127.0.0.1")
+        }
+
+        if(!IsOnQuest()) {
+            // Is not on quest
+            document.getElementById("restoreBackup").classList.add("notActive")
+            document.getElementById("onPcInfo").classList.remove("hidden")
+        }
+
         UpdateUI()
         TokenUIUpdate()
         const oculusLink = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
@@ -314,7 +325,7 @@
             fetch("/questappversionswitcher/loggedinstatus").then(res => {
                 res.text().then(res => {
                     if(res == "2") {
-                        // Logged in#
+                        // Logged in
                         document.getElementById("loggedInMsg").style.visibility = "visible"
                         document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
                     } else {
@@ -638,6 +649,10 @@
         }
 
         document.getElementById("restoreBackup").onclick = () => {
+            if(!IsOnQuest()) {
+                TextBoxError("restoreTextBox", "You can only restore backups in your quest")
+                return
+            }
             if (backupInProgress) {
                 TextBoxError("restoreTextBox", "Can not restore a backup while one is being created")
                 return
