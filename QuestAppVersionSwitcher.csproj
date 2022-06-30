@@ -92,6 +92,7 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\hiddenApps.json" />
     <None Include="QuestPatcher.Axaml\LICENSE" />
     <None Include="QuestPatcher.Axaml\QuestPatcher.Axml.csproj" />
     <None Include="QuestPatcher.Axaml\README.md" />

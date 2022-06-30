@@ -1,0 +1,387 @@
+[
+    {
+        "AppName": "com.oculus.firsttimenuxresources",
+        "PackageName": "com.oculus.firsttimenuxresources"
+    },
+   
+    {
+        "AppName": "Oculus OS Updater",
+        "PackageName": "com.oculus.updater"
+    },
+    {
+        "AppName": "Calendar Storage",
+        "PackageName": "com.android.providers.calendar"
+    },
+    {
+        "AppName": "StatsCollector",
+        "PackageName": "com.oculus.statscollector"
+    },
+    {
+        "AppName": "Android System",
+        "PackageName": "android"
+    },
+    {
+        "AppName": "Media Storage",
+        "PackageName": "com.android.providers.media"
+    },
+    {
+        "AppName": "Oculus System Driver",
+        "PackageName": "com.oculus.systemdriver"
+    },
+    {
+        "AppName": "WebSafety",
+        "PackageName": "com.oculus.websafety"
+    },
+    {
+        "AppName": "External Storage",
+        "PackageName": "com.android.externalstorage"
+    },
+    {
+        "AppName": "HTML Viewer",
+        "PackageName": "com.android.htmlviewer"
+    },
+    {
+        "AppName": "Companion Device Manager",
+        "PackageName": "com.android.companiondevicemanager"
+    },
+    {
+        "AppName": "com.oculus.os.vrlockscreen",
+        "PackageName": "com.oculus.os.vrlockscreen"
+    },
+    {
+        "AppName": "Download Manager",
+        "PackageName": "com.android.providers.downloads"
+    },
+    {
+        "AppName": "TV Storage",
+        "PackageName": "com.android.providers.tv"
+    },
+    {
+        "AppName": "SystemSearch",
+        "PackageName": "com.oculus.systemsearch"
+    },
+    {
+        "AppName": "NetworkStack",
+        "PackageName": "com.android.networkstack.inprocess"
+    },
+    {
+        "AppName": "PacProcessor",
+        "PackageName": "com.android.pacprocessor"
+    },
+    {
+        "AppName": "Oculus App Runtime",
+        "PackageName": "com.oculus.vrshell"
+    },
+    {
+        "AppName": "VrUsb",
+        "PackageName": "com.oculus.os.vrusb"
+    },
+    {
+        "AppName": "Module Metadata",
+        "PackageName": "com.android.modulemetadata"
+    },
+    {
+        "AppName": "Certificate Installer",
+        "PackageName": "com.android.certinstaller"
+    },
+    {
+        "AppName": "Wfd Service",
+        "PackageName": "com.qualcomm.wfd.service"
+    },
+    {
+        "AppName": "com.oculus.metacam.MetaCamApplication",
+        "PackageName": "com.oculus.metacam"
+    },
+    {
+        "AppName": "Geocoder",
+        "PackageName": "com.oculus.location.geocoder"
+    },
+    {
+        "AppName": "com.android.provision",
+        "PackageName": "com.android.provision"
+    },
+    {
+        "AppName": "Intent Filter Verification Service",
+        "PackageName": "com.android.statementservice"
+    },
+    {
+        "AppName": "Oculus Unified Telemetry",
+        "PackageName": "com.oculus.unifiedtelemetry"
+    },
+    {
+        "AppName": "Oculus System Utilities",
+        "PackageName": "com.oculus.systemutilities"
+    },
+    {
+        "AppName": "com.oculus.deviceauthserver",
+        "PackageName": "com.oculus.deviceauthserver"
+    },
+    {
+        "AppName": "LineFrequencyService",
+        "PackageName": "com.oculus.linefrequencyservice"
+    },
+    {
+        "AppName": "LineFrequencyService",
+        "PackageName": "com.oculus.linefrequencyservice"
+    },
+    {
+        "AppName": "com.oculus.os.logcollector",
+        "PackageName": "com.oculus.os.logcollector"
+    },
+    {
+        "AppName": "Oculus Link",
+        "PackageName": "com.oculus.xrstreamingclient"
+    },
+    {
+        "AppName": "Settings Storage",
+        "PackageName": "com.android.providers.settings"
+    },
+    {
+        "AppName": "SocialPlatform",
+        "PackageName": "com.oculus.socialplatform"
+    },
+    {
+        "AppName": "com.android.sharedstoragebackup",
+        "PackageName": "com.android.sharedstoragebackup"
+    },
+    {
+        "AppName": "com.oculus.qplservice",
+        "PackageName": "com.oculus.qplservice"
+    },
+    {
+        "AppName": "Android System WebView",
+        "PackageName": "com.android.webview"
+    },
+    {
+        "AppName": "Input Devices",
+        "PackageName": "com.android.inputdevices"
+    },
+    {
+        "AppName": "Oculus Assistant Service",
+        "PackageName": "com.oculus.assistant"
+    },
+    {
+        "AppName": "com.oculus.notification_proxy.NotificationProxyApplication",
+        "PackageName": "com.oculus.notification_proxy"
+    },
+    {
+        "AppName": "System Resource",
+        "PackageName": "com.oculus.systemresource"
+    },
+    {
+        "AppName": "Companion Server",
+        "PackageName": "com.oculus.companion.server"
+    },
+    {
+        "AppName": "com.oculus.backuptransportservice",
+        "PackageName": "com.oculus.backuptransportservice"
+    },
+    {
+        "AppName": "Android Shared Library",
+        "PackageName": "android.ext.shared"
+    },
+    {
+        "AppName": "One Time Init",
+        "PackageName": "com.android.onetimeinitializer"
+    },
+    {
+        "AppName": "Key Chain",
+        "PackageName": "com.android.keychain"
+    },
+    {
+        "AppName": "com.android.localtransport",
+        "PackageName": "com.android.localtransport"
+    },
+    {
+        "AppName": "Package installer",
+        "PackageName": "com.android.packageinstaller"
+    },
+    {
+        "AppName": "SystemUX",
+        "PackageName": "com.oculus.systemux"
+    },
+    {
+        "AppName": "com.facebook.spatial_persistence_service",
+        "PackageName": "com.facebook.spatial_persistence_service"
+    },
+    {
+        "AppName": "ProxyHandler",
+        "PackageName": "com.android.proxyhandler"
+    },
+    {
+        "AppName": "com.oculus.nux.ota",
+        "PackageName": "com.oculus.nux.ota"
+    },
+    {
+        "AppName": "Work Setup",
+        "PackageName": "com.android.managedprovisioning"
+    },
+    {
+        "AppName": "BugReportService",
+        "PackageName": "com.oculus.bugreportservice"
+    },
+    {
+        "AppName": "Guidebook",
+        "PackageName": "com.oculus.guidebook"
+    },
+    {
+        "AppName": "VrCastService",
+        "PackageName": "com.oculus.vrcast"
+    },
+    {
+        "AppName": "com.oculus.gatekeeperservice",
+        "PackageName": "com.oculus.gatekeeperservice"
+    },
+    {
+        "AppName": "Charge Control",
+        "PackageName": "com.oculus.os.chargecontrol"
+    },
+    {
+        "AppName": "com.oculus.os.clearactivity",
+        "PackageName": "com.oculus.os.clearactivity"
+    },
+    {
+        "AppName": "Oculus Core Mobile Services",
+        "PackageName": "com.oculus.ocms"
+    },
+    {
+        "AppName": "com.oculus.yadi.YADI",
+        "PackageName": "com.oculus.yadi"
+    },
+    {
+        "AppName": "AppSafety",
+        "PackageName": "com.oculus.appsafety"
+    },
+    {
+        "AppName": "com.oculus.bodyapiservice",
+        "PackageName": "com.oculus.bodyapiservice"
+    },
+    {
+        "AppName": "com.oculus.guardianresources",
+        "PackageName": "com.oculus.guardianresources"
+    },
+    {
+        "AppName": "com.oculus.guardian",
+        "PackageName": "com.oculus.guardian"
+    },
+    {
+        "AppName": "Oculus Gaming Activity",
+        "PackageName": "com.oculus.gamingactivity"
+    },
+    {
+        "AppName": "com.android.server.NetworkPermissionConfig",
+        "PackageName": "com.android.networkstack.permissionconfig"
+    },
+    {
+        "AppName": "com.oculus.environment.prod.winterlodge",
+        "PackageName": "com.oculus.environment.prod.winterlodge"
+    },
+    {
+        "AppName": "DialogHost",
+        "PackageName": "com.oculus.os.dialoghost"
+    },
+    {
+        "AppName": "ExternalStorage",
+        "PackageName": "com.oculus.externalstorage"
+    },
+    {
+        "AppName": "Blocked Numbers Storage",
+        "PackageName": "com.android.providers.blockednumber"
+    },
+    {
+        "AppName": "Preloader",
+        "PackageName": "com.oculus.preloader"
+    },
+    {
+        "AppName": "Fused Location",
+        "PackageName": "com.android.location.fused"
+    },
+    {
+        "AppName": "Permission controller",
+        "PackageName": "com.android.permissioncontroller"
+    },
+    {
+        "AppName": "MicService",
+        "PackageName": "com.oculus.micservice"
+    },
+    {
+        "AppName": "VrAlertService",
+        "PackageName": "com.oculus.vralertservice"
+    },
+    {
+        "AppName": "Bluetooth",
+        "PackageName": "com.android.bluetooth"
+    },
+    {
+        "AppName": "com.qualcomm.timeservice",
+        "PackageName": "com.qualcomm.timeservice"
+    },
+    {
+        "AppName": "Contacts Storage",
+        "PackageName": "com.android.providers.contacts"
+    },
+    {
+        "AppName": "CaptivePortalLogin",
+        "PackageName": "com.android.captiveportallogin"
+    },
+    {
+        "AppName": "VpnDialogs",
+        "PackageName": "com.android.vpndialogs"
+    },
+    {
+        "AppName": "com.oculus.presence.PresenceApplication",
+        "PackageName": "com.oculus.presence"
+    },
+    {
+        "AppName": "Storage Manager",
+        "PackageName": "com.android.storagemanager"
+    },
+    {
+        "AppName": "Bookmark Provider",
+        "PackageName": "com.android.bookmarkprovider"
+    },
+    {
+        "AppName": "Oculus System Activities",
+        "PackageName": "com.oculus.systemactivities"
+    },
+    {
+        "AppName": "FirstTimeNux",
+        "PackageName": "com.oculus.firsttimenux"
+    },
+    {
+        "AppName": "com.android.backupconfirm",
+        "PackageName": "com.android.backupconfirm"
+    },
+    {
+        "AppName": "com.oculus.identitymanagement.service",
+        "PackageName": "com.oculus.identitymanagement.service"
+    },
+    {
+        "AppName": "Shell",
+        "PackageName": "com.android.shell"
+    },
+    {
+        "AppName": "WebSafety",
+        "PackageName": "com.oculus.websafety"
+    },
+    {
+        "AppName": "VRDesktop",
+        "PackageName": "com.oculus.vrshell.desktop"
+    },
+    {
+        "AppName": "Oculus User Server",
+        "PackageName": "com.oculus.userserver2"
+    },
+    {
+        "AppName": "oculus.platform",
+        "PackageName": "oculus.platform"
+    },
+    {
+        "AppName": "Avatar SDK Pkg",
+        "PackageName": "com.oculus.avatar2"
+    },
+    {
+        "AppName": "ShellEnv",
+        "PackageName": "com.oculus.shellenv"
+    }
+]

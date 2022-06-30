@@ -186,6 +186,7 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRouteFile("/", "html/index.html");
             server.AddRouteFile("/downgrade.html", "html/downgrade.html");
+            server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
             {

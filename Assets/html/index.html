@@ -352,24 +352,29 @@
             fetch("questappversionswitcher/config").then(res => res.json().then(res => {
                 config = res
                 Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
-                    e.innerHTML = config.currentApp
+                    if(config.currentApp) e.innerHTML = config.currentApp
+                    else e.innerHTML = "No app selected"
                 })
-                fetch("backups?package=" + config.currentApp).then(res => res.json().then(res => {
-                    document.getElementById("backupList").innerHTML = ""
-                    document.getElementById("size").innerHTML = res.backupsSizeString
-                    if (res.backups) {
-                        res.backups.forEach(backup => {
-                            document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString})</div>`
-                        })
-                    }
-                    if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
-                    Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
-                        i.onclick = function () {
-                            selectedBackup = i.getAttribute("value")
-                            UpdateUI()
+                if(config.currentApp) {
+                    fetch("backups?package=" + config.currentApp).then(res => res.json().then(res => {
+                        document.getElementById("backupList").innerHTML = ""
+                        document.getElementById("size").innerHTML = res.backupsSizeString
+                        if (res.backups) {
+                            res.backups.forEach(backup => {
+                                document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString})</div>`
+                            })
                         }
-                    })
-                }))
+                        if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
+                        Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
+                            i.onclick = function () {
+                                selectedBackup = i.getAttribute("value")
+                                UpdateUI()
+                            }
+                        })
+                    }))
+                } else {
+                    document.getElementById("backupList").innerHTML = `<div class="listItem" value="">Select an app via the change app button above</div>`
+                }
             }))
             fetch("allbackups").then(res => {
                 res.text().then(text => {
@@ -441,24 +446,33 @@
             document.getElementById("appList").innerHTML = undefinedLoader
             document.getElementById("appList").className = "list"
             document.getElementById("appListContainer").className = "listContainer"
-            fetch("android/installedappsandbackups").then(res => res.json().then(res => {
-                document.getElementById("appList").innerHTML = ""
-                res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
-                const interval = 10
-                var target = 0
-                var current = 0
-                var i = setInterval(() => {
-                    target = res.length < target + interval ? res.length : target + interval
-                    var apps = ""
-                    while (current < target) {
-                        var app = res[current]
-                        apps += `<div onclick="ChangeApp('${app.PackageName}')" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
-                        current++
-                    }
-                    document.getElementById("appList").innerHTML += apps
-                    if (current == res.length) clearInterval(i)
-                }, 200)
+            fetch("/hiddenApps.json").then(res => res.json().then(hiddenApps => {
+                hiddenApps = hiddenApps.map(x => x.PackageName)
+                fetch("android/installedappsandbackups").then(res => res.json().then(res => {
+                    document.getElementById("appList").innerHTML = ""
+                    res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
+                    const interval = 10
+                    var target = 0
+                    var current = 0
+                    var i = setInterval(() => {
+                        target = res.length < target + interval ? res.length : target + interval
+                        var apps = ""
+                        while (current < target) {
+                            var app = res[current]
+                            if(hiddenApps.includes(app.PackageName)) {
+                                current++
+                                continue;
+                            }
+                            //apps += `<div onclick="ChangeApp('${app.PackageName}')" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.AppName} - ${app.PackageName}</div>`
+                            apps += `<div onclick="ChangeApp('${app.PackageName}')" class="listItem${app.PackageName == config.currentApp ? " listItemSelected" : ""}" value="${app.PackageName}">${app.PackageName}</div>`
+                            current++
+                        }
+                        document.getElementById("appList").innerHTML += apps
+                        if (current == res.length) clearInterval(i)
+                    }, 200)
+                }))
             }))
+            
         }
 
         function ChangeApp(package) {
