@@ -1,8 +1,6 @@
 ﻿using ComputerUtils.Android.Encryption;
 using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
-using OculusGraphQLApiLib;
-using OculusGraphQLApiLib.Results;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
 using System;
@@ -19,33 +17,9 @@ namespace QuestAppVersionSwitcher
         public event DownloadFinished DownloadFinishedEvent;
         public string tmpPath = "";
 
-        public bool DoesUserOwnApp(List<Entitlement> userEntitlements, string appId)
-        {
-            foreach (Entitlement entitlement in userEntitlements)
-            {
-                if (entitlement.item.id == appId)
-                {
-                    Logger.Log("User owns " + appId);
-                    return true;
-                }
-            }
-            Logger.Log("User doesn't own " + appId);
-            return false;
-        }
-
         public void StartDownload(string binaryid, string password, string version, string app, string appId)
         {
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
-            GraphQLClient.oculusStoreToken = decodedToken;
-            Logger.Log("Fetching entitlements");
-            ViewerData<OculusUserWrapper> user = GraphQLClient.GetActiveEntitelments();
-            Logger.Log("Fetched entitlements");
-            if (user == null || user.data == null || user.data.viewer == null || user.data.viewer.user == null || user.data.viewer.user.active_entitlements == null || user.data.viewer.user.active_entitlements.nodes == null)
-            {
-                Logger.Log("Fetching of entitlements failed");
-                return;
-            }
-            if (!DoesUserOwnApp(user.data.viewer.user.active_entitlements.nodes, appId)) return;
             WebClient downloader = new WebClient();
             tmpPath = CoreService.coreVars.QAVDTmpDowngradeDir + DateTime.Now.Ticks + ".apk";
             List<long> lastBytesPerSec = new List<long>();
