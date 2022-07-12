@@ -634,7 +634,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 DownloadManager m = new DownloadManager();
-                m.StartDownload(r.binaryId, r.password, r.version, r.app);
+                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId);
                 m.DownloadFinishedEvent += DownloadCompleted;
                 managers.Add(m);
                 serverRequest.SendString("Added to downloads. Check download progress tab. Pop up will close in 5 seconds");
