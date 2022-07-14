@@ -16,12 +16,16 @@ namespace QuestAppVersionSwitcher
         public delegate void DownloadFinished(DownloadManager manager);
         public event DownloadFinished DownloadFinishedEvent;
         public string tmpPath = "";
+        public bool isObb = false;
+        public string packageName = "";
 
-        public void StartDownload(string binaryid, string password, string version, string app, string appId)
+        public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName)
         {
+            this.packageName = packageName;
+            this.isObb = isObb;
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
             WebClient downloader = new WebClient();
-            tmpPath = CoreService.coreVars.QAVDTmpDowngradeDir + DateTime.Now.Ticks + ".apk";
+            tmpPath = CoreService.coreVars.QAVDTmpDowngradeDir + DateTime.Now.Ticks + (isObb ? ".obb" : ".apk");
             List<long> lastBytesPerSec = new List<long>();
             DateTime lastUpdate = DateTime.Now;
             bool locked = false;

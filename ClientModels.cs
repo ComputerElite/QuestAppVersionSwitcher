@@ -47,6 +47,8 @@ namespace QuestAppVersionSwitcher.ClientModels
         public string version { get; set; } = "";
         public string app { get; set; } = "";
         public string parentId { get; set; } = "";
+        public bool isObb { get; set; } = false;
+        public string packageName { get; set; } = "";
     }
 
     public class DownloadProgress

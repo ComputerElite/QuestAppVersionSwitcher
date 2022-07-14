@@ -634,7 +634,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 DownloadManager m = new DownloadManager();
-                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId);
+                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId, r.isObb, r.packageName);
                 m.DownloadFinishedEvent += DownloadCompleted;
                 managers.Add(m);
                 serverRequest.SendString("Added to downloads. Check download progress tab. Pop up will close in 5 seconds");
@@ -669,6 +669,15 @@ namespace QuestAppVersionSwitcher
 
         public void DownloadCompleted(DownloadManager m)
         {
+            if(m.isObb)
+            {
+                string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
+                FileManager.RecreateDirectoryIfExisting(bbackupDir);
+                File.Move(m.tmpPath, bbackupDir + "obb/" + "main.obb");
+                Logger.Log("Moved obb");
+                return;
+            }
+            // Is apk
             MemoryStream manifestStream = new MemoryStream();
             ZipArchive apkArchive = ZipFile.OpenRead(m.tmpPath);
             apkArchive.GetEntry("AndroidManifest.xml").Open().CopyTo(manifestStream);
