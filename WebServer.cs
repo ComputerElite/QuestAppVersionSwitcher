@@ -671,9 +671,10 @@ namespace QuestAppVersionSwitcher
         {
             if(m.isObb)
             {
-                string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
-                FileManager.RecreateDirectoryIfExisting(bbackupDir);
-                File.Move(m.tmpPath, bbackupDir + "obb/" + "main.obb");
+                string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/obb/";
+                FileManager.CreateDirectoryIfNotExisting(bbackupDir);
+                FileManager.DeleteFileIfExisting(bbackupDir + "main.obb");
+                File.Move(m.tmpPath, bbackupDir + "main.obb");
                 Logger.Log("Moved obb");
                 return;
             }
