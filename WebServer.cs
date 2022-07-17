@@ -533,6 +533,10 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
+                if (Directory.Exists(backupDir + "obb/" + package))
+                {
+                    FileManager.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package, true);
+                }
                 serverRequest.SendString(Directory.Exists(backupDir + package).ToString(), "text/plain", 200);
                 return true;
             }));
@@ -586,12 +590,6 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("Game data of " + package + " was unable to be restored: " + e.Message, "text/plain", 500);
                     return true;
                 }
-
-                if (Directory.Exists(backupDir + "obb/" + package))
-                {
-                    FileManager.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package, true);
-                }
-
                 serverRequest.SendString("Game data restored", "text/plain", 200);
                 return true;
             }));
