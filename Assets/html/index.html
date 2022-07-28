@@ -99,6 +99,12 @@
                         <div class="button" id="login">Login</div>
                         <div class="buttonLabel">Log in with your Oculus/Facebook account to downgrade games (<b>ONLY WORKS ON QUEST, NOT ON PC</b>)</div>
                     </div>
+                    <div class="buttonContainer">
+                        <input type="password" id="tokeninput" placeholder="Token">
+                        <div class="button" id="logintoken">Login with token</div>
+                        <div class="buttonLabel">Log in with your Oculus token to downgrade games (Open this page on PC or phone to paste your token; Tipe the link at the bottom in your browser)</div>
+                    </div>
+                    <a href="https://computerelite.github.io/tools/Oculus/ObtainToken.html">Guide to get your token</a>
                     <div id="tokenTextBox" class="textBox"></div>
                 </div>
 
@@ -321,6 +327,10 @@
             // Is not on quest
             document.getElementById("restoreBackup").classList.add("notActive")
             document.getElementById("onPcInfo").classList.remove("hidden")
+        }
+
+        document.getElementById("logintoken").onclick = () => {
+            location = `?token=${document.getElementById("tokeninput").value}`
         }
 
         UpdateUI()

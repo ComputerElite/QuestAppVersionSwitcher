@@ -228,6 +228,10 @@ code {
    background-color: #1F1F1F;
 }
 
+a {
+    color: #5689f7;
+}
+
 .darken {
   background-color: #00000055;
 }
