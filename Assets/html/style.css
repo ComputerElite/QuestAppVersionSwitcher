@@ -1,4 +1,254 @@
-﻿body {
+﻿/* Loader */
+
+.loaderContainer {
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+
+.loaderSquare {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background-color: #EEEEEE;
+    z-index: 0;
+    
+    animation: linear loaderSquareSpin 3s infinite;
+}
+
+.loaderCircleHole {
+    position: absolute;
+    background-color: #414141;
+    border-radius: 50%;
+    width: 85px;
+    height: 85px;
+    top: 32.5px;
+    left: 32.5px;
+    z-index: 1;
+}
+
+.loaderMiddleCircle {
+    position: absolute;
+    background-color: #EEEEEE;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    top: 57.5px;
+    left: 57.5px;
+    z-index: 2;
+}
+
+.loaderSpinningCircle {
+    position: absolute;
+    background-color: #EEEEEE;
+    border-radius: 50%;
+    width: 22.5px;
+    height: 22.5px;
+    top: 63px;
+    left: 63px;
+    z-index: 3;
+    
+    animation: linear loaderSpinningCircleSpin 3s infinite;
+}
+
+.loaderBarTop {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 100px;
+    height: 5px;
+    z-index: 3;
+    left: 25px;
+
+    animation: ease-in-out loaderBarTop 1.5s infinite;
+}
+
+.loaderBarBottom {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 100px;
+    height: 5px;
+    z-index: 3;
+    left: 25px;
+    bottom: 0px;
+
+    animation: ease-in-out loaderBarBottom 1.5s infinite;
+}
+
+.loaderBarLeft {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 5px;
+    height: 100px;
+    z-index: 3;
+    left: 0px;
+    top: 25px;
+
+    animation: linear loaderBarLeft 1.5s infinite;
+}
+
+.loaderBarRight {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 5px;
+    height: 100px;
+    z-index: 3;
+    right: 0px;
+    top: 25px;
+
+    animation: linear loaderBarRight 1.5s infinite;
+}
+
+@keyframes loaderBarRight {
+    0% {
+        top: 50px;
+        opacity: 0;
+        height: 50px;
+    }
+    10% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    40% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    50% {
+        height: 50px;
+        opacity: 0;
+        top: 50px;
+    }
+    50.0001% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    60% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    90% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    100% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    
+}
+
+@keyframes loaderBarLeft {
+    0% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    10% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    40% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    50% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    50.0001% {
+        top: 50px;
+        opacity: 0;
+        height: 50px;
+    }
+    60% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    90% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    100% {
+        height: 50px;
+        opacity: 0;
+        top: 50px;
+    }
+}
+
+@keyframes loaderBarBottom {
+    0% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    15% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    85% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+}
+
+@keyframes loaderBarTop {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    15% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    85% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+}
+
+
+@keyframes loaderSpinningCircleSpin {
+    0% {
+        transform: rotate(0deg) translateX(-30px);
+    }
+    100% {
+        transform: rotate(720deg) translateX(-30px);
+    }
+}
+
+@keyframes loaderSquareSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-720deg);
+    }
+}
+
+/* Loader end */
+
+
+body {
     margin: 0px;
     color: #FFFFFF;
     font-family: 'Open Sans';
@@ -149,6 +399,7 @@
     color: #FFFFFF;
     width: fit-content;
     overflow-y: scroll;
+    z-index: 5;
 }
 
 .listContainer {
@@ -158,6 +409,7 @@
     width: 100%;
     position: fixed;
     height: 100%;
+    z-index: 5;
 }
 
 .smallListContainer {

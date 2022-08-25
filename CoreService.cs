@@ -52,7 +52,9 @@ namespace QuestAppVersionSwitcher.Core
             // Create all directories and files
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
-            FileManager.RecreateDirectoryIfExisting(coreVars.QAVDTmpDowngradeDir);
+            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
+            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpPatchingDir);
+            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
             if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
             coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
             qAVSWebserver.Start();
