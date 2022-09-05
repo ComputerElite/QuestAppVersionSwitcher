@@ -26,6 +26,7 @@ using CookieManager = Android.Webkit.CookieManager;
 using Android.Content;
 using Android.App;
 using ComputerUtils.Android;
+using QuestAppVersionSwitcher.Mods;
 
 namespace QuestAppVersionSwitcher
 {
@@ -161,6 +162,40 @@ namespace QuestAppVersionSwitcher
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
             });
+            server.AddRoute("GET", "/mods/mods", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(QAVSModManager.GetMods(), "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/install", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.InstallMod(request.bodyBytes, request.queryString.Get("filename"));
+                request.SendString("Trying to install", "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/mods/cover", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendData(QAVSModManager.GetModCover(request.queryString.Get("id")), "image/xyz");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/uninstall", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.UninstallMod(request.queryString.Get("id"));
+                request.SendString("Trying to uninstall", "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/enable", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.EnableMod(request.queryString.Get("id"));
+                request.SendString("Trying to uninstall", "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/delete", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.DeleteMod(request.queryString.Get("id"));
+                request.SendString("Trying to delete", "application/json");
+                return true;
+            }));
             //// Patching and modding
             /// QAVS
             /// - Backups
@@ -303,6 +338,7 @@ namespace QuestAppVersionSwitcher
             {
                 CoreService.coreVars.currentApp = serverRequest.queryString.Get("body");
                 CoreService.coreVars.Save();
+                QAVSModManager.Update();
                 serverRequest.SendString("App changed to " + serverRequest.bodyString);
                 return true;
             }));

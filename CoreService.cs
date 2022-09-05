@@ -6,6 +6,7 @@ using Android.Webkit;
 using AndroidX.Core.App;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
+using QuestAppVersionSwitcher.Mods;
 using System;
 using System.IO;
 using System.Reflection;
@@ -55,8 +56,14 @@ namespace QuestAppVersionSwitcher.Core
             FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
             FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpPatchingDir);
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
+            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
+            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
+
+            // Download file copies file
+            ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);
             if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
             coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
+            QAVSModManager.Init();
             qAVSWebserver.Start();
         }
     }

@@ -390,6 +390,132 @@ body {
     margin-top: 40px;
 }
 
+.infiniteList {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #1F1F1F;
+    height: fit-content;
+    color: #FFFFFF;
+    width: fit-content;
+    width: 90%;
+    z-index: 5;
+}
+
+.mod {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.smallText {
+    font-size: .75em;
+}
+
+.margin20 {
+    margin: 20px;
+}
+
+.nomargin {
+    margin: 0 !important;
+}
+
+.version {
+    margin-left: 20px;
+}
+
+.leftRightSplit {
+    display: flex;
+    flex-direction: row;
+    margin: 20px;
+    max-width: 70%;
+}
+
+.upDownSplit {
+    display: flex;
+    flex-direction: column;
+}
+
+.spaceBetween {
+    justify-content: space-between;
+}
+
+.modCover {
+    width: 20vw;
+    height: auto;
+    margin-right: 20px
+}
+
+.relative {
+    position: relative;
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: absolute;
+    display: inline-block;
+    width: 60px;
+    height: 25px;
+    right: 20px;
+    bottom: 20px;
+  }
+  
+  /* Hide default HTML checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .slider:before {
+    -webkit-transform: translateX(36px);
+    -ms-transform: translateX(36px);
+    transform: translateX(36px);
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
 .list {
     display: flex;
     flex-wrap: wrap;

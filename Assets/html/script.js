@@ -38,15 +38,94 @@ function UpdatePatchingStatus() {
             }
             */
             if(res.isPatched) {
+                document.getElementById("modsButton").style.visibility = "visible"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
             } else if(res.canBePatched) {
                 patchStatus.innerHTML = `<h2>Game is not patched.</h2>
                                         <div class="button" onclick="PatchGame()">Patch it now</div>`
+                document.getElementById("modsButton").style.visibility = "hidden"
             } else {
                 patchStatus.innerHTML = "<h2>Game can not be modded</h2>"
+                document.getElementById("modsButton").style.visibility = "hidden"
             }
         })
     })
+}
+
+setInterval(() => {
+    UpdateModsAndLibs()
+}, 2000);
+
+function UpdateModsAndLibs() {
+    fetch(`/mods/mods`).then(res => {
+        res.json().then(res => {
+            var mods = ``
+            for(const mod of res.mods){
+                mods += FormatMod(mod)
+            }
+            document.getElementById("modsList").innerHTML = mods
+            var libs = ``
+            for(const mod of res.libs){
+                libs += FormatMod(mod)
+            }
+            document.getElementById("libsList").innerHTML = libs
+        })
+    })
+}
+
+function UploadMod() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.click();
+    input.onchange = () => {
+        if(input.files.length > 0) {
+            fetch(`/mods/install?filename=${input.files[0].name}`, {
+                method: "POST",
+                body: input.files[0]
+            })
+        }
+    }
+}
+
+function DeleteMod(id) {
+    fetch(`/mods/delete?id=${id}`, {method: "POST"}).then(res => {
+        UpdateModsAndLibs()
+    })
+}
+
+function UpdateModState(id, enable) {
+    fetch(`/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"}).then(res => {
+        UpdateModsAndLibs()
+    })
+}
+
+function FormatMod(mod) {
+    return `
+    <div class="mod">
+        <div class="leftRightSplit">
+            <img class="modCover" src="/mods/cover?id=${mod.Id}">
+            <div class="upDownSplit spaceBetween">
+                <div class="upDownSplit">
+                    <div class="leftRightSplit nomargin">
+                        <div>${mod.Name}</div>
+                        <div class="smallText version">v${mod.VersionString}</div>
+                    </div>
+                    <div class="smallText">${mod.Description}</div>
+                </div>
+                <div class="button" onclick="DeleteMod('${mod.Id}')">Delete</div>
+            </div>
+        </div>
+        <div class="upDownSplit spaceBetween relative">
+            <div class="smallText margin20">
+                (by ${mod.Author})
+            </div>
+            <label class="switch">
+                <input onchange="UpdateModState('${mod.Id}', ${!mod.IsInstalled})" type="checkbox" ${mod.IsInstalled ? `checked` : ``}>
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+    `
 }
 
 var patchInProgress = false
@@ -258,6 +337,11 @@ document.getElementById("closeApp").onclick = () => {
     fetch("questappversionswitcher/kill")
 }
 document.getElementById("confirmPort").onclick = () => {
+    var port = parseInt(document.getElementById("port").value)
+    if(port < 5000 || port > 6000) {
+        TextBoxError("serverTextBox", "Only ports between 5000 and 6000 are allowed")
+        return
+    }
     fetch("questappversionswitcher/changeport?body=" + document.getElementById("port").value).then(res => {
         res.text().then(text => {
             if(res.status == 200) {

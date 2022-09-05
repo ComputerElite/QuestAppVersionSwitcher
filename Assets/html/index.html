@@ -17,6 +17,7 @@
             <div class="menuItem" section="downgrade">Downgrade</div>
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
+            <div class="menuItem" section="mods" id="modsButton">Mods</div>
             <div class="menuItem" section="tools">Tools & Options</div>
         </div>
         <div class="content">
@@ -25,6 +26,18 @@
                 <h3>Currently selected game: <div class="inline packageName">some game</div></h3>
                 <div id="patchStatus">Loading...</div>
                 <div class="textbox" id="patchingTextBox"></div>
+            </div>
+            <div class="contentItem hidden" id="mods">
+                <b>Please note that mod installation is in VERY early access, there are issues. e. g. no blocking of user actions while an operation is ongoing, no indication wether a mod install/disable was successful</b>
+                <div class="button" onclick="UploadMod()">Install a Mod</div>
+                <h2>Mods</h2>
+                <div class="infiniteList" id="modsList">
+                    
+                </div>
+                <h2>Libraries</h2>
+                <div class="infiniteList" id="libsList">
+                    
+                </div>
             </div>
 
             <div class="contentItem" id="backup">
