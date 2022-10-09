@@ -705,14 +705,18 @@ document.getElementById("tokenPassword").onclick = () => {
         password: document.getElementById("passwordToken").value
     })).then(res => {
         res.text().then(text => {
-            if (res.status == 403) {
-                TextBoxError("step8box", text)
-            } else if (res.status == 200) {
+            if (res.status == 200) {
                 TextBoxGood("step8box", text)
                 setTimeout(() => {
                     TokenUIUpdate()
                     CloseGetPasswordPopup()
                 }, 5000)
+            } else {
+                
+                TextBoxError("step8box", text + "<br>The pop up will close automatically in 10 seconds")
+                setTimeout(() => {
+                    CloseGetPasswordPopup()
+                }, 10000)
             }
         })
     })
