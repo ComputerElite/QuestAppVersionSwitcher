@@ -2,6 +2,37 @@
 
 namespace QuestAppVersionSwitcher.ClientModels
 {
+    public class PatchingStatus
+    {
+        public bool isPatched { get; set; } = false;
+        public bool isInstalled { get; set; } = true;
+        public bool canBePatched { get; set; } = true; // Not implemented yet.
+        public string version { get; set; } = "";
+        public string versionCode { get; set; } = "";
+        public ModdedJson moddedJson { get; set; } = null;
+    }
+
+    public class MessageAndValue<T>
+    {
+        public string msg { get; set; } = "";
+        public T value { get; set; } = default(T);
+
+        public MessageAndValue(string msg, T value)
+        {
+            this.msg = msg;
+            this.value = value;
+        }
+    }
+
+    public class ModdedJson
+    {
+        public string patcherName { get; set; } = "";
+        public string patcherVersion { get; set; } = "0.0.0";
+        public string modloaderName { get; set; } = "";
+        public string modloaderVersion { get; set; } = "";
+        public List<string> modifiedFiles { get; set; } = new List<string>();
+    }
+
     public class About
     {
         public string version { get; set; } = "";

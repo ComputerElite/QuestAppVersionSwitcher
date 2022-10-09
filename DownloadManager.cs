@@ -25,7 +25,7 @@ namespace QuestAppVersionSwitcher
             this.isObb = isObb;
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
             WebClient downloader = new WebClient();
-            tmpPath = CoreService.coreVars.QAVDTmpDowngradeDir + DateTime.Now.Ticks + (isObb ? ".obb" : ".apk");
+            tmpPath = CoreService.coreVars.QAVSTmpDowngradeDir + DateTime.Now.Ticks + (isObb ? ".obb" : ".apk");
             List<long> lastBytesPerSec = new List<long>();
             DateTime lastUpdate = DateTime.Now;
             bool locked = false;

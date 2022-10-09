@@ -1,4 +1,254 @@
-﻿body {
+﻿/* Loader */
+
+.loaderContainer {
+    width: 150px;
+    height: 150px;
+    position: relative;
+}
+
+.loaderSquare {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background-color: #EEEEEE;
+    z-index: 0;
+    
+    animation: linear loaderSquareSpin 3s infinite;
+}
+
+.loaderCircleHole {
+    position: absolute;
+    background-color: #414141;
+    border-radius: 50%;
+    width: 85px;
+    height: 85px;
+    top: 32.5px;
+    left: 32.5px;
+    z-index: 1;
+}
+
+.loaderMiddleCircle {
+    position: absolute;
+    background-color: #EEEEEE;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    top: 57.5px;
+    left: 57.5px;
+    z-index: 2;
+}
+
+.loaderSpinningCircle {
+    position: absolute;
+    background-color: #EEEEEE;
+    border-radius: 50%;
+    width: 22.5px;
+    height: 22.5px;
+    top: 63px;
+    left: 63px;
+    z-index: 3;
+    
+    animation: linear loaderSpinningCircleSpin 3s infinite;
+}
+
+.loaderBarTop {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 100px;
+    height: 5px;
+    z-index: 3;
+    left: 25px;
+
+    animation: ease-in-out loaderBarTop 1.5s infinite;
+}
+
+.loaderBarBottom {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 100px;
+    height: 5px;
+    z-index: 3;
+    left: 25px;
+    bottom: 0px;
+
+    animation: ease-in-out loaderBarBottom 1.5s infinite;
+}
+
+.loaderBarLeft {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 5px;
+    height: 100px;
+    z-index: 3;
+    left: 0px;
+    top: 25px;
+
+    animation: linear loaderBarLeft 1.5s infinite;
+}
+
+.loaderBarRight {
+    position: absolute;
+    background-color: #EEEEEE;
+    width: 5px;
+    height: 100px;
+    z-index: 3;
+    right: 0px;
+    top: 25px;
+
+    animation: linear loaderBarRight 1.5s infinite;
+}
+
+@keyframes loaderBarRight {
+    0% {
+        top: 50px;
+        opacity: 0;
+        height: 50px;
+    }
+    10% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    40% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    50% {
+        height: 50px;
+        opacity: 0;
+        top: 50px;
+    }
+    50.0001% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    60% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    90% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    100% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    
+}
+
+@keyframes loaderBarLeft {
+    0% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    10% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    40% {
+        top: 25px;
+        opacity: 1;
+        height: 100px;
+    }
+    50% {
+        top: 25px;
+        opacity: 0;
+        height: 100px;
+    }
+    50.0001% {
+        top: 50px;
+        opacity: 0;
+        height: 50px;
+    }
+    60% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    90% {
+        top: 50px;
+        opacity: 1;
+        height: 50px;
+    }
+    100% {
+        height: 50px;
+        opacity: 0;
+        top: 50px;
+    }
+}
+
+@keyframes loaderBarBottom {
+    0% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+    15% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    85% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+}
+
+@keyframes loaderBarTop {
+    0% {
+        transform: translateX(100px);
+        opacity: 0;
+    }
+    15% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    85% {
+        transform: translateX(0px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-100px);
+        opacity: 0;
+    }
+}
+
+
+@keyframes loaderSpinningCircleSpin {
+    0% {
+        transform: rotate(0deg) translateX(-30px);
+    }
+    100% {
+        transform: rotate(720deg) translateX(-30px);
+    }
+}
+
+@keyframes loaderSquareSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-720deg);
+    }
+}
+
+/* Loader end */
+
+
+body {
     margin: 0px;
     color: #FFFFFF;
     font-family: 'Open Sans';
@@ -140,6 +390,132 @@
     margin-top: 40px;
 }
 
+.infiniteList {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #1F1F1F;
+    height: fit-content;
+    color: #FFFFFF;
+    width: fit-content;
+    width: 90%;
+    z-index: 5;
+}
+
+.mod {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.smallText {
+    font-size: .75em;
+}
+
+.margin20 {
+    margin: 20px;
+}
+
+.nomargin {
+    margin: 0 !important;
+}
+
+.version {
+    margin-left: 20px;
+}
+
+.leftRightSplit {
+    display: flex;
+    flex-direction: row;
+    margin: 20px;
+    max-width: 70%;
+}
+
+.upDownSplit {
+    display: flex;
+    flex-direction: column;
+}
+
+.spaceBetween {
+    justify-content: space-between;
+}
+
+.modCover {
+    width: 20vw;
+    height: auto;
+    margin-right: 20px
+}
+
+.relative {
+    position: relative;
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: absolute;
+    display: inline-block;
+    width: 60px;
+    height: 25px;
+    right: 20px;
+    bottom: 20px;
+  }
+  
+  /* Hide default HTML checkbox */
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  /* The slider */
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+  
+  input:checked + .slider {
+    background-color: #2196F3;
+  }
+  
+  input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+  }
+  
+  input:checked + .slider:before {
+    -webkit-transform: translateX(36px);
+    -ms-transform: translateX(36px);
+    transform: translateX(36px);
+  }
+  
+  /* Rounded sliders */
+  .slider.round {
+    border-radius: 34px;
+  }
+  
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
 .list {
     display: flex;
     flex-wrap: wrap;
@@ -149,6 +525,7 @@
     color: #FFFFFF;
     width: fit-content;
     overflow-y: scroll;
+    z-index: 5;
 }
 
 .listContainer {
@@ -158,6 +535,7 @@
     width: 100%;
     position: fixed;
     height: 100%;
+    z-index: 5;
 }
 
 .smallListContainer {

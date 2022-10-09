@@ -26,6 +26,7 @@ using CookieManager = Android.Webkit.CookieManager;
 using Android.Content;
 using Android.App;
 using ComputerUtils.Android;
+using QuestAppVersionSwitcher.Mods;
 
 namespace QuestAppVersionSwitcher
 {
@@ -138,13 +139,14 @@ namespace QuestAppVersionSwitcher
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public List<DownloadManager> managers = new List<DownloadManager>();
         public SHA256 hasher = SHA256.Create();
+        public static string patchText = "";
+        public static int patchCode = 202;
 
         public LoggedInStatus GetLoggedInStatus()
         {
             if(CoreService.coreVars.token == "") return LoggedInStatus.NotLoggedIn;
             return LoggedInStatus.LoggedIn;
         }
-
 
         public void Start()
         {
@@ -160,6 +162,92 @@ namespace QuestAppVersionSwitcher
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
             });
+            server.AddRoute("GET", "/mods/mods", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(QAVSModManager.GetMods(), "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(JsonSerializer.Serialize(QAVSModManager.runningOperations), "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/install", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.InstallMod(request.bodyBytes, request.queryString.Get("filename"));
+                request.SendString("Trying to install", "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/mods/cover", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendData(QAVSModManager.GetModCover(request.queryString.Get("id")), "image/xyz");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/uninstall", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.UninstallMod(request.queryString.Get("id"));
+                request.SendString("Trying to uninstall", "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/enable", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.EnableMod(request.queryString.Get("id"));
+                request.SendString("Trying to uninstall", "application/json");
+                return true;
+            }));
+            server.AddRoute("POST", "/mods/delete", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.DeleteMod(request.queryString.Get("id"));
+                request.SendString("Trying to delete", "application/json");
+                return true;
+            }));
+            //// Patching and modding
+            /// QAVS
+            /// - Backups
+            /// - tmpDowngrade
+            /// - tmpPatching
+            ///     - apk
+            ///     
+            server.AddRoute("GET", "/patching/getmodstatus", new Func<ServerRequest, bool>(request =>
+            {
+                PatchingStatus status = PatchingManager.GetPatchingStatus();
+                if(status == null)
+                {
+                    status = new PatchingStatus
+                    {
+                        isInstalled = false,
+                        canBePatched = false,
+                    };
+                }
+                request.SendString(JsonSerializer.Serialize(status), "application/json");
+                return true;
+            }));
+            
+            server.AddRoute("GET", "/patching/patchapk", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString("Acknowledged. Check status at /patching/patchstatus", "text/plain", 202);
+                patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Copying APK. This can take a bit", ""));
+                patchCode = 202;
+                if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                {
+                    patchText = CoreService.coreVars.currentApp + " is not installed. Please select a diffrent app";
+                    patchCode = 400;
+                    return true;
+                }
+                string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
+                FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
+                File.Copy(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp), appLocation);
+                ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
+                PatchingManager.PatchAPK(apkArchive, appLocation);
+                return true;
+            }));
+            server.AddRoute("GET", "/patching/patchstatus", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                serverRequest.SendString(patchText, "text/plain", patchCode);
+                return true;
+            }));
+
+
             server.AddRoute("GET", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
             {
                 CookieManager.Instance.Flush();
@@ -185,7 +273,7 @@ namespace QuestAppVersionSwitcher
                 return true;
             }));
             server.AddRouteFile("/", "html/index.html");
-            server.AddRouteFile("/downgrade.html", "html/downgrade.html");
+            server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
@@ -258,6 +346,7 @@ namespace QuestAppVersionSwitcher
             {
                 CoreService.coreVars.currentApp = serverRequest.queryString.Get("body");
                 CoreService.coreVars.Save();
+                QAVSModManager.Update();
                 serverRequest.SendString("App changed to " + serverRequest.bodyString);
                 return true;
             }));
@@ -724,6 +813,15 @@ namespace QuestAppVersionSwitcher
                 if (name.Contains(c)) return false;
             }
             return true;
+        }
+
+        public static string MakeFileNameSafe(string name)
+        {
+            foreach (char c in ReservedChars)
+            {
+                name = name.Replace(c, '_');
+            }
+            return name;
         }
 
         public List<string> GetIPs()
