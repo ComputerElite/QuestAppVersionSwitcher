@@ -167,6 +167,17 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             }));
+            server.AddRoute("GET", "/patching/getpatchoptions", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(JsonSerializer.Serialize(CoreService.coreVars.patchingPermissions), "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/patching/setpatchoptions", new Func<ServerRequest, bool>(request =>
+            {
+                CoreService.coreVars.patchingPermissions = JsonSerializer.Deserialize<PatchingPermissions>(request.queryString.Get("body"));
+                request.SendString("Set patch options", "application/json");
+                return true;
+            }));
             server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
             {
                 request.SendString(JsonSerializer.Serialize(QAVSModManager.runningOperations), "application/json");

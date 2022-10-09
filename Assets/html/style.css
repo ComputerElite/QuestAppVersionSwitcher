@@ -447,8 +447,21 @@ body {
     margin-right: 20px
 }
 
+#other {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .relative {
     position: relative;
+}
+
+.option {
+    margin-left: 30px;
+}
+
+.normal {
+    position: relative !important;
 }
 
 /* The switch - the box around the slider */

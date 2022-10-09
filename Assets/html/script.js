@@ -47,7 +47,7 @@ function UpdatePatchingStatus() {
                 document.getElementById("modsButton").style.visibility = "hidden"
             }
 
-            if(!IsOnQuest() && !res.isPatched) {
+            if(!IsOnQuest() && !res.isPatched && false) {
                 patchStatus.innerHTML = "<h2>To mod your game open QuestAppVersionSwitcher on your Quest</h2>"
                 return;
             }
@@ -63,6 +63,14 @@ var operationsOngoing = false
 const operationsElement = document.getElementById("operations")
 const ongoingCount = document.getElementById("ongoingCount")
 const operationsList = document.getElementById("operationsList")
+
+const externalStorageCheckbox = document.getElementById("externalstorage")
+const handTrackingCheckbox = document.getElementById("handtracking")
+const handTrackingVersion = document.getElementById("handtrackingversion")
+const debugCheckbox = document.getElementById("debug")
+const otherContainer = document.getElementById("other")
+var otherPermissions = []
+
 function UpdateModsAndLibs() {
     fetch(`/mods/mods`).then(res => {
         res.json().then(res => {
@@ -154,42 +162,78 @@ function FormatMod(mod, active = true) {
     `
 }
 
+function AddPermission() {
+    otherPermissions.push(document.getElementById("otherName").value)
+    document.getElementById("otherName").value = ""
+    UpdatePermissions()
+}
+
+function UpdatePermissions() {
+    var perms = ""
+    for(const p of otherPermissions){
+        perms += `
+        <div style="padding: 10px; margin-right: 20px; border-radius: 5px; border: 1px #242424 solid;">
+            ${p}
+            <div class="button" style="display: inline" onclick="RemovePermission('${p}')">X</div>
+        </div>`
+    }
+    otherContainer.innerHTML = perms
+}
+
+function RemovePermission(name) {
+    otherPermissions = otherPermissions.filter(a => a != name)
+    UpdatePermissions()
+}
+
 var patchInProgress = false
 var lastApp = ""
 function PatchGame() {
     patchInProgress = true
-    fetch("/patching/patchapk").then(res => {
-        res.text().then(text => {
-            if (res.status == 202) {
-                TextBoxText("patchingTextBox", text)
-                patchStatus.innerHTML = `<h2>Patching game<br><br>${squareLoader}</h2>`
-                var i = setInterval(() => {
-                    fetch("/patching/patchstatus").then(res => {
-                        res.json().then(text => {
-                            if (res.status == 202) {
-                                TextBoxText("patchingTextBox", text.msg)
-                            } else if (res.status == 200) {
-                                TextBoxGood("patchingTextBox", text.msg)
-                                clearInterval(i)
-                                patchInProgress = false
-                                if(text.value) {
-                                    // patching returned a backup name to restore so restore the backup
-                                    selectedBackup = text.value
-                                    OpenRestorePopup();
+    var patchOptions = {
+        otherPermissions: otherPermissions,
+        debug: debugCheckbox.checked,
+        handTracking: handTrackingCheckbox.checked,
+        handTrackingVersion: parseInt(handTrackingVersion.value),
+        externalStorage: externalStorageCheckbox.checked
+    }
+    fetch(`/patching/setpatchoptions?body=${JSON.stringify(patchOptions)}`).then(res => {
+        fetch("/patching/patchapk").then(res => {
+            res.text().then(text => {
+                if (res.status == 202) {
+                    TextBoxText("patchingTextBox", text)
+                    patchStatus.innerHTML = `<h2>Patching game<br><br>${squareLoader}</h2>`
+                    var i = setInterval(() => {
+                        fetch("/patching/patchstatus").then(res => {
+                            res.json().then(text => {
+                                if (res.status == 202) {
+                                    TextBoxText("patchingTextBox", text.msg)
+                                } else if (res.status == 200) {
+                                    TextBoxGood("patchingTextBox", text.msg)
+                                    clearInterval(i)
+                                    patchInProgress = false
+                                    if(text.value) {
+                                        if(!IsOnQuest()) {
+                                            alert("Restore the backup with patched in its name from within your Quest to finalize the patching process")
+                                            return
+                                        }
+                                        // patching returned a backup name to restore so restore the backup
+                                        selectedBackup = text.value
+                                        OpenRestorePopup();
+                                    }
+                                    UpdateUI()
+                                } else {
+                                    TextBoxError("patchingTextBox", text.msg)
+                                    clearInterval(i)
+                                    patchInProgress = false
+                                    UpdateUI()
                                 }
-                                UpdateUI()
-                            } else {
-                                TextBoxError("patchingTextBox", text.msg)
-                                clearInterval(i)
-                                patchInProgress = false
-                                UpdateUI()
-                            }
+                            })
                         })
-                    })
-                }, 500);
-            } else {
-                TextBoxError("patchingTextBox", text)
-            }
+                    }, 500);
+                } else {
+                    TextBoxError("patchingTextBox", text)
+                }
+            })
         })
     })
 }
