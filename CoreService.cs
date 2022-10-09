@@ -34,7 +34,7 @@ namespace QuestAppVersionSwitcher.Core
             {
                 if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
             }
-            
+
             //Set webbrowser settings
             browser.SetWebChromeClient(new WebChromeClient());
             browser.Settings.JavaScriptEnabled = true;

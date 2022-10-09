@@ -167,6 +167,11 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             }));
+            server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(JsonSerializer.Serialize(QAVSModManager.runningOperations), "application/json");
+                return true;
+            }));
             server.AddRoute("POST", "/mods/install", new Func<ServerRequest, bool>(request =>
             {
                 QAVSModManager.InstallMod(request.bodyBytes, request.queryString.Get("filename"));
@@ -208,8 +213,11 @@ namespace QuestAppVersionSwitcher
                 PatchingStatus status = PatchingManager.GetPatchingStatus();
                 if(status == null)
                 {
-                    request.SendString(CoreService.coreVars.currentApp + " is not installed. Please select a diffrent app", "text/plain", 400);
-                    return true;
+                    status = new PatchingStatus
+                    {
+                        isInstalled = false,
+                        canBePatched = false,
+                    };
                 }
                 request.SendString(JsonSerializer.Serialize(status), "application/json");
                 return true;
@@ -805,6 +813,15 @@ namespace QuestAppVersionSwitcher
                 if (name.Contains(c)) return false;
             }
             return true;
+        }
+
+        public static string MakeFileNameSafe(string name)
+        {
+            foreach (char c in ReservedChars)
+            {
+                name = name.Replace(c, '_');
+            }
+            return name;
         }
 
         public List<string> GetIPs()

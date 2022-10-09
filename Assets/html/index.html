@@ -28,8 +28,24 @@
                 <div class="textbox" id="patchingTextBox"></div>
             </div>
             <div class="contentItem hidden" id="mods">
-                <b>Please note that mod installation is in VERY early access, there are issues. e. g. no blocking of user actions while an operation is ongoing, no indication wether a mod install/disable was successful</b>
+                <b>Please note that mod installation is in early access, there may be issues. Feel free to give feedback on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
                 <div class="button" onclick="UploadMod()">Install a Mod</div>
+                <div id="operations">
+                    <h2 id="ongoingCount">Ongoing operations:</h2>
+                    <div class="loaderContainer" style="margin-bottom: 10px;">
+                        <div class="loaderBarRight"></div>
+                        <div class="loaderBarLeft"></div>
+                        <div class="loaderBarTop"></div>
+                        <div class="loaderBarBottom"></div>
+                        <div class="loaderSpinningCircle"></div>
+                        <div class="loaderMiddleCircle"></div>
+                        <div class="loaderCircleHole"></div>
+                        <div class="loaderSquare"></div>
+                    </div>
+                    <div class="infiniteList" id="operationsList">
+                        ${operations}
+                    </div>
+                </div>
                 <h2>Mods</h2>
                 <div class="infiniteList" id="modsList">
                     

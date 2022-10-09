@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using ComputerUtils.Android.Logging;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 namespace QuestAppVersionSwitcher.Mods
@@ -8,13 +10,32 @@ namespace QuestAppVersionSwitcher.Mods
     {
         public List<IMod> mods { get; set; } = new List<IMod>();
         public List<IMod> libs { get; set; } = new List<IMod>();
+        public List<QAVSOperation> operations { get; set; } = new List<QAVSOperation>();
     }
+
+    public enum QAVSOperationType
+    {
+        ModInstall,
+        ModUninstall,
+        ModDisable,
+        ModDelete,
+        DependencyDownload,
+        Other
+    }
+
+    public class QAVSOperation
+    {
+        public QAVSOperationType type { get; set; } = QAVSOperationType.ModInstall;
+        public string name { get; set; } = "";
+    }
+
     public class QAVSModManager
     {
         public static ModManager modManager;
         public static OtherFilesManager otherFilesManager;
-        public static bool operationOngoing = false;
         public static JsonSerializerOptions options;
+        public static int operations = 0;
+        public static Dictionary<int, QAVSOperation> runningOperations = new Dictionary<int, QAVSOperation>();
 
         public static void Init()
         {
@@ -36,16 +57,25 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static void InstallMod(byte[] modBytes, string fileName)
         {
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + fileName });
+
             TempFile f = new TempFile(Path.GetExtension(fileName));
             File.WriteAllBytes(f.Path, modBytes);
             IMod mod = modManager.TryParseMod(f.Path).Result;
-            mod.Install();
+            mod.Install().Wait();
+            runningOperations.Remove(operationId);
             modManager.ForceSave();
         }
 
         public static void UninstallMod(string id)
         {
-            foreach(IMod m in modManager.AllMods)
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModUninstall, name = "Unnstalling " + id });
+
+            foreach (IMod m in modManager.AllMods)
             {
                 if(m.Id == id)
                 {
@@ -54,10 +84,15 @@ namespace QuestAppVersionSwitcher.Mods
                     break;
                 }
             }
+
+            runningOperations.Remove(operationId);
         }
 
         public static void DeleteMod(string id)
         {
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModDelete, name = "Deleting " + id });
             foreach (IMod m in modManager.AllMods)
             {
                 if (m.Id == id)
@@ -67,19 +102,25 @@ namespace QuestAppVersionSwitcher.Mods
                     break;
                 }
             }
+            runningOperations.Remove(operationId);
         }
 
         public static void EnableMod(string id)
         {
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + id });
+
             foreach (IMod m in modManager.AllMods)
             {
                 if (m.Id == id)
                 {
-                    m.Install();
+                    m.Install().Wait();
                     modManager.ForceSave();
                     break;
                 }
             }
+            runningOperations.Remove(operationId);
         }
 
         public static string GetMods()
@@ -87,7 +128,8 @@ namespace QuestAppVersionSwitcher.Mods
             return JsonSerializer.Serialize(new ModsAndLibs
             {
                 mods = modManager.Mods,
-                libs = modManager.Libraries
+                libs = modManager.Libraries,
+                operations = runningOperations.Values.ToList()
             });
         }
 

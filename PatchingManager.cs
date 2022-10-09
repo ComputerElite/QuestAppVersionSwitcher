@@ -117,7 +117,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Almost done. Hang tight", ""));
             WebClient c = new WebClient();
             PatchingStatus status = JsonSerializer.Deserialize<PatchingStatus>(c.DownloadString("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/patching/getmodstatus")); // seems to be the easiest way
-            string backupName = status.version + "_patched";
+            string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
             File.Move(appLocation, backupDir + "app.apk");

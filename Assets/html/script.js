@@ -32,14 +32,12 @@ function UpdatePatchingStatus() {
     patchStatus.innerHTML = `Loading<br><br>${squareLoader}`
     fetch("/patching/getmodstatus").then(res => {
         res.json().then(res => {
-            /*
-            if(!IsOnQuest()) {
-                patchStatus.innerHTML = "<h2>To mod your game open QuestAppVersionSwitcher on your Quest</h2>"
-            }
-            */
             if(res.isPatched) {
                 document.getElementById("modsButton").style.visibility = "visible"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
+            } else if(!res.isInstalled) {
+                patchStatus.innerHTML = `<h2>Game is not installed. Please restore a backup or install the app so the game can get patched</h2>`
+                document.getElementById("modsButton").style.visibility = "hidden"
             } else if(res.canBePatched) {
                 patchStatus.innerHTML = `<h2>Game is not patched.</h2>
                                         <div class="button" onclick="PatchGame()">Patch it now</div>`
@@ -47,6 +45,11 @@ function UpdatePatchingStatus() {
             } else {
                 patchStatus.innerHTML = "<h2>Game can not be modded</h2>"
                 document.getElementById("modsButton").style.visibility = "hidden"
+            }
+
+            if(!IsOnQuest() && !res.isPatched) {
+                patchStatus.innerHTML = "<h2>To mod your game open QuestAppVersionSwitcher on your Quest</h2>"
+                return;
             }
         })
     })
@@ -56,17 +59,37 @@ setInterval(() => {
     UpdateModsAndLibs()
 }, 2000);
 
+var operationsOngoing = false
+const operationsElement = document.getElementById("operations")
+const ongoingCount = document.getElementById("ongoingCount")
+const operationsList = document.getElementById("operationsList")
 function UpdateModsAndLibs() {
     fetch(`/mods/mods`).then(res => {
         res.json().then(res => {
+            operationsOngoing = res.operations.length > 0
             var mods = ``
+            if(!operationsOngoing) {
+                operationsElement.style.display = "none"
+            } else {
+                operationsElement.style.display = "block"
+                var operations = ""
+                for(const operation of res.operations){
+                    operations += `
+                    <div class="mod" style="padding: 10px">
+                        ${operation.name}
+                    </div>
+                    `
+                }
+                operationsList.innerHTML = operations
+                ongoingCount.innerHTML = `Ongoing operations: ${res.operations.length}`
+            }
             for(const mod of res.mods){
-                mods += FormatMod(mod)
+                mods += FormatMod(mod, !operationsOngoing)
             }
             document.getElementById("modsList").innerHTML = mods
             var libs = ``
             for(const mod of res.libs){
-                libs += FormatMod(mod)
+                libs += FormatMod(mod, !operationsOngoing)
             }
             document.getElementById("libsList").innerHTML = libs
         })
@@ -99,7 +122,7 @@ function UpdateModState(id, enable) {
     })
 }
 
-function FormatMod(mod) {
+function FormatMod(mod, active = true) {
     return `
     <div class="mod">
         <div class="leftRightSplit">
@@ -112,17 +135,20 @@ function FormatMod(mod) {
                     </div>
                     <div class="smallText">${mod.Description}</div>
                 </div>
-                <div class="button" onclick="DeleteMod('${mod.Id}')">Delete</div>
+                ${active ? `
+                <div class="button" onclick="DeleteMod('${mod.Id}')">Delete</div>` : ``}
             </div>
         </div>
         <div class="upDownSplit spaceBetween relative">
             <div class="smallText margin20">
                 (by ${mod.Author})
             </div>
+            ${active ? `
             <label class="switch">
                 <input onchange="UpdateModState('${mod.Id}', ${!mod.IsInstalled})" type="checkbox" ${mod.IsInstalled ? `checked` : ``}>
                 <span class="slider round"></span>
-            </label>
+            </label>` : ``}
+            
         </div>
     </div>
     `

@@ -5,6 +5,7 @@ namespace QuestAppVersionSwitcher.ClientModels
     public class PatchingStatus
     {
         public bool isPatched { get; set; } = false;
+        public bool isInstalled { get; set; } = true;
         public bool canBePatched { get; set; } = true; // Not implemented yet.
         public string version { get; set; } = "";
         public string versionCode { get; set; } = "";
