@@ -11,6 +11,8 @@ const squareLoader = `
     <div class="loaderSquare"></div>
 </div>`
 
+document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
+
 function IsOnQuest() {
     return location.host.startsWith("127.0.0.1")
 }
@@ -345,19 +347,19 @@ setInterval(() => {
     fetch("/downloads").then(res => {
         var m = ""
         res.json().then(json => {
-            json.forEach(d => {
+            for(const d of json) {
                 m += `<div class="downloadContainer">
-                                                                                        <div class="downloadProgressContainer">
-                                                                                            <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
-                                                                                        </div>
-                                                                                        <div class="DownloadText" style="color: ${d.textColor};">
-                                                                                            ${d.backupName} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
-                                                                                        </div>
-                                                                                    </div>`
-            })
+                    <div class="downloadProgressContainer">
+                        <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
+                    </div>
+                    <div class="DownloadText" style="color: ${d.textColor};">
+                        ${d.backupName} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
+                    </div>
+                </div>`
+            }
+            if (m == "") m = "<h2>No downloads running</h2>"
+            document.getElementById("progressBarContainers").innerHTML = m
         })
-        if (m == "") m = "<h2>No downloads running</h2>"
-        document.getElementById("progressBarContainers").innerHTML = m
     })
 }, 500)
 
