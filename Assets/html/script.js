@@ -21,6 +21,7 @@ if(!IsOnQuest()) {
     // Is not on quest
     document.getElementById("restoreBackup").classList.add("notActive")
     document.getElementById("onPcInfo").classList.remove("hidden")
+    document.getElementById("uninstall").classList.add("notActive")
 }
 
 document.getElementById("logintoken").onclick = () => {
@@ -510,6 +511,7 @@ function OpenRestorePopup() {
 }
 
 document.getElementById("uninstall").onclick = () => {
+    if(!IsOnQuest()) return
     fetch(`android/uninstallpackage?package=${config.currentApp}`).then(res => {
         if (res.status == 230) GotoStep(3)
         else GotoStep(2)
