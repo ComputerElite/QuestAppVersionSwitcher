@@ -244,7 +244,7 @@ function PatchGame() {
 
 UpdateUI()
 TokenUIUpdate()
-const oculusLink = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F&reason=page_require_login"
+const oculusLink = "https://auth.meta.com/"
 const params = new URLSearchParams(window.location.search)
 var config = {}
 var selectedBackup = ""

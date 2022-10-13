@@ -32,7 +32,7 @@ namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
-        public bool wasOnFacebook = false;
+        public bool wasOnOculus = false;
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
@@ -40,23 +40,33 @@ namespace QuestAppVersionSwitcher
             Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
-                if (wasOnFacebook)
+                if (wasOnOculus)
                 {
-                    // Restart app here
-                    CoreService.coreVars.loginStep = 1;
-                    CoreService.coreVars.Save();
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
-                    });
-                   
-                    wasOnFacebook = false;
+                    view.EvaluateJavascript("var mySpans = document.getElementsByTagName(\"svg\");for(var i=0;i<mySpans.length;i++){if(mySpans[i].ariaLabel == 'Open Side Navigation Menu'){mySpans[i].parentElement.click();break;}}setTimeout(() => { mySpans = document.getElementsByTagName(\"h6\"); for (var i = 0; i < mySpans.length; i++) { if (mySpans[i].innerHTML == 'Log in / Sign up') { mySpans[i].click(); break; } } }, 600)", null);
                 }
+                wasOnOculus = true;
+                
                 view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
             }
-            if (url.Split("?")[0].Contains("facebook.com"))
+            if (url.Split("?")[0] == "https://auth.meta.com/settings/")
             {
-                wasOnFacebook = true;
+                wasOnOculus = false;
+                view.LoadUrl("https://oculus.com/experiences/quest");
+                // Restart app here
+                /*
+                CoreService.coreVars.loginStep = 1;
+                CoreService.coreVars.Save();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
+                });
+                wasOnFacebook = false;
+                */
+                
+            }
+            if (url.Split("?")[0] == "https://auth.meta.com/settings/")
+            {
+                //wasOnFacebook = true;
             }
         }
 
@@ -65,8 +75,8 @@ namespace QuestAppVersionSwitcher
             ["sec-fetch-mode"] = "navigate",
             ["sec-fetch-site"] = "same-origin",
             ["sec-fetch-dest"] = "document",
-            ["sec-ch-ua-platform"] = "\"Windows\"",
-            ["sec-ch-ua"] = "\" Not A; Brand\";v=\"99\", \"Chromium\";v=\"102\", \"Microsoft Edge\";v=\"102\"",
+            ["sec-ch-ua-platform"] = "\"Linux\"",
+            ["sec-ch-ua"] = "\" Not A; Brand\";v=\"99\", \"Chromium\";v=\"104\"",
             ["sec-ch-ua-mobile"] = "?0",
             ["sec-fetch-user"] = "?1"
         };
@@ -79,6 +89,9 @@ namespace QuestAppVersionSwitcher
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
                 else request.RequestHeaders[p.Key] = p.Value;
             }
+            if (request.RequestHeaders.ContainsKey("document-policy")) request.RequestHeaders.Remove("document-policy");
+
+            if (request.RequestHeaders.ContainsKey("document-domain")) request.RequestHeaders.Remove("document-domain");
             string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
             if (cookie != null) request.RequestHeaders["cookie"] = cookie;
             if (request.Method == "POST")

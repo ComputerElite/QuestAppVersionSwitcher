@@ -43,7 +43,7 @@ namespace QuestAppVersionSwitcher.Core
             browser.Focusable = true;
             browser.Settings.MediaPlaybackRequiresUserGesture = false;
             browser.Settings.DomStorageEnabled = true;
-            browser.Settings.UserAgentString = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/21.2.0.1.37.371181431 SamsungBrowser/4.0 Chrome/100.0.4896.160 VR Safari/537.36";
+            browser.Settings.UserAgentString = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
             browser.Settings.DatabaseEnabled = true;
             browser.Settings.DatabasePath = "/data/data/" + browser.Context.PackageName + "/databases/";
             browser.Settings.LoadWithOverviewMode = true;
