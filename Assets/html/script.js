@@ -679,7 +679,7 @@ document.getElementById("abortPassword").onclick = () => {
 document.getElementById("confirmPassword").onclick = () => {
     options.password = document.getElementById("passwordConfirm").value
     options.app = options.parentName
-    fetch("/download?body=" + JSON.stringify(options)).then(res => {
+    fetch("/download?body=" + JSON.stringify(options).replace(/&/g, "and")).then(res => {
         res.text().then(text => {
             if (res.status == 403) {
                 TextBoxError("step7box", text)
