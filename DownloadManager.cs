@@ -93,6 +93,65 @@ namespace QuestAppVersionSwitcher
             downloader.DownloadFileAsync(new Uri("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken), tmpPath);
         }
 
+        public void StartDownload(string url, string path)
+        {
+            WebClient downloader = new WebClient();
+            downloader.Headers.Add("User-Agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
+            string p = CoreVars.fileDir + DateTime.Now.Ticks;
+            tmpPath = p;
+            List<long> lastBytesPerSec = new List<long>();
+            DateTime lastUpdate = DateTime.Now;
+            bool locked = false;
+            long BytesToRecieve = 0;
+            long lastBytes = 0;
+            this.name = Path.GetFileName(url);
+            this.backupName = "";
+            downloader.DownloadProgressChanged += (o, e) =>
+            {
+                if (locked) return;
+
+                locked = true;
+                double secondsPassed = (DateTime.Now - lastUpdate).TotalSeconds;
+                if (secondsPassed >= 0.5)
+                {
+                    BytesToRecieve = e.TotalBytesToReceive;
+                    string current = SizeConverter.ByteSizeToString(e.BytesReceived);
+                    string total = SizeConverter.ByteSizeToString(BytesToRecieve);
+                    long bytesPerSec = (long)Math.Round((e.BytesReceived - lastBytes) / secondsPassed);
+                    lastBytesPerSec.Add(bytesPerSec);
+                    if (lastBytesPerSec.Count > 5) lastBytesPerSec.RemoveAt(0);
+                    lastBytes = e.BytesReceived;
+                    long avg = 0;
+                    foreach (long l in lastBytesPerSec) avg += l;
+                    avg = avg / lastBytesPerSec.Count;
+                    this.done = e.BytesReceived;
+                    this.total = BytesToRecieve;
+                    this.speed = bytesPerSec;
+                    this.eTASeconds = (e.TotalBytesToReceive - e.BytesReceived) / avg;
+                    this.doneString = SizeConverter.ByteSizeToString(this.done);
+                    this.totalString = SizeConverter.ByteSizeToString(this.total);
+                    this.speedString = SizeConverter.ByteSizeToString(this.speed, 0) + "/s";
+                    this.eTAString = SizeConverter.SecondsToBetterString(this.eTASeconds);
+                    this.percentage = this.done / (double)this.total;
+                    this.percentageString = String.Format("{0:0.#}", this.percentage * 100) + "%";
+                    lastUpdate = DateTime.Now;
+                }
+                locked = false;
+            };
+            downloader.DownloadFileCompleted += (o, e) =>
+            {
+                if(e.Error != null)
+                {
+                    Logger.Log(e.Error.ToString(), LoggingType.Warning);
+                }
+                File.Move(tmpPath, path);
+                QAVSWebserver.managers.Remove(this);
+                DownloadFinishedEvent(this);
+            };
+            Logger.Log(tmpPath);
+            downloader.DownloadFileAsync(new Uri(url), tmpPath);
+        }
+
         public void SetEmpty(bool alsoSize = true)
         {
             

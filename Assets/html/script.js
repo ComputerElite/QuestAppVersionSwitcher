@@ -11,10 +11,37 @@ const squareLoader = `
     <div class="loaderSquare"></div>
 </div>`
 
+const browser = document.getElementById("browser")
+const toastsE = document.getElementById("toasts")
 document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 
 function IsOnQuest() {
     return location.host.startsWith("127.0.0.1")
+}
+
+function BrowserGo(direction) {
+    browser.contentWindow.history.go(direction);
+}
+
+function OpenSite(url) {
+    location = url
+}
+
+let toasts = 0;
+let currentToasts = 0;
+function ShowToast(msg, color, bgc) {
+    toasts++;
+    currentToasts++;
+    let toastId = toasts;
+    toastsE.innerHTML += `
+    <div id="toast${toastId}" style="background-color: ${bgc}; color: ${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: ${(currentToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px">
+        ${msg}
+    </div>
+    `;
+    setTimeout(() => {
+        document.getElementById(`toast${toastId}`).remove();
+        currentToasts--;
+    }, 5000)
 }
 
 if(!IsOnQuest()) {
@@ -22,6 +49,11 @@ if(!IsOnQuest()) {
     document.getElementById("restoreBackup").classList.add("notActive")
     document.getElementById("onPcInfo").classList.remove("hidden")
     document.getElementById("uninstall").classList.add("notActive")
+    //document.getElementById("getModsButton").style.display = "none"
+    
+} else {
+    document.getElementById("installModButton").classList.add("notActive")
+    document.getElementById("installModButton").style.display = "none"
 }
 
 document.getElementById("logintoken").onclick = () => {
@@ -429,17 +461,19 @@ document.getElementById("confirmPort").onclick = () => {
 document.getElementById("appListContainer").onclick = (event) => {
     if (event.target.id == 'appListContainer') UpdateUI(true)
 }
+setInterval(() => {
+    Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), i => {
+        i.onclick = function () {
+            Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
+                e.className = "menuItem" + (e.getAttribute("section") == this.getAttribute("section") ? " selected" : "")
+            })
+            Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
+                e.className = "contentItem" + (e.id == this.getAttribute("section") ? "" : " hidden")
+            })
+        }
+    })
+}, 500)
 
-Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), i => {
-    i.onclick = function () {
-        Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
-            e.className = "menuItem" + (e.getAttribute("section") == this.getAttribute("section") ? " selected" : "")
-        })
-        Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
-            e.className = "contentItem" + (e.id == this.getAttribute("section") ? "" : " hidden")
-        })
-    }
-})
 
 var backupInProgress = false
 

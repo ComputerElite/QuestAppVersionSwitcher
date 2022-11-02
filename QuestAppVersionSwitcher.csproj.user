@@ -5,7 +5,7 @@
     <ActiveDebugProfile>Oculus Quest</ActiveDebugProfile>
     <DefaultDevice>Pixel_5_API_30</DefaultDevice>
     <AndroidDesignerPreferredTheme>AppTheme</AndroidDesignerPreferredTheme>
-    <AndroidDesignerPreferredDevice>Nexus 4</AndroidDesignerPreferredDevice>
+    <AndroidDesignerPreferredDevice>automotive_1024p_landscape</AndroidDesignerPreferredDevice>
     <SelectedPlatformGroup>PhysicalDevice</SelectedPlatformGroup>
   </PropertyGroup>
 </Project>

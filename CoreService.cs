@@ -22,6 +22,7 @@ namespace QuestAppVersionSwitcher.Core
         public static QAVSWebserver qAVSWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
+        public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public async void Start()
         {
 
@@ -43,11 +44,12 @@ namespace QuestAppVersionSwitcher.Core
             browser.Focusable = true;
             browser.Settings.MediaPlaybackRequiresUserGesture = false;
             browser.Settings.DomStorageEnabled = true;
-            browser.Settings.UserAgentString = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
+            browser.Settings.UserAgentString = ua;
             browser.Settings.DatabaseEnabled = true;
             browser.Settings.DatabasePath = "/data/data/" + browser.Context.PackageName + "/databases/";
             browser.Settings.LoadWithOverviewMode = true;
             browser.Settings.UseWideViewPort = true;
+            browser.SetDownloadListener(new DownloadListener());
             CookieManager.Instance.SetAcceptThirdPartyCookies(browser, true);
 
             // Create all directories and files

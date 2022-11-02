@@ -315,6 +315,10 @@ body {
     padding: 20px;
 }
 
+.noPadding {
+    padding: 0px !important;
+}
+
 .contentHeader {
     font-size: 130%;
     margin-bottom: 30px;
@@ -425,6 +429,17 @@ body {
     margin-left: 20px;
 }
 
+iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    overflow-y: visible;
+}
+
+.buttonsContainer > div {
+    margin: 5px;
+}
+
 .leftRightSplit {
     display: flex;
     flex-direction: row;
@@ -435,6 +450,10 @@ body {
 .upDownSplit {
     display: flex;
     flex-direction: column;
+}
+
+.navigationMargin {
+    margin: 5px;
 }
 
 .spaceBetween {
@@ -609,6 +628,8 @@ code {
 .buttonSelectionContainer {
   display: flex;
 }
+
+
 
 .buttonMargin {
   margin-left: 20px;

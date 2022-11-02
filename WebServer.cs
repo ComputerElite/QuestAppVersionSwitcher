@@ -27,12 +27,15 @@ using Android.Content;
 using Android.App;
 using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
+using System.Net;
 
 namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
         public bool wasOnOculus = false;
+        public string navButtonsScript = "var qavsInjectionDiv = document.createElement(\"div\");qavsInjectionDiv.style = \"color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;\"; qavsInjectionDiv.innerHTML += `<div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(-1)\">Back</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(1)\">Forward</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"location = 'http://localhost:" + CoreService.coreVars.serverPort + "'\">QuestAppVersionSwitcher</div>`; document.body.appendChild(qavsInjectionDiv)";
+        public string toastCode = "var QAVSScript = document.createElement(\"script\");QAVSScript.innerHTML = `var QAVSToastsE = document.createElement(\"div\");document.body.appendChild(QAVSToastsE);let QAVStoasts = 0;let currentQAVSToasts = 0;function ShowToast(msg, color, bgc) {    QAVStoasts++;    currentQAVSToasts++;    let QAVStoastId = QAVStoasts;    QAVSToastsE.innerHTML += \\`<div id=\"QAVStoast\\${QAVStoastId}\" style=\"background-color: \\${bgc}; color: \\${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: \\${(currentQAVSToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px\">\\${msg}</div>\\`;    setTimeout(() => {        document.getElementById(\\`QAVStoast\\${QAVStoastId}\\`).remove();        currentQAVSToasts--;    }, 5000)}`; document.body.appendChild(QAVSScript);";
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
@@ -64,6 +67,11 @@ namespace QuestAppVersionSwitcher
                 */
                 
             }
+            if(!url.ToLower().Contains("localhost"))
+            {
+                view.EvaluateJavascript(navButtonsScript, null);
+                view.EvaluateJavascript(toastCode, null);
+            }
             if (url.Split("?")[0] == "https://auth.meta.com/settings/")
             {
                 //wasOnFacebook = true;
@@ -78,7 +86,8 @@ namespace QuestAppVersionSwitcher
             ["sec-ch-ua-platform"] = "\"Linux\"",
             ["sec-ch-ua"] = "\" Not A; Brand\";v=\"99\", \"Chromium\";v=\"104\"",
             ["sec-ch-ua-mobile"] = "?0",
-            ["sec-fetch-user"] = "?1"
+            ["sec-fetch-user"] = "?1",
+            ["cross-origin-opener-policy"] = "unsafe-none"
         };
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
@@ -98,7 +107,6 @@ namespace QuestAppVersionSwitcher
             {
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
-                
             }
             if(request.Url.Path.Contains("consent") && request.Url.Host.Contains("oculus"))
             {
@@ -116,6 +124,22 @@ namespace QuestAppVersionSwitcher
                     Logger.Log(p.Key + ": " + p.Value);
                 }
             }
+            /*
+            // somehow user webclient to handle the request and then change the response headers. No idea how to get the request body from the webview
+            WebClient c = new WebClient();
+            foreach (KeyValuePair<string, string> p in request.RequestHeaders)
+            {
+                c.Headers.Add(p.Key, p.Value);
+            }
+            byte[] responseData = new byte[0];
+            if(request.Method == "POST" || request.Method == "PUT" || request.Method == "PATCH")
+            {
+                c.UploadData(request.Url.ToString(), request.Method, request.);
+            } else
+            {
+                c.DownloadData(request.Url.ToString());
+            }
+            */
             return base.ShouldInterceptRequest(view, request);
         }
 
@@ -140,6 +164,7 @@ namespace QuestAppVersionSwitcher
             return true;
         }
     }
+
     public enum LoggedInStatus
     {
         NotLoggedIn = 0,
@@ -150,7 +175,7 @@ namespace QuestAppVersionSwitcher
     {
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
-        public List<DownloadManager> managers = new List<DownloadManager>();
+        public static List<DownloadManager> managers = new List<DownloadManager>();
         public SHA256 hasher = SHA256.Create();
         public static string patchText = "";
         public static int patchCode = 202;
@@ -175,6 +200,13 @@ namespace QuestAppVersionSwitcher
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
             });
+            server.AddRoute("GET", "/google/", new Func<ServerRequest, bool>(request =>
+            {
+                WebClient c = new WebClient();
+                c.Headers.Add("User-Agent", CoreService.ua);
+                request.SendString(c.DownloadString("https://www.google.com/" + request.pathDiff));
+                return true;
+            }));
             server.AddRoute("GET", "/mods/mods", new Func<ServerRequest, bool>(request =>
             {
                 request.SendString(QAVSModManager.GetMods(), "application/json");
