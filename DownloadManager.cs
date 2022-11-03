@@ -1,4 +1,5 @@
 ﻿using ComputerUtils.Android.Encryption;
+using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
 using QuestAppVersionSwitcher.ClientModels;
@@ -97,6 +98,7 @@ namespace QuestAppVersionSwitcher
         {
             WebClient downloader = new WebClient();
             downloader.Headers.Add("User-Agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
+            FileManager.CreateDirectoryIfNotExisting(CoreVars.fileDir);
             string p = CoreVars.fileDir + DateTime.Now.Ticks;
             tmpPath = p;
             List<long> lastBytesPerSec = new List<long>();

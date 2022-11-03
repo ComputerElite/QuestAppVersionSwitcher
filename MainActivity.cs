@@ -29,8 +29,8 @@ namespace QuestAppVersionSwitcher
             SetContentView(Resource.Layout.activity_main);
             //Get webView WebView from Main Layout  
             webView = FindViewById<WebView>(Resource.Id.webView);
+
             CoreVars.fileDir = "/sdcard/Android/data/com.ComputerElite.questappversionswitcher/files/";
-            FileManager.CreateDirectoryIfNotExisting(CoreVars.fileDir);
             CoreService.browser = webView;
             AndroidCore.context = this;
             AndroidCore.assetManager = this.Assets;
