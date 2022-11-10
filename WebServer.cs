@@ -51,30 +51,16 @@ namespace QuestAppVersionSwitcher
                 
                 view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
             }
-            if (url.Split("?")[0] == "https://auth.meta.com/settings/")
+            else if (url.Split("?")[0] == "https://auth.meta.com/settings/")
             {
                 wasOnOculus = false;
                 view.LoadUrl("https://oculus.com/experiences/quest");
-                // Restart app here
-                /*
-                CoreService.coreVars.loginStep = 1;
-                CoreService.coreVars.Save();
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    view.EvaluateJavascript("location = 'http://127.0.0.1:" + CoreService.coreVars.serverPort + "?restart=true'", null);
-                });
-                wasOnFacebook = false;
-                */
                 
             }
-            if(!url.ToLower().Contains("localhost"))
+            else if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
             {
                 view.EvaluateJavascript(navButtonsScript, null);
                 view.EvaluateJavascript(toastCode, null);
-            }
-            if (url.Split("?")[0] == "https://auth.meta.com/settings/")
-            {
-                //wasOnFacebook = true;
             }
         }
 

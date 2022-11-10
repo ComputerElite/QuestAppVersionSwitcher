@@ -282,6 +282,9 @@ var config = {}
 var selectedBackup = ""
 
 var undefinedLoader = `<div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>`
+setInterval(() => {
+    TokenUIUpdate()
+}, 5000)
 
 function TokenUIUpdate() {
     fetch("/questappversionswitcher/loggedinstatus").then(res => {
