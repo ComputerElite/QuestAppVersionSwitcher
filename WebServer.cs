@@ -28,6 +28,12 @@ using Android.App;
 using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
 using System.Net;
+using System.Net.Sockets;
+using Socket = System.Net.Sockets.Socket;
+using Java.Lang;
+using Exception = System.Exception;
+using String = System.String;
+using Thread = System.Threading.Thread;
 
 namespace QuestAppVersionSwitcher
 {
@@ -418,7 +424,25 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Install request sent");
                 return true;
             }));
-            server.AddRoute("GET", "/backups", new Func<ServerRequest, bool>(serverRequest =>
+			server.AddRoute("POST", "/android/uploadandinstallapk", new Func<ServerRequest, bool>(serverRequest =>
+			{
+                TempFile tmpFile = new TempFile();
+                tmpFile.Path += ".apk";
+                File.WriteAllBytes(tmpFile.Path, serverRequest.bodyBytes);
+                string packageName = GetAPKPackageName(tmpFile.Path);
+				string version = GetAPKVersion(tmpFile.Path);
+				CoreService.coreVars.currentApp = packageName;
+                CoreService.coreVars.Save();
+				string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
+                Logger.Log("Moving file");
+                FileManager.CreateDirectoryIfNotExisting(backupDir);
+                FileManager.DeleteFileIfExisting(backupDir + "app.apk");
+                File.Move(tmpFile.Path, backupDir + "app.apk");
+
+				serverRequest.SendString("uploaded and selected app in backup tab");
+				return true;
+			}));
+			server.AddRoute("GET", "/backups", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -789,6 +813,22 @@ namespace QuestAppVersionSwitcher
                 CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+            Thread t = new Thread(() =>
+            {
+				Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                IPAddress ip = IPAddress.Parse("232.0.53.6");
+				s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip));
+				s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
+				IPEndPoint ipep = new IPEndPoint(ip, 53500);
+				s.Connect(ipep);
+                
+				while (true)
+                {
+					s.Send(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new MultiCastContent { ips = GetIPs(), port = CoreService.coreVars.serverPort })));
+					Thread.Sleep(5000);
+				}
+            });
+            t.Start();
         }
 
         public string GetSHA256OfString(string input)
@@ -808,32 +848,56 @@ namespace QuestAppVersionSwitcher
                 return;
             }
             // Is apk
-            MemoryStream manifestStream = new MemoryStream();
-            ZipArchive apkArchive = ZipFile.OpenRead(m.tmpPath);
-            apkArchive.GetEntry("AndroidManifest.xml").Open().CopyTo(manifestStream);
-            manifestStream.Position = 0;
-            AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
-            string packageName = "";
-            foreach (AxmlAttribute a in manifest.Attributes)
-            {
-                if (a.Name == "package")
-                {
-                    //Console.WriteLine("\nAPK Version is " + a.Value);
-                    Logger.Log("package is " + a.Value);
-                    packageName = a.Value.ToString();
-                }
-            }
-            foreach (char r in ReservedChars)
-            {
-                m.name = m.name.Replace(r, ' ');
-            }
-            string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + m.backupName + "/";
+            string packageName = GetAPKPackageName(m.tmpPath);
+			string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + m.backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
             File.Move(m.tmpPath, backupDir + "app.apk");
             Logger.Log("Moved apk");
         }
 
-        public BackupList GetBackups(string package)
+        public string GetAPKPackageName(string path)
+        {
+			// Is apk
+			MemoryStream manifestStream = new MemoryStream();
+			ZipArchive apkArchive = ZipFile.OpenRead(path);
+			apkArchive.GetEntry("AndroidManifest.xml").Open().CopyTo(manifestStream);
+			manifestStream.Position = 0;
+			AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
+			string packageName = "";
+			foreach (AxmlAttribute a in manifest.Attributes)
+			{
+				if (a.Name == "package")
+				{
+					//Console.WriteLine("\nAPK Version is " + a.Value);
+					Logger.Log("package is " + a.Value);
+					packageName = a.Value.ToString();
+				}
+			}
+            return packageName;
+		}
+
+		public string GetAPKVersion(string path)
+		{
+			// Is apk
+			MemoryStream manifestStream = new MemoryStream();
+			ZipArchive apkArchive = ZipFile.OpenRead(path);
+			apkArchive.GetEntry("AndroidManifest.xml").Open().CopyTo(manifestStream);
+			manifestStream.Position = 0;
+			AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
+			string version = "";
+			foreach (AxmlAttribute a in manifest.Attributes)
+			{
+				if (a.Name == "versionName")
+				{
+					//Console.WriteLine("\nAPK Version is " + a.Value);
+					Logger.Log("version is " + a.Value);
+					version = a.Value.ToString();
+				}
+			}
+			return version;
+		}
+
+		public BackupList GetBackups(string package)
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/";
             BackupList backups = new BackupList();
@@ -871,4 +935,11 @@ namespace QuestAppVersionSwitcher
             return server.ips;
         }
     }
+
+    public class MultiCastContent
+    {
+		public string QAVSVersion { get { return CoreService.version.ToString(); } }
+        public List<string> ips { get; set; }
+        public int port { get; set; }
+	}
 }
