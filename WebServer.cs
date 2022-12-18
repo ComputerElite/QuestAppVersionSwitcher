@@ -34,6 +34,8 @@ using Java.Lang;
 using Exception = System.Exception;
 using String = System.String;
 using Thread = System.Threading.Thread;
+using OculusGraphQLApiLib;
+using OculusGraphQLApiLib.Results;
 
 namespace QuestAppVersionSwitcher
 {
@@ -379,6 +381,37 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Uninstall request sent");
                 return true;
             }));
+            server.AddRoute("GET", "/questappversionswitcher/uploadlogs", new Func<ServerRequest, bool>(request =>
+            {
+				QAVSReport report = new QAVSReport();
+                report.version = CoreService.version.ToString();
+                report.log = Logger.log;
+				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
+                report.reportTime = DateTime.Now;
+                if(report.userIsLoggedIn)
+                {
+                    try
+                    {
+						if (GetSHA256OfString(request.queryString.Get("password")) != CoreService.coreVars.password)
+						{
+							request.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
+							return true;
+						}
+                        GraphQLClient.log = false;
+						GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.queryString.Get("password"));
+						ViewerData<OculusUserWrapper> entitlements = GraphQLClient.GetActiveEntitelments();
+						foreach (Entitlement e in entitlements.data.viewer.user.active_entitlements.nodes)
+						{
+							report.userEntitlements.Add(e.id);
+						}
+					} catch
+                    {
+                        
+                    }
+                }
+                request.SendString(JsonSerializer.Serialize(report));
+                return true;
+			}));
             server.AddRoute("GET", "/android/ispackageinstalled", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
@@ -941,5 +974,15 @@ namespace QuestAppVersionSwitcher
 		public string QAVSVersion { get { return CoreService.version.ToString(); } }
         public List<string> ips { get; set; }
         public int port { get; set; }
+	}
+
+	public class QAVSReport
+	{
+		public string log { get; set; }
+		public string version { get; set; }
+		public DateTime reportTime { get; set; }
+		public string reportId { get; set; }
+		public bool userIsLoggedIn { get; set; }
+        public List<string> userEntitlements { get; set; } = new List<String>();
 	}
 }

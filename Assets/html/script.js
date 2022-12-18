@@ -730,6 +730,23 @@ document.getElementById("confirmPassword").onclick = () => {
     })
 }
 
+document.getElementById("logs").onclick = () => {
+    TextBoxText("logsText", "Working.. please wait")
+    fetch("/questappversionswitcher/uploadlogs?password=" + document.getElementById("logspwd").value).then(res => {
+        res.text().then(text => {
+            if (res.status == 403) {
+                TextBoxError("logsText", text)
+            } else if (res.status == 200) {
+                fetch("https://oculusdb.rui2015.me/api/v1/qavsreport", {method: "POST", body: text}).then(res => {
+                    res.text().then(text => {
+                        TextBoxGood("logsText", "Logs uploaded successfully. Tell your support member this ID: " + text)
+                    })
+                })
+            }
+        })
+    })
+}
+
 document.getElementById("abortLogin").onclick = () => {
     CloseGetPasswordPopup()
 }
