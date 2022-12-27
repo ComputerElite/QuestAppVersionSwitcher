@@ -388,7 +388,9 @@ namespace QuestAppVersionSwitcher
                 report.log = Logger.log;
 				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
-                if(report.userIsLoggedIn)
+                report.availableSpace = Android.OS.Environment.ExternalStorageDirectory.UsableSpace;
+
+				if (report.userIsLoggedIn)
                 {
                     try
                     {
@@ -983,6 +985,14 @@ namespace QuestAppVersionSwitcher
 		public DateTime reportTime { get; set; }
 		public string reportId { get; set; }
 		public bool userIsLoggedIn { get; set; }
-        public List<string> userEntitlements { get; set; } = new List<String>();
+        public List<string> userEntitlements { get; set; } = new List<string>();
+		public long availableSpace { get; set; }
+		public string availableSpaceString
+		{
+			get
+			{
+				return SizeConverter.ByteSizeToString(availableSpace);
+			}
+		}
 	}
 }
