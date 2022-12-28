@@ -36,6 +36,7 @@ using String = System.String;
 using Thread = System.Threading.Thread;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
+using ComputerUtils.Updating;
 
 namespace QuestAppVersionSwitcher
 {
@@ -385,7 +386,6 @@ namespace QuestAppVersionSwitcher
             {
 				QAVSReport report = new QAVSReport();
                 report.version = CoreService.version.ToString();
-                report.log = Logger.log;
 				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
                 report.availableSpace = Android.OS.Environment.ExternalStorageDirectory.UsableSpace;
@@ -411,6 +411,7 @@ namespace QuestAppVersionSwitcher
                         
                     }
                 }
+                report.log = Logger.log;
                 request.SendString(JsonSerializer.Serialize(report));
                 return true;
 			}));
@@ -838,7 +839,32 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(JsonSerializer.Serialize(progress));
                 return true;
             }));
-            server.AddRouteFile("/facts.png", "facts.png");
+            server.AddRoute("GET", "/questappversionswitcher/checkupdate", new Func<ServerRequest, bool>(request =>
+            {
+                Updater u = new Updater(CoreService.version.ToString().Substring(0, CoreService.version.ToString().Length - 2), "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QuestAppVersionSwitcher"); ;
+                request.SendString(JsonSerializer.Serialize(u.CheckUpdate()), "application/json");
+                return true;
+            }));
+			server.AddRoute("GET", "/questappversionswitcher/update", new Func<ServerRequest, bool>(request =>
+			{
+				Updater u = new Updater(CoreService.version.ToString().Substring(0, CoreService.version.ToString().Length - 2), "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QuestAppVersionSwitcher"); ;
+                request.SendString("Downloading apk, one second please");
+                
+                TempFile tmpFile = new TempFile();
+				tmpFile.Path += ".apk";
+                u.DownloadLatestAPK(tmpFile.Path);
+				string packageName = GetAPKPackageName(tmpFile.Path);
+				string version = GetAPKVersion(tmpFile.Path);
+				string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
+				Logger.Log("Moving file");
+				FileManager.CreateDirectoryIfNotExisting(backupDir);
+				FileManager.DeleteFileIfExisting(backupDir + "app.apk");
+				File.Move(tmpFile.Path, backupDir + "app.apk");
+
+				AndroidService.InitiateInstallApk(backupDir + "app.apk");
+				return true;
+			}));
+			server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
             Thread.Sleep(1500);
             if (CoreService.coreVars.loginStep == 1)

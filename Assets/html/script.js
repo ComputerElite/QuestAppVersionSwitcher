@@ -701,6 +701,33 @@ function CloseGetPasswordPopup() {
     GotoStep(7)
 }
 
+CheckUpdate()
+
+document.getElementById("checkUpdate").onclick = () => CheckUpdate()
+
+function CheckUpdate() {
+    TextBoxText("updateTextBox", "Checking for updates...")
+    fetch("/questappversionswitcher/checkupdate").then(res => res.json().then(json => {
+        if(json.isUpdateAvailable) {
+            OpenGetPasswordPopup()
+            GotoStep(11)
+            document.getElementById("updateAvailableText").innerHTML = json.msg
+        } else {
+            TextBoxText("updateTextBox", json.msg)
+        }
+    }))
+}
+
+document.getElementById("cancelupdate").onclick = () => {
+    CloseGetPasswordPopup()
+}
+
+document.getElementById("updateqavs").onclick = () => {
+    fetch("/questappversionswitcher/update").then(res => res.text().then(text => {
+        TextBoxText("step11box", text)
+    }))
+}
+
 function OpenGetPasswordPopup() {
     CloseGetPasswordPopup()
     document.getElementById("getPasswordContainer").className = "listContainer darken"
