@@ -16,7 +16,7 @@ const toastsE = document.getElementById("toasts")
 document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 
 function IsOnQuest() {
-    return location.host.startsWith("127.0.0.1")
+    return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
 
 function BrowserGo(direction) {
@@ -69,17 +69,21 @@ function UpdatePatchingStatus() {
         res.json().then(res => {
             if(res.isPatched) {
                 document.getElementById("modsButton").style.visibility = "visible"
+                document.getElementById("getModsButton").style.visibility = "visible"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
             } else if(!res.isInstalled) {
                 patchStatus.innerHTML = `<h2>Game is not installed. Please restore a backup or install the app so the game can get patched</h2>`
                 document.getElementById("modsButton").style.visibility = "hidden"
+                document.getElementById("getModsButton").style.visibility = "hidden"
             } else if(res.canBePatched) {
                 patchStatus.innerHTML = `<h2>Game is not patched.</h2>
                                         <div class="button" onclick="PatchGame()">Patch it now</div>`
                 document.getElementById("modsButton").style.visibility = "hidden"
+                document.getElementById("getModsButton").style.visibility = "hidden"
             } else {
                 patchStatus.innerHTML = "<h2>Game can not be modded</h2>"
                 document.getElementById("modsButton").style.visibility = "hidden"
+                document.getElementById("getModsButton").style.visibility = "hidden"
             }
 
             if(!IsOnQuest() && !res.isPatched && false) {
@@ -388,6 +392,7 @@ setInterval(() => {
                     <div class="downloadProgressContainer">
                         <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
                     </div>
+                    <input type="button" class="DownloadText" value="Cancel" onclick="StopDownload('${d.backupName}')">
                     <div class="DownloadText" style="color: ${d.textColor};">
                         ${d.backupName} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
                     </div>
@@ -738,6 +743,8 @@ window.onmessage = (e) => {
     OpenGetPasswordPopup()
 }
 document.getElementById("abortPassword").onclick = () => {
+    document.getElementById("abortPassword").innerHTML = "Abort Download"
+    document.getElementById("confirmPassword").style.display = "block"
     CloseGetPasswordPopup()
 }
 document.getElementById("confirmPassword").onclick = () => {
@@ -749,12 +756,15 @@ document.getElementById("confirmPassword").onclick = () => {
                 TextBoxError("step7box", text)
             } else if (res.status == 200) {
                 TextBoxGood("step7box", text)
-                setTimeout(() => {
-                    CloseGetPasswordPopup()
-                }, 5000)
+                document.getElementById("abortPassword").innerHTML = "Close Popup"
+                document.getElementById("confirmPassword").style.display = "none"
             }
         })
     })
+}
+
+function StopDownload(name) {
+    fetch(`/canceldownload?name=${name}`)
 }
 
 document.getElementById("logs").onclick = () => {

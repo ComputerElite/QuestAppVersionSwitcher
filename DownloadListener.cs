@@ -1,4 +1,5 @@
 ﻿using Android.Webkit;
+using ComputerUtils.Android.Logging;
 using Java.Interop;
 using Java.Lang;
 using QuestAppVersionSwitcher.Core;
@@ -12,8 +13,9 @@ namespace QuestAppVersionSwitcher
     public class DownloadListener : Java.Lang.Object, IDownloadListener
     {
         public void OnDownloadStart(string url, string userAgent, string contentDisposition, string mimetype, long contentLength)
-        {
-            CoreService.browser.EvaluateJavascript("ShowToast('Downloading mod', '#FFFFFF', '#222222')", null);
+		{
+			Logger.Log("Downloading mod from " + url);
+			CoreService.browser.EvaluateJavascript("ShowToast('Downloading mod', '#FFFFFF', '#222222')", null);
             string modPath = CoreService.coreVars.QAVSTmpModsDir + "downloadedmod" + DateTime.Now.Ticks + ".qmod";
             DownloadManager m = new DownloadManager();
             m.DownloadFinishedEvent += (manager) =>

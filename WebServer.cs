@@ -42,7 +42,6 @@ namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
-        public bool wasOnOculus = false;
         public string navButtonsScript = "var qavsInjectionDiv = document.createElement(\"div\");qavsInjectionDiv.style = \"color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;\"; qavsInjectionDiv.innerHTML += `<div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(-1)\">Back</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(1)\">Forward</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"location = 'http://localhost:" + CoreService.coreVars.serverPort + "'\">QuestAppVersionSwitcher</div><div style=\\\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\\\" onclick=\\\"location = 'https://oculus.com/experiences/quest'\\\">Oculus (Login)</div>`; document.body.appendChild(qavsInjectionDiv)";
         public string toastCode = "var QAVSScript = document.createElement(\"script\");QAVSScript.innerHTML = `var QAVSToastsE = document.createElement(\"div\");document.body.appendChild(QAVSToastsE);let QAVStoasts = 0;let currentQAVSToasts = 0;function ShowToast(msg, color, bgc) {    QAVStoasts++;    currentQAVSToasts++;    let QAVStoastId = QAVStoasts;    QAVSToastsE.innerHTML += \\`<div id=\"QAVStoast\\${QAVStoastId}\" style=\"background-color: \\${bgc}; color: \\${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: \\${(currentQAVSToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px\">\\${msg}</div>\\`;    setTimeout(() => {        document.getElementById(\\`QAVStoast\\${QAVStoastId}\\`).remove();        currentQAVSToasts--;    }, 5000)}`; document.body.appendChild(QAVSScript);";
         // Grab token
@@ -52,19 +51,15 @@ namespace QuestAppVersionSwitcher
             Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
-                if (wasOnOculus)
-                {
-                    view.EvaluateJavascript("var mySpans = document.getElementsByTagName(\"svg\");for(var i=0;i<mySpans.length;i++){if(mySpans[i].ariaLabel == 'Open Side Navigation Menu'){mySpans[i].parentElement.click();break;}}setTimeout(() => { mySpans = document.getElementsByTagName(\"h6\"); for (var i = 0; i < mySpans.length; i++) { if (mySpans[i].innerHTML == 'Log in / Sign up') { mySpans[i].click(); break; } } }, 600)", null);
-                }
-                wasOnOculus = true;
+                // click login button
+                view.EvaluateJavascript("SetTimeout(() => {var mySpans = document.getElementsByTagName(\"svg\");for(var i=0;i<mySpans.length;i++){if(mySpans[i].ariaLabel == 'Open Side Navigation Menu'){mySpans[i].parentElement.click();break;}}setTimeout(() => { mySpans = document.getElementsByTagName(\"h6\"); for (var i = 0; i < mySpans.length; i++) { if (mySpans[i].innerHTML == 'Log in / Sign up') { mySpans[i].click(); break; } } }, 600)}, 1000)", null);
                 
+                // send token to QAVS
                 view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
             }
-            else if (url.Split("?")[0] == "https://auth.meta.com/settings/")
+            else if (url.StartsWith("https://auth.meta.com/settings"))
             {
-                wasOnOculus = false;
                 view.LoadUrl("https://oculus.com/experiences/quest");
-                
             }
             else if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
             {
@@ -826,10 +821,15 @@ namespace QuestAppVersionSwitcher
                 m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId, r.isObb, r.packageName);
                 m.DownloadFinishedEvent += DownloadCompleted;
                 managers.Add(m);
-                serverRequest.SendString("Added to downloads. Check download progress tab. Pop up will close in 5 seconds");
+                serverRequest.SendString("Added to downloads. Check download progress tab.");
                 return true;
             }));
-            server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
+			server.AddRoute("GET", "/canceldownload", new Func<ServerRequest, bool>(serverRequest =>
+			{
+				managers.Find(x => x.backupName == serverRequest.queryString.Get("name")).StopDownload();
+				return true;
+			}));
+			server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
             {
                 List<DownloadProgress> progress = new List<DownloadProgress>();
                 foreach (DownloadManager m in managers)

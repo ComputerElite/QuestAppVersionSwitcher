@@ -1,4 +1,6 @@
 ﻿using ComputerUtils.Android.Logging;
+using QuestAppVersionSwitcher.Core;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,8 +22,9 @@ namespace QuestAppVersionSwitcher.Mods
         ModDisable,
         ModDelete,
         DependencyDownload,
-        Other
-    }
+        Other,
+		Error
+	}
 
     public class QAVSOperation
     {
@@ -63,8 +66,17 @@ namespace QuestAppVersionSwitcher.Mods
 
             TempFile f = new TempFile(Path.GetExtension(fileName));
             File.WriteAllBytes(f.Path, modBytes);
-            IMod mod = modManager.TryParseMod(f.Path).Result;
-            mod.Install().Wait();
+            try
+			{
+				IMod mod = modManager.TryParseMod(f.Path).Result;
+				mod.Install().Wait();
+			} catch (Exception e)
+			{
+				runningOperations.Remove(operationId);
+                operationId = operations;
+				operations++;
+				runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\nTo remove this message restart QuestAppVersionSwitcher" });
+			}
             runningOperations.Remove(operationId);
             modManager.ForceSave();
         }

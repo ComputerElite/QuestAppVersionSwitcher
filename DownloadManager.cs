@@ -19,13 +19,25 @@ namespace QuestAppVersionSwitcher
         public string tmpPath = "";
         public bool isObb = false;
         public string packageName = "";
+		public WebClient downloader = new WebClient();
+        public bool canceled = false;
+        
+        public void StopDownload()
+		{
+			canceled = true;
+			downloader.CancelAsync();
+            SetEmpty(false);
+			this.backupName = "Download Canceled";
+			this.textColor = "#EE0000";
+            if (File.Exists(tmpPath)) File.Delete(tmpPath);
+		}
 
-        public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName)
+		public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName)
         {
             this.packageName = packageName;
             this.isObb = isObb;
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
-            WebClient downloader = new WebClient();
+            downloader = new WebClient();
             tmpPath = CoreService.coreVars.QAVSTmpDowngradeDir + DateTime.Now.Ticks + (isObb ? ".obb" : ".apk");
             List<long> lastBytesPerSec = new List<long>();
             DateTime lastUpdate = DateTime.Now;
@@ -72,6 +84,7 @@ namespace QuestAppVersionSwitcher
             };
             downloader.DownloadFileCompleted += (o, e) =>
             {
+                if (canceled) return;
                 if (e.Error != null)
                 {
                     Logger.Log(e.Error.ToString(), LoggingType.Error);
