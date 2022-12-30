@@ -69,21 +69,17 @@ function UpdatePatchingStatus() {
         res.json().then(res => {
             if(res.isPatched) {
                 document.getElementById("modsButton").style.visibility = "visible"
-                document.getElementById("getModsButton").style.visibility = "visible"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
             } else if(!res.isInstalled) {
                 patchStatus.innerHTML = `<h2>Game is not installed. Please restore a backup or install the app so the game can get patched</h2>`
                 document.getElementById("modsButton").style.visibility = "hidden"
-                document.getElementById("getModsButton").style.visibility = "hidden"
             } else if(res.canBePatched) {
                 patchStatus.innerHTML = `<h2>Game is not patched.</h2>
                                         <div class="button" onclick="PatchGame()">Patch it now</div>`
                 document.getElementById("modsButton").style.visibility = "hidden"
-                document.getElementById("getModsButton").style.visibility = "hidden"
             } else {
                 patchStatus.innerHTML = "<h2>Game can not be modded</h2>"
                 document.getElementById("modsButton").style.visibility = "hidden"
-                document.getElementById("getModsButton").style.visibility = "hidden"
             }
 
             if(!IsOnQuest() && !res.isPatched && false) {
