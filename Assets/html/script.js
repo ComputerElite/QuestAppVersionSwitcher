@@ -19,6 +19,10 @@ function IsOnQuest() {
     return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
 
+function LaunchApp() {
+    fetch("/android/launch");
+}
+
 function BrowserGo(direction) {
     browser.contentWindow.history.go(direction);
 }

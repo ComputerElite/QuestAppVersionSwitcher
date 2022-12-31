@@ -327,7 +327,13 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
                 return true;
             }));
-            server.AddRoute("GET", "/android/installedappsandbackups", new Func<ServerRequest, bool>(serverRequest =>
+			server.AddRoute("GET", "/android/launch", new Func<ServerRequest, bool>(serverRequest =>
+			{
+				serverRequest.SendString("Launching " + CoreService.coreVars.currentApp);
+                AndroidService.LaunchApp(CoreService.coreVars.currentApp);
+				return true;
+			}));
+			server.AddRoute("GET", "/android/installedappsandbackups", new Func<ServerRequest, bool>(serverRequest =>
             {
                 List<App> apps = AndroidService.GetInstalledApps();
 
