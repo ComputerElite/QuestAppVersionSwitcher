@@ -723,7 +723,7 @@ function CheckUpdate() {
         if(json.isUpdateAvailable) {
             OpenGetPasswordPopup()
             GotoStep(11)
-            document.getElementById("updateAvailableText").innerHTML = json.msg
+            document.getElementById("updateAvailableText").innerHTML = json.msg + "<br><br>" + json.changelog.replace(/\n/g, "<br>")
         } else {
             TextBoxText("updateTextBox", json.msg)
         }
