@@ -108,7 +108,7 @@
                 <h2>To download mods simply download any mod from one of the following sites</h2>
                 <div style="display: flex; flex-direction: column;" class="buttonsContainer">
                     <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html`)">Open website hub</div>
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html`)">Open Beat Saber Mods page</div>
+                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}`)">Open Beat Saber Mods page</div>
                     <div class="button labelMargin" onclick="OpenSite(`https://www.google.com/search?q=computerelite`)">Open Google</div>
                 </div>
                 
@@ -276,12 +276,12 @@
                 <div class="contentHeader headerMargin">
                     Password needed
                 </div>
-                Please enter a password to encrypt your login information (token). You can change this password any time by simply pressing the login button again in the tools & options tab.
+                Create a password to encrypt your login information (token). If you forget this password, you can change it any time by simply logging in again in the tools & options tab.
                 <input type="password" id="passwordToken" placeholder="password">
                 <div id="step8box" class="textBox"></div>
                 <div class="buttonSelectionContainer">
                     <div class="buttonContainer buttonMargin">
-                        <div class="button" id="tokenPassword">Confirm password</div>
+                        <div class="button" id="tokenPassword">Create password for QuestAppVersionSwitcher</div>
                     </div>
                 </div>
             </div>
@@ -292,7 +292,7 @@
                 To login we'll open auth.meta.com for you. Accept the cookies when Meta or Oculus ask you to. We'll then redirect you to the login. Consenting to cookies is needed so you can log in.
                 <br />
                 <br />
-                <b>If not done automatically after loggin in press the <code>Oculus (Login)</code> button at the top and on the oculus site find the login button to complete the login</b>
+                <b>If not done automatically after loggin in press the <code>Oculus (Login)</code> button at the top and on the oculus site and find the login button to complete the login</b>
                 <div id="step9box" class="textBox"></div>
                 <div class="buttonSelectionContainer">
                     <div class="buttonContainer">

@@ -11,6 +11,8 @@ const squareLoader = `
     <div class="loaderSquare"></div>
 </div>`
 
+var currentGameVersion = ""
+
 const browser = document.getElementById("browser")
 const toastsE = document.getElementById("toasts")
 document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
@@ -64,6 +66,10 @@ document.getElementById("logintoken").onclick = () => {
     location = `?token=${document.getElementById("tokeninput").value}`
 }
 
+function UpdateVersion(version) {
+    currentGameVersion = version
+}
+
 function UpdatePatchingStatus() {
     if(patchInProgress) {
         return;
@@ -71,7 +77,8 @@ function UpdatePatchingStatus() {
     patchStatus.innerHTML = `Loading<br><br>${squareLoader}`
     fetch("/patching/getmodstatus").then(res => {
         res.json().then(res => {
-            if(res.isPatched) {
+            UpdateVersion(res.version)
+            if (res.isPatched) {
                 document.getElementById("modsButton").style.visibility = "visible"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
             } else if(!res.isInstalled) {
