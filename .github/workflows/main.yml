@@ -21,9 +21,6 @@ jobs:
         path: 'ComputerUtils/'
     - name: Check files
       run: ls
-    - name: Set default Xamarin SDK versions
-      run: |
-        $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.10 --android=10.2
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
