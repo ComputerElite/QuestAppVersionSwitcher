@@ -19,8 +19,6 @@ jobs:
       with:
         repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils\'
-    - name: Check files
-      run: ls
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
@@ -30,7 +28,7 @@ jobs:
       run: nuget restore
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
-      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
+      run: dotnet build
     - name: Upload apk
       uses: actions/upload-artifact@v3
       with:
