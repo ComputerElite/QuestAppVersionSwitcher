@@ -27,10 +27,10 @@ jobs:
         dotnet-version: 5.0.x
     - name: Restore dependencies
       working-directory: 'QAVS/QuestAppVersionSwitcher'
-      run: dotnet restore
+      run: nuget restore
     - name: Build
       working-directory: 'QAVS/QuestAppVersionSwitcher'
-      run: dotnet build --no-restore
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
     - name: Upload apk
       uses: actions/upload-artifact@v3
       with:
