@@ -26,7 +26,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      working-directory: 'QAVS/QuestAppVersionSwitcher'
+      working-directory: 'QAVS'
       run: nuget restore
     - name: Build
       working-directory: 'QAVS/QuestAppVersionSwitcher'
