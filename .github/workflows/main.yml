@@ -19,6 +19,9 @@ jobs:
       with:
         repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils/'
+    - name: Check files
+      working-directory: '$VM_ASSETS/'
+      run: ls
     - name: Set default Xamarin SDK versions
       run: |
         $VM_ASSETS/select-xamarin-sdk-v2.sh --mono=6.10 --android=10.2
@@ -32,8 +35,8 @@ jobs:
     - name: Build
       working-directory: 'QAVS/QuestAppVersionSwitcher'
       run: dotnet build --no-restore
-    - name: Upload net6.0.zip
+    - name: Upload apk
       uses: actions/upload-artifact@v3
       with:
-        name: net6.0.zip
-        path: OculusDB/OculusDB/bin/Debug/net6.0
+        name: com.ComputerElite.questappversionswitcher-Signed.apk
+        path: QAVS/QuestAppVersionSwitcher/bin/Release/com.ComputerElite.questappversionswitcher-Signed.apk
