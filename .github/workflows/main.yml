@@ -17,7 +17,7 @@ jobs:
         path: 'QAVS'
     - uses: actions/checkout@v3
       with:
-        repository: 'ComputerElite\ComputerUtils'
+        repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils\'
     - name: Check files
       run: ls
