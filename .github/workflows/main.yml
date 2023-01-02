@@ -23,12 +23,14 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 5.0.x
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
     - name: Restore dependencies
       working-directory: 'QAVS'
       run: nuget restore
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
-      run: dotnet build
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
     - name: Upload apk
       uses: actions/upload-artifact@v3
       with:
