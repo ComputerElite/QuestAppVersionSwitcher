@@ -30,7 +30,7 @@ jobs:
       run: nuget restore
     - name: Build
       working-directory: 'QAVS/QuestAppVersionSwitcher'
-      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
+      run: msbuild xabuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
     - name: Upload apk
       uses: actions/upload-artifact@v3
       with:
