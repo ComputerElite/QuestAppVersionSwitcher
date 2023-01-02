@@ -1,0 +1,38 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: 'QAVS/QuestAppVersionSwitcher'
+    - uses: actions/checkout@v3
+      with:
+        repository: 'ComputerElite/ComputerUtils'
+        path: 'ComputerUtils/'
+    - name: Check files
+      run: ls
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+      working-directory: 'QAVS'
+      run: nuget restore
+    - name: Build
+      working-directory: 'QAVS/QuestAppVersionSwitcher'
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
+    - name: Upload apk
+      uses: actions/upload-artifact@v3
+      with:
+        name: com.ComputerElite.questappversionswitcher-Signed.apk
+        path: QAVS/QuestAppVersionSwitcher/bin/Release/com.ComputerElite.questappversionswitcher-Signed.apk
