@@ -318,6 +318,7 @@ namespace QuestAppVersionSwitcher
                 request.SendString("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.");
                 return true;
             }));
+            /* FS loading for dev if wanted
             server.AddRoute("GET", "/script.js", new Func<ServerRequest, bool>(request =>
 			{
 				request.SendFileFS(CoreService.coreVars.QAVSDir + "script.js");
@@ -333,12 +334,11 @@ namespace QuestAppVersionSwitcher
 				request.SendFileFS(CoreService.coreVars.QAVSDir + "index.html");
 				return true;
 			}));
-            /*
+            */
 			server.AddRouteFile("/", "html/index.html");
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
-            */
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
