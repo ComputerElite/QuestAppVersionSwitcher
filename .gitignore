@@ -1,2 +1,4 @@
-﻿/bin
-/obj
+﻿/QuestAppVersionSwitcher/bin
+/QuestAppVersionSwitcher/obj
+/.idea
+/.vs
