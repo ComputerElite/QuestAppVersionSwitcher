@@ -20,8 +20,6 @@ jobs:
         repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils/'
     - name: Check files
-      run: echo "$VM_ASSETS"
-    - name: Check files
       working-directory: '$VM_ASSETS'
       run: ls
     - name: Set default Xamarin SDK versions
