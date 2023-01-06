@@ -32,7 +32,7 @@ jobs:
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
       run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
-    - uses: r0adkll/sign-android-release@v1
+    - uses: r0adkll/sign-android-release@v1.0.3
       name: Sign app APK
       id: sign_app
       with:
