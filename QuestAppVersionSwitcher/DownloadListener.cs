@@ -19,6 +19,7 @@ namespace QuestAppVersionSwitcher
 			CoreService.browser.EvaluateJavascript("ShowToast('Downloading', '#FFFFFF', '#222222')", null);
 			string extension = Path.GetExtension(url.Split('?')[0]);
 			string fileName = "downloaded" + DateTime.Now.Ticks;
+            if (extension == "") extension = ".qmod";
 			string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
 			DownloadManager m = new DownloadManager();
             m.DownloadFinishedEvent += (manager) =>
