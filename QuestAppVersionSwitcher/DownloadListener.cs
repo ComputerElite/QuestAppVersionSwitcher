@@ -1,4 +1,5 @@
 ﻿using Android.Webkit;
+using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using Java.Interop;
 using Java.Lang;
@@ -15,16 +16,19 @@ namespace QuestAppVersionSwitcher
         public void OnDownloadStart(string url, string userAgent, string contentDisposition, string mimetype, long contentLength)
 		{
 			Logger.Log("Downloading mod from " + url);
-			CoreService.browser.EvaluateJavascript("ShowToast('Downloading mod', '#FFFFFF', '#222222')", null);
-            string modPath = CoreService.coreVars.QAVSTmpModsDir + "downloadedmod" + DateTime.Now.Ticks + ".qmod";
-            DownloadManager m = new DownloadManager();
+			CoreService.browser.EvaluateJavascript("ShowToast('Downloading', '#FFFFFF', '#222222')", null);
+			string extension = Path.GetExtension(url.Split('?')[0]);
+			string fileName = Path.GetFileNameWithoutExtension(url.Split('?')[0]);
+            if (fileName == "") fileName = "downloaded" + DateTime.Now.Ticks;
+			string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
+			DownloadManager m = new DownloadManager();
             m.DownloadFinishedEvent += (manager) =>
             {
                 CoreService.browser.EvaluateJavascript("ShowToast('Downloaded, now installing', '#FFFFFF', '#222222')", null);
                 Thread t = new Thread(() =>
                 {
-                    QAVSModManager.InstallMod(File.ReadAllBytes(modPath), Path.GetFileName(modPath));
-                    File.Delete(modPath);
+					QAVSModManager.InstallMod(modPath, Path.GetFileName(modPath));
+                    FileManager.DeleteFileIfExisting(modPath);
                 });
                 t.Start();
             };

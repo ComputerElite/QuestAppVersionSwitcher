@@ -405,6 +405,25 @@ body {
     z-index: 5;
 }
 
+select {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #1F1F1F;
+    height: fit-content;
+    color: #FFFFFF;
+    width: fit-content;
+    width: 90%;
+    z-index: 5;
+    border: none;
+    border-radius: 0;
+    font-size: 1em;
+    padding: 5px;
+}
+
+select:focus {
+    outline: none;
+}
+
 .mod {
     width: 100%;
     display: flex;

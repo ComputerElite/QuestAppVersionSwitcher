@@ -37,6 +37,8 @@ using Thread = System.Threading.Thread;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
+using Org.BouncyCastle.Math.EC.Endo;
+using Android.Widget;
 
 namespace QuestAppVersionSwitcher
 {
@@ -153,7 +155,7 @@ namespace QuestAppVersionSwitcher
             view.LoadUrl(url, headers);
             return true;
         }
-    }
+	}
 
     public enum LoggedInStatus
     {
@@ -318,7 +320,7 @@ namespace QuestAppVersionSwitcher
                 request.SendString("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.");
                 return true;
             }));
-            /* FS loading for dev if wanted
+			/* FS loading for dev if wanted
             server.AddRoute("GET", "/script.js", new Func<ServerRequest, bool>(request =>
 			{
 				request.SendFileFS(CoreService.coreVars.QAVSDir + "script.js");
@@ -335,6 +337,48 @@ namespace QuestAppVersionSwitcher
 				return true;
 			}));
             */
+			server.AddRoute("GET", "/cosmetics/types", new Func<ServerRequest, bool>(request =>
+			{
+				string game = request.queryString.Get("game");
+				if (game == null) game = CoreService.coreVars.currentApp;
+				request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetCosmeticsGame(game)), "application/json");
+				return true;
+			}));
+			server.AddRoute("GET", "/cosmetics/getinstalled", new Func<ServerRequest, bool>(request =>
+			{
+				string game = request.queryString.Get("game");
+				if (game == null) game = CoreService.coreVars.currentApp;
+				string type = request.queryString.Get("type");
+				if (type == null)
+				{
+					request.SendString("No type specified", "text/plain", 400);
+					return true;
+				}
+                
+				request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetInstalledCosmetics(game, type)), "application/json");
+				return true;
+			}));
+			server.AddRoute("GET", "/cosmetics/delete", new Func<ServerRequest, bool>(request =>
+			{
+				string game = request.queryString.Get("game");
+				if (game == null) game = CoreService.coreVars.currentApp;
+				string type = request.queryString.Get("type");
+				if (type == null)
+				{
+					request.SendString("No type specified", "text/plain", 400);
+					return true;
+				}
+				string filename = request.queryString.Get("filename");
+				if (filename == null)
+				{
+					request.SendString("No filename specified", "text/plain", 400);
+					return true;
+				}
+                CoreVars.cosmetics.RemoveCosmetic(game, type, filename);
+				request.SendString("Deleted");
+				return true;
+			}));
+
 			server.AddRouteFile("/", "html/index.html");
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");

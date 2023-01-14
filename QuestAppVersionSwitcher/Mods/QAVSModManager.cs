@@ -53,6 +53,12 @@ namespace QuestAppVersionSwitcher.Mods
             Update();
         }
 
+        public static bool SupportsFormat(string extension)
+        {
+            if (extension.ToLower() == ".qmod") return true;
+            return false;
+        }
+
         public static void Update()
         {
             modManager.LoadModsForCurrentApp();
@@ -60,15 +66,28 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static void InstallMod(byte[] modBytes, string fileName)
         {
+            TempFile f = new TempFile(Path.GetExtension(fileName));
+            File.WriteAllBytes(f.Path, modBytes);
+            InstallMod(f.Path, fileName);
+        }
+
+        public static void InstallMod(string path, string fileName)
+        {
             int operationId = operations;
             operations++;
             runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + fileName });
 
-            TempFile f = new TempFile(Path.GetExtension(fileName));
-            File.WriteAllBytes(f.Path, modBytes);
+            if(!SupportsFormat(Path.GetExtension(fileName)))
+            {
+                File.Move(path, Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName);
+                path = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName;
+				CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(fileName), path, true);
+				runningOperations.Remove(operationId);
+				return;   
+            }
             try
 			{
-				IMod mod = modManager.TryParseMod(f.Path).Result;
+				IMod mod = modManager.TryParseMod(path).Result;
 				mod.Install().Wait();
 			} catch (Exception e)
 			{

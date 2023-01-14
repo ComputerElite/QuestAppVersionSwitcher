@@ -60,6 +60,57 @@ if(!IsOnQuest()) {
 } else {
     document.getElementById("installModButton").classList.add("notActive")
     document.getElementById("installModButton").style.display = "none"
+    document.getElementById("installCosmeticButton").classList.add("notActive")
+    document.getElementById("installCosmeticButton").style.display = "none"
+}
+const cosmeticsTypeSelect = document.getElementById("cosmeticsType")
+function UpdateCosmeticsTypes() {
+    fetch(`/cosmetics/types`).then(res => res.json().then(res => {
+        if(res == null || res.fileTypes == null || res.fileTypes.length <= 0) {
+            cosmeticsTypeSelect.innerHTML = `<option class="listItem" value="null">No types found</option>`;
+            return;
+        }
+        var html = ""
+        for(const [key, value] of Object.entries(res.fileTypes)) {
+            html += `<option class="listItem" value="${value.fileType}">${value.name}</option>`
+        }
+        cosmeticsTypeSelect.innerHTML = html;
+        UpdateShownCosmetics()
+    }))
+}
+UpdateCosmeticsTypes()
+
+cosmeticsTypeSelect.onchange = () => UpdateShownCosmetics()
+
+function UpdateShownCosmetics() {
+    fetch(`/cosmetics/getinstalled?type=${cosmeticsTypeSelect.value}`).then(res => res.json().then(res => {
+        var html = ``;
+        if(res == null || res.length <= 0) {
+            html = `<div class="listItem">None installed</div>`
+        } else {
+            for(const m of res) {
+                html += FormatCosmetic(m)
+            }
+        }
+        document.getElementById("cosmeticsList").innerHTML = html;
+    }))
+}
+
+function FormatCosmetic(c) {
+    return `
+    <div class="mod" style="width: 100%;">
+        <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100%; margin: 20px;">
+            <div>${c}</div>
+            <div class="button" onclick="DeleteCosmetic('${c}')">Delete</div>
+        </div>
+    </div>
+    `
+}
+
+function DeleteCosmetic(name) {
+    fetch(`/cosmetics/delete?type=${cosmeticsTypeSelect.value}&filename=${name}`).then(res => {
+        UpdateShownCosmetics()
+    })
 }
 
 document.getElementById("logintoken").onclick = () => {
@@ -159,6 +210,8 @@ function UploadMod() {
             fetch(`/mods/install?filename=${input.files[0].name}`, {
                 method: "POST",
                 body: input.files[0]
+            }).then(res => {
+                UpdateShownCosmetics()
             })
         }
     }
@@ -314,6 +367,7 @@ function TokenUIUpdate() {
 }
 
 function UpdateUI(closeLists = false) {
+    UpdateShownCosmetics()
     fetch("questappversionswitcher/config").then(res => res.json().then(res => {
         config = res
         Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
@@ -448,6 +502,7 @@ function ChangeApp(package) {
     console.log("Changing app to " + package)
     fetch("questappversionswitcher/changeapp?body=" + package).then(() => UpdateUI(true))
     UpdateUI(true)
+    UpdateCosmeticsTypes()
 }
 
 document.getElementById("exit").onclick = () => {

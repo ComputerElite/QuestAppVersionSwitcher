@@ -52,6 +52,7 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.DatabasePath = "/data/data/" + browser.Context.PackageName + "/databases/";
             browser.Settings.LoadWithOverviewMode = true;
             browser.Settings.UseWideViewPort = true;
+            browser.Settings.AllowFileAccess = true;
             browser.SetDownloadListener(new DownloadListener());
             CookieManager.Instance.SetAcceptThirdPartyCookies(browser, true);
 
@@ -68,7 +69,8 @@ namespace QuestAppVersionSwitcher.Core
             ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);
             if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
             coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
-            QAVSModManager.Init();
+			CoreVars.cosmetics = Cosmetics.LoadCosmetics();
+			QAVSModManager.Init();
             qAVSWebserver.Start();
         }
     }

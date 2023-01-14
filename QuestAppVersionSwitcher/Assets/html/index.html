@@ -20,7 +20,8 @@
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
             <div class="menuItem" section="mods" id="modsButton">Installed Mods</div>
-            <div class="menuItem" section="getMods" id="getModsButton">Get Mods</div>
+            <div class="menuItem" section="cosmetics" id="cosmeticsButton">Cosmetics & more</div>
+            <div class="menuItem" section="getMods" id="getModsButton">Get Mods & cosmetics</div>
             <div class="menuItem" section="tools">Tools & Options</div>
         </div>
         <div class="content">
@@ -104,8 +105,20 @@
 
                 </div>
             </div>
+            <div class="contentItem hidden" id="cosmetics">
+
+                <div class="buttonContainer"><div class="button" onclick="LaunchApp()">Launch Game</div></div>
+                <div class="buttonContainer"><div class="button" id="installCosmeticButton" onclick="UploadMod()">Install a Cosmetic from Disk</div></div>
+                <h2>Cosmetics type</h2>
+                <select id="cosmeticsType">
+
+                </select>
+                <div class="infiniteList" style="margin-top: 20px;" id="cosmeticsList">
+
+                </div>
+            </div>
             <div class="contentItem hidden" id="getMods">
-                <h2>You can download mods from the following sites. Only QMods are supported by QuestAppVersionSwitcher</h2>
+                <h2>You can download mods and cosmetics from the following sites. Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game</h2>
                 <div style="display: flex; flex-direction: column;" class="buttonsContainer">
                     <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}`)">Open Beat Saber Mods page</div>
                     <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}`)">Open website hub</div>

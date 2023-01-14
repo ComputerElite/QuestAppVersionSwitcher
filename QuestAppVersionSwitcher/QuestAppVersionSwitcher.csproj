@@ -75,6 +75,7 @@
     <Compile Include="ClientModels.cs" />
     <Compile Include="CoreService.cs" />
     <Compile Include="CoreVars.cs" />
+    <Compile Include="Cosmetics\Cosmetics.cs" />
     <Compile Include="DownloadListener.cs" />
     <Compile Include="DownloadManager.cs" />
     <None Include="LICENSE-QuestPatcher" />
