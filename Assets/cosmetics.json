@@ -4,19 +4,36 @@
             ".qsaber": {
                 "name": "Sabers",
                 "fileType": ".qsaber",
-                "directory": ""
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/sabers"
             },
             ".qwall": {
                 
-                "name": "Sabers",
-                "fileType": ".qsaber",
-                "directory": ""
+                "name": "Walls",
+                "fileType": ".qwall",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/walls"
             },
-            ".qsaber": {
+            ".qbloq": {
                 
-                "name": "Sabers",
-                "fileType": ".qsaber",
-                "directory": ""
+                "name": "Bloqs",
+                "fileType": ".qbloq",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/notes"
+            },
+            ".whacker": {
+                "name": "Whackers",
+                "fileType": ".whacker",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/whackers"
+            },
+            ".box": {
+                
+                "name": "Boxes",
+                "fileType": ".box",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/boxes"
+            },
+            ".cyoob": {
+                
+                "name": "Cyoobs",
+                "fileType": ".cyoob",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/cyoobs"
             }
         }
     }
