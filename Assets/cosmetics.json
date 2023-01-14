@@ -1,0 +1,23 @@
+{
+    "com.beatgames.beatsaber": {
+        "fileTypes": {
+            ".qsaber": {
+                "name": "Sabers",
+                "fileType": ".qsaber",
+                "directory": ""
+            },
+            ".qwall": {
+                
+                "name": "Sabers",
+                "fileType": ".qsaber",
+                "directory": ""
+            },
+            ".qsaber": {
+                
+                "name": "Sabers",
+                "fileType": ".qsaber",
+                "directory": ""
+            }
+        }
+    }
+}
