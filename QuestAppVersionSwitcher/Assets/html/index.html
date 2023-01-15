@@ -12,7 +12,7 @@
             <div class="header">
                 <div style="width: 100%;">Welcome to Quest App Version Switcher</div>
                 <div style="font-size: 80%; width: 100%;">
-                    Backing <div class="inline packageName">some game</div> up
+                    Managing <div class="inline packageName">some game</div>
                 </div>
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
@@ -31,55 +31,57 @@
                 <div id="patchStatus">Loading...</div>
                 <div class="textbox" id="patchingTextBox"></div>
 
-                <h2>Patching options</h2>
-                <label class="option">
-                    <label class="switch normal">
-                        <input id="externalstorage" type="checkbox" checked>
-                        <span class="slider round"></span>
+                <div id="patchingOptions">
+                    <h2>Patching options</h2>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="externalstorage" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Add external storage permission
                     </label>
-                    Add external storage permission
-                </label>
-                <br>
-                <label class="option">
-                    <label class="switch normal">
-                        <input id="handtracking" type="checkbox" checked>
-                        <span class="slider round"></span>
+                    <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="handtracking" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Add hand tracking permission
                     </label>
-                    Add hand tracking permission
-                </label>
-                <br>
-                <label class="option">
-                    Hand tracking version
-                    <select id="handtrackingversion">
-                        <option value="3">V2</option>
-                        <option value="2">V1 high frequency</option>
-                        <option value="1">V1</option>
-                    </select>
-                </label>
-                <br>
-                <br>
-                <label class="option">
-                    <label class="switch normal">
-                        <input id="debug" type="checkbox" checked>
-                        <span class="slider round"></span>
+                    <br>
+                    <label class="option">
+                        Hand tracking version
+                        <select id="handtrackingversion">
+                            <option value="3">V2</option>
+                            <option value="2">V1 high frequency</option>
+                            <option value="1">V1</option>
+                        </select>
                     </label>
-                    Add Debug option
-                </label>
-                <br>
-                <br>
-                <input type="text" id="otherName" placeholder="permission name">
-                <br>
-                <br>
-                <div class="button" onclick="AddPermission()">Add Permission</div>
-                <br>
-                <div id="other">
-
+                    <br>
+                    <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="debug" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Add Debug option
+                    </label>
+                    <br>
+                    <br>
+                    <input type="text" id="otherName" placeholder="permission name">
+                    <br>
+                    <br>
+                    <div class="button" onclick="AddPermission()">Add Permission</div>
+                    <br>
+                    <div id="other">
+                    </div>
                 </div>
+                
             </div>
             <div class="contentItem hidden" id="mods">
-                <div class="button" onclick="LaunchApp()">Launch Game</div>
                 <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
-                <div class="button" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
+                <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
+                <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
                 <div id="operations">
                     <h2 id="ongoingCount">Ongoing operations:</h2>
                     <div class="loaderContainer" style="margin-bottom: 10px;">
@@ -113,7 +115,8 @@
                 <select id="cosmeticsType">
 
                 </select>
-                <div class="infiniteList" style="margin-top: 20px;" id="cosmeticsList">
+                <div id="availableAfterModdingTypes" style="display: none;">Types available after modding: </div>
+                <div class="infiniteList topMargin" id="cosmeticsList">
 
                 </div>
             </div>
@@ -135,7 +138,7 @@
                     <div class="button" id="changeApp2">Change app</div>
                     <div class="buttonLabel">Change the app you want to manage</div>
                 </div>
-                <div>Backups of <div class="inline packageName">some game</div> (<div id="size" class="inline"></div>)</div>
+                <div class="topMargin">Backups of <div class="inline packageName">some game</div> (<div id="size" class="inline"></div>)</div>
                 <div class="smallListContainer">
                     <div id="backupList" class="list">
                     </div>

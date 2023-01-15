@@ -293,6 +293,10 @@ body {
     background-color: #1a83da;
 }
 
+.topMargin {
+    margin-top: 20px;
+}
+
 .sidebar {
     background-color: #242424;
     width: fit-content;
@@ -311,7 +315,6 @@ body {
 
 .contentItem {
     height: 100%;
-    width: 100%;
     padding: 20px;
 }
 
@@ -332,6 +335,8 @@ body {
 
 .menuItem {
     padding: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     display: flex;
     align-items: center;
     color: #FFFFFF;
@@ -594,12 +599,10 @@ iframe {
 }
 
 .smallListContainer {
-  padding: 10px;
   display: flex;
   align-items: center;
   width: 90%;
-  max-height: 300;
-  overflow-y: scroll;
+  max-height: 300px;
 }
 
 .listItem {
@@ -652,10 +655,12 @@ code {
   display: flex;
 }
 
-
-
 .buttonMargin {
   margin-left: 20px;
+}
+
+.topButtonMargin {
+    margin-top: 10px;
 }
 
 .restoreStep {

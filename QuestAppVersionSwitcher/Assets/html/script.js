@@ -70,11 +70,30 @@ function UpdateCosmeticsTypes() {
             cosmeticsTypeSelect.innerHTML = `<option class="listItem" value="null">No types found</option>`;
             return;
         }
+        var fvalue = cosmeticsTypeSelect.value
         var html = ""
+        var htmlAvailableAfterModding = ""
         for(const [key, value] of Object.entries(res.fileTypes)) {
-            html += `<option class="listItem" value="${value.fileType}">${value.name}</option>`
+            if(value.requiresModded && !isGamePatched) {
+                if(htmlAvailableAfterModding == "") {
+                    htmlAvailableAfterModding = `After patching the game you can add: `
+                }
+                htmlAvailableAfterModding += `${value.name}, `
+            } else {
+                if(!fvalue) {
+                    fvalue = value.fileType
+                }
+                html += `<option class="listItem" value="${value.fileType}">${value.name}</option>`
+            }
         }
+        document.getElementById("availableAfterModdingTypes").style.display = htmlAvailableAfterModding != "" ? "block" : "none"
+        document.getElementById("availableAfterModdingTypes").innerHTML = htmlAvailableAfterModding.substring(0, htmlAvailableAfterModding.length - 2)
         cosmeticsTypeSelect.innerHTML = html;
+        if(html == "") {
+            cosmeticsTypeSelect.innerHTML = `<option class="listItem" value="null">No types found</option>`;
+        }
+        if(!fvalue) fvalue = "null"
+        cosmeticsTypeSelect.value = fvalue
         UpdateShownCosmetics()
     }))
 }
@@ -121,6 +140,9 @@ function UpdateVersion(version) {
     currentGameVersion = version
 }
 
+var isGamePatched = false
+const patchingOptions = document.getElementById("patchingOptions")
+
 function UpdatePatchingStatus() {
     if(patchInProgress) {
         return;
@@ -129,21 +151,26 @@ function UpdatePatchingStatus() {
     fetch("/patching/getmodstatus").then(res => {
         res.json().then(res => {
             UpdateVersion(res.version)
+            isGamePatched = res.isPatched
             if (res.isPatched) {
-                document.getElementById("modsButton").style.visibility = "visible"
+                document.getElementById("modsButton").style.display = "block"
+                patchingOptions.style.display = "none"
                 patchStatus.innerHTML = "<h2>Game is already patched. You can install mods</h2>"
             } else if(!res.isInstalled) {
                 patchStatus.innerHTML = `<h2>Game is not installed. Please restore a backup or install the app so the game can get patched</h2>`
-                document.getElementById("modsButton").style.visibility = "hidden"
+                patchingOptions.style.display = "none"
+                document.getElementById("modsButton").style.display = "none"
             } else if(res.canBePatched) {
                 patchStatus.innerHTML = `<h2>Game is not patched.</h2>
                                         <div class="button" onclick="PatchGame()">Patch it now</div>`
-                document.getElementById("modsButton").style.visibility = "hidden"
+                patchingOptions.style.display = "block"
+                document.getElementById("modsButton").style.display = "none"
             } else {
                 patchStatus.innerHTML = "<h2>Game can not be modded</h2>"
-                document.getElementById("modsButton").style.visibility = "hidden"
+                patchingOptions.style.display = "none"
+                document.getElementById("modsButton").style.display = "none"
             }
-
+            UpdateCosmeticsTypes()
             if(!IsOnQuest() && !res.isPatched && false) {
                 patchStatus.innerHTML = "<h2>To mod your game open QuestAppVersionSwitcher on your Quest</h2>"
                 return;
@@ -191,10 +218,16 @@ function UpdateModsAndLibs() {
             for(const mod of res.mods){
                 mods += FormatMod(mod, !operationsOngoing)
             }
+            if(mods == "") {
+                mods = `<div class="mod" style="padding: 20px;">None installed</div>`
+            }
             document.getElementById("modsList").innerHTML = mods
             var libs = ``
             for(const mod of res.libs){
                 libs += FormatMod(mod, !operationsOngoing)
+            }
+            if(libs == "") {
+                libs = `<div class="mod" style="padding: 20px;">None installed</div>`
             }
             document.getElementById("libsList").innerHTML = libs
         })

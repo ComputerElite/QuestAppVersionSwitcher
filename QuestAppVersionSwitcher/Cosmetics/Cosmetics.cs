@@ -120,6 +120,7 @@ namespace QuestAppVersionSwitcher
 		public string name { get; set; } = "Unknown";
 		public string fileType { get; set; } = "Unknown";
 		public string directory { get; set; } = "";
+		public bool requiresModded { get; set; } = true;
 
 		public void InstallCosmetic(string currentPath, bool deleteOriginalFile = true)
 		{
