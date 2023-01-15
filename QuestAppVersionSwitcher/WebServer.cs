@@ -50,7 +50,6 @@ namespace QuestAppVersionSwitcher
         public override void OnPageFinished(WebView view, string url)
         {
             CookieManager.Instance.Flush();
-            Logger.Log(url);
             if (url.Split("?")[0].Contains("oculus.com"))
             {
                 // click login button
@@ -111,10 +110,6 @@ namespace QuestAppVersionSwitcher
                     });
                 });
                 t.Start();
-                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-                {
-                    Logger.Log(p.Key + ": " + p.Value);
-                }
             }
             /*
             // somehow user webclient to handle the request and then change the response headers. No idea how to get the request body from the webview
@@ -140,10 +135,8 @@ namespace QuestAppVersionSwitcher
             Dictionary<string, string> headers = new Dictionary<string, string>();
             foreach (KeyValuePair<string, IList<string>> p in h)
             {
-                Logger.Log("8");
                 if (p.Value.Count > 0)
                 {
-                    Logger.Log("9: " + p.Key);
                     if(p.Key != null) headers.Add(p.Key.ToLower(), p.Value[0]);
                 }
             }
