@@ -579,7 +579,7 @@ iframe {
 .list {
     display: flex;
     flex-wrap: wrap;
-    max-height: 90%;
+    max-height: 50vh;
     background-color: #1F1F1F;
     height: fit-content;
     color: #FFFFFF;
@@ -596,13 +596,6 @@ iframe {
     position: fixed;
     height: 100%;
     z-index: 5;
-}
-
-.smallListContainer {
-  display: flex;
-  align-items: center;
-  width: 90%;
-  max-height: 300px;
 }
 
 .listItem {
