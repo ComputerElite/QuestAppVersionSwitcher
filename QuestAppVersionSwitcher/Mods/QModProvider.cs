@@ -63,7 +63,7 @@ namespace QuestAppVersionSwitcher.Mods
                 }
                 if (existingInstall.Version > qmod.Version)
                 {
-                    throw new InstallationException($"Version of existing {existingInstall.Id} ({existingInstall.Version}) is greater than installing version ({mod.Version}). Direct version downgrades are not permitted");
+                    throw new InstallationException($"Version of existing {existingInstall.Id} ({existingInstall.Version}) is greater than installing version ({mod.Version}). Direct version downgrades are not permitted. This may be fixed by deleting all mods and libraries.");
                 }
                 // Uninstall the existing mod. May throw an exception if other mods depend on the older version
                 needImmediateInstall = await PrepareVersionChange(existingInstall, mod);

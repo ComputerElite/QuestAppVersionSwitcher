@@ -207,7 +207,7 @@ function UpdateModsAndLibs() {
                 var operations = ""
                 for(const operation of res.operations){
                     operations += `
-                    <div class="mod" style="padding: 10px">
+                    <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
                         ${operation.name}
                     </div>
                     `

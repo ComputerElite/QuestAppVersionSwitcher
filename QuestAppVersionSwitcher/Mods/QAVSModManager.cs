@@ -89,14 +89,14 @@ namespace QuestAppVersionSwitcher.Mods
 			{
 				IMod mod = modManager.TryParseMod(path).Result;
 				mod.Install().Wait();
+				runningOperations.Remove(operationId);
 			} catch (Exception e)
 			{
 				runningOperations.Remove(operationId);
                 operationId = operations;
 				operations++;
-				runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\nTo remove this message restart QuestAppVersionSwitcher" });
+				runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher" });
 			}
-            runningOperations.Remove(operationId);
             modManager.ForceSave();
         }
 
@@ -146,12 +146,21 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 if (m.Id == id)
                 {
-                    m.Install().Wait();
-                    modManager.ForceSave();
+                    try
+					{
+						m.Install().Wait();
+						modManager.ForceSave();
+						runningOperations.Remove(operationId);
+					} catch(Exception e)
+					{
+						runningOperations.Remove(operationId);
+						operationId = operations;
+						operations++;
+						runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error enabling mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher" });
+					}
                     break;
                 }
             }
-            runningOperations.Remove(operationId);
         }
 
         public static string GetMods()
