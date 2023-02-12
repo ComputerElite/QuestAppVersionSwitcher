@@ -720,7 +720,7 @@ document.getElementById("restoreappdata").onclick = () => {
                 })
             }
             else {
-                TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
+                TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
                 GotoStep(3)
             }
         })
@@ -732,7 +732,7 @@ document.getElementById("skip").onclick = () => {
         res.text().then(text => {
             if (text == "True") GotoStep(6)
             else {
-                TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
+                TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
                 GotoStep(3)
             }
         })
@@ -766,6 +766,7 @@ document.getElementById("restoreBackup").onclick = () => {
         return
     }
     OpenRestorePopup()
+    if(document.getElementById("restoreAppData").checked) GotoStep(4)
 }
 
 function GotoStep(step) {
