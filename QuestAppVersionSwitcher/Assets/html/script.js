@@ -83,7 +83,7 @@ function UpdateCosmeticsTypes() {
                 if(!fvalue) {
                     fvalue = value.fileType
                 }
-                html += `<option class="listItem" value="${value.fileType}">${value.name}</option>`
+                html += `<option class="listItem" value="${value.fileType}">${value.name} (${value.fileType})</option>`
             }
         }
         document.getElementById("availableAfterModdingTypes").style.display = htmlAvailableAfterModding != "" ? "block" : "none"
@@ -266,7 +266,7 @@ function FormatMod(mod, active = true) {
     return `
     <div class="mod">
         <div class="leftRightSplit">
-            <img class="modCover" src="/mods/cover?id=${mod.Id}">
+            <img class="modCover" src="/mods/cover?id=${mod.Id}" onerror="this.src = 'https://raw.githubusercontent.com/ComputerElite/ComputerElite.github.io/main/assets/ModCover.png'" >
             <div class="upDownSplit spaceBetween">
                 <div class="upDownSplit">
                     <div class="leftRightSplit nomargin">

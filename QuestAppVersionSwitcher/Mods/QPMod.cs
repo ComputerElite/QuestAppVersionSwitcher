@@ -51,12 +51,17 @@ namespace QuestAppVersionSwitcher.Mods
             Manifest = manifest;
             _modManager = modManager;
 
-            FileCopyTypes = manifest.CopyExtensions.Select(copyExt => new FileCopyType()
+            FileCopyTypes = manifest.CopyExtensions.Select(copyExt =>
             {
-                NameSingular = $"{manifest.Name} .{copyExt.Extension} file",
-                NamePlural = $"{manifest.Name} .{copyExt.Extension} files",
-                Path = copyExt.Destination,
-                SupportedExtensions = new List<string> { copyExt.Destination }
+                string destination = copyExt.Destination;
+                if (!destination.EndsWith(Path.DirectorySeparatorChar)) destination += Path.DirectorySeparatorChar;
+                return new FileCopyType()
+                {
+                    NameSingular = $"{manifest.Name} .{copyExt.Extension} file",
+                    NamePlural = $"{manifest.Name} .{copyExt.Extension} files",
+                    Path = destination,
+                    SupportedExtensions = new List<string> { "." + copyExt.Extension }
+                };
             }).ToList();
         }
 

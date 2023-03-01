@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using QuestAppVersionSwitcher.Mods;
 using static Android.Graphics.Path;
 
 namespace QuestAppVersionSwitcher
@@ -75,6 +76,30 @@ namespace QuestAppVersionSwitcher
 				Logger.Log("Error deserializing:\n" + e.ToString());
 			}
 			return cos;
+		}
+
+		public void AddCopyType(string packageId, FileCopyType type)
+		{
+			if(!games.ContainsKey(packageId)) games.Add(packageId, new CosmeticsGame());
+			foreach (string extension in type.SupportedExtensions)
+			{
+				games[packageId].fileTypes[extension] = new CosmeticType()
+				{
+					directory = type.Path,
+					fileType = extension,
+					name = type.NamePlural,
+					requiresModded = true
+				};
+			}
+		}
+		
+		public void RemoveCopyType(string packageId, FileCopyType type)
+		{
+			if (!games.ContainsKey(packageId)) return;
+			foreach (string extension in type.SupportedExtensions)
+			{
+				games[packageId].fileTypes.Remove(extension);
+			}
 		}
 	}
 

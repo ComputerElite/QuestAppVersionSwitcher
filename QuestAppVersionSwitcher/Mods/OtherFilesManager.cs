@@ -1,9 +1,11 @@
-﻿using QuestAppVersionSwitcher.Core;
+﻿using System;
+using QuestAppVersionSwitcher.Core;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Java.Util.Logging;
 
 namespace QuestAppVersionSwitcher.Mods
 {
@@ -54,13 +56,10 @@ namespace QuestAppVersionSwitcher.Mods
         /// <param name="type">The <see cref="FileCopyType"/> to add</param>
         public void RegisterFileCopy(string packageId, FileCopyType type)
         {
-            if (!_copyIndex.TryGetValue(packageId, out var copyTypes))
-            {
-                copyTypes = new List<FileCopyType>();
-                _copyIndex[packageId] = copyTypes;
-            }
-
-            copyTypes.Add(type);
+            ComputerUtils.Android.Logging.Logger.Log("supported: " + String.Join(", ", type.SupportedExtensions));
+            ComputerUtils.Android.Logging.Logger.Log(type.Path);
+            ComputerUtils.Android.Logging.Logger.Log(type.NameSingular);
+            CoreVars.cosmetics.AddCopyType(packageId, type);
         }
 
         /// <summary>
@@ -70,7 +69,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// <param name="type">The <see cref="FileCopyType"/> to remove</param>
         public void RemoveFileCopy(string packageId, FileCopyType type)
         {
-            _copyIndex[packageId].Remove(type);
+            CoreVars.cosmetics.RemoveCopyType(packageId, type);
         }
     }
 }
