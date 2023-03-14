@@ -864,7 +864,7 @@ function StopDownload(name) {
 }
 
 document.getElementById("logs").onclick = () => {
-    TextBoxText("logsText", "Working.. please wait")
+    TextBoxText("logsText", "Collecting information.. please allow us up to 30 seconds to collect everything")
     fetch("/questappversionswitcher/uploadlogs?password=" + document.getElementById("logspwd").value).then(res => {
         res.text().then(text => {
             if (res.status == 403) {

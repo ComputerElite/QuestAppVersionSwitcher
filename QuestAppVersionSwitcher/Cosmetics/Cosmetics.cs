@@ -70,7 +70,7 @@ namespace QuestAppVersionSwitcher
 			try
 			{
 				cos.games = JsonSerializer.Deserialize<Dictionary<string, CosmeticsGame>>(cosmetics);
-				Logger.Log("Deserialized successfully! Got Cosmetics for " + cos.games.Count + " cosmetics");
+				Logger.Log("Deserialized successfully! Got Cosmetics for " + cos.games.Count + " games");
 			} catch(Exception e)
 			{
 				Logger.Log("Error deserializing:\n" + e.ToString());

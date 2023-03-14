@@ -439,6 +439,7 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("GET", "/questappversionswitcher/uploadlogs", new Func<ServerRequest, bool>(request =>
             {
+                Logger.Log("\n\n------Log upload requested------");
 				QAVSReport report = new QAVSReport();
                 report.version = CoreService.version.ToString();
 				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
@@ -464,6 +465,19 @@ namespace QuestAppVersionSwitcher
 					} catch
                     {
                         
+                    }
+                }
+                Logger.Log("---Backups---");
+                foreach (string game in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
+                {
+                    Logger.Log(Path.GetFileName(game));
+                    foreach (string backup in Directory.GetDirectories(game))
+                    {
+                        Logger.Log("├──" + Path.GetFileName(backup));
+                        foreach (string file in Directory.GetFiles(backup))
+                        {
+                            Logger.Log("|  ├──" + Path.GetFileName(file) + " (" + SizeConverter.ByteSizeToString(new FileInfo(file).Length) + ")");
+                        }
                     }
                 }
                 report.log = Logger.log;
