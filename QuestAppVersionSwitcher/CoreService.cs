@@ -14,6 +14,10 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using Android.Media.Audiofx;
+using Android.Provider;
+using Com.Xamarin.Formsviewgroup;
+using ComputerUtils.Android;
 using Xamarin.Essentials;
 
 namespace QuestAppVersionSwitcher.Core
@@ -38,6 +42,7 @@ namespace QuestAppVersionSwitcher.Core
             {
                 if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
             }
+            
 
             //Set webbrowser settings
             browser.SetWebChromeClient(new WebChromeClient());
@@ -64,6 +69,8 @@ namespace QuestAppVersionSwitcher.Core
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
             FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
+                
+            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
 
             // Download file copies file
             ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);

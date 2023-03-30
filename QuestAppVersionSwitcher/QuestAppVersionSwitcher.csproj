@@ -79,6 +79,7 @@
     <Compile Include="DownloadListener.cs" />
     <Compile Include="DownloadManager.cs" />
     <None Include="LICENSE-QuestPatcher" />
+    <Compile Include="FolderPermission.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Mods\ConfigModProvider.cs" />
     <Compile Include="Mods\ExternalFilesDownloader.cs" />
