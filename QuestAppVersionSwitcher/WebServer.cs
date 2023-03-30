@@ -173,7 +173,6 @@ namespace QuestAppVersionSwitcher
 
         public void Start()
         {
-            FolderPermission.openDirectory("Android/data/com.beatgames.beatsaber");
             WebViewClient client = new WebViewClient();
 
             CoreService.browser.SetWebViewClient(new QAVSWebViewClient());

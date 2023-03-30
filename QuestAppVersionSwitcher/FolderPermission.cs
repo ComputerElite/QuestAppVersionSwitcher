@@ -3,8 +3,10 @@ using Android.Content;
 using Android.Net;
 using Android.OS;
 using Android.OS.Storage;
+using Android.Provider;
 using AndroidX.Activity.Result.Contract;
 using ComputerUtils.Android;
+using Google.Android.Material.Dialog;
 using Java.IO;
 using Java.Util.Logging;
 using QuestAppVersionSwitcher.Core;
@@ -16,41 +18,24 @@ namespace QuestAppVersionSwitcher
     {
         public static void openDirectory(string dirInExtenalStorage)
         {
-            string path = Environment.ExternalStorageDirectory.AbsolutePath + "/" + dirInExtenalStorage;
-            File file = new File(path);
-            string startDir = "";
-            string finalDirPath = "";
+            Logger.Log("Converting api path to api 30+ path");
+            Logger.Log("path is " + RemapPathForApi300OrAbove(dirInExtenalStorage));
+            Intent intent = new Intent(Intent.ActionOpenDocumentTree)
+                .PutExtra(
+                    DocumentsContract.ExtraInitialUri,
+                    Uri.Parse(RemapPathForApi300OrAbove(dirInExtenalStorage)));
+            Logger.Log("Gonna start now");
+            AndroidCore.context.StartActivity(intent);
+        }
 
-            if (file.Exists()) {
-                startDir = dirInExtenalStorage.Replace("/", "%2F");
-            } 
-
-            StorageManager sm = (StorageManager)AndroidCore.context.GetSystemService(Context.StorageService);
-
-            Intent intent = sm.PrimaryStorageVolume.CreateOpenDocumentTreeIntent();
-
-
-            Uri uri = (Uri)intent.GetParcelableExtra("android.provider.extra.INITIAL_URI");
-
-            string scheme = uri.ToString();
-
-            Logger.Log("INITIAL_URI scheme: " + scheme);
-
-            scheme = scheme.Replace("/root/", "/document/");
-
-            finalDirPath = scheme + "%3A" + startDir;
-
-            uri = Uri.Parse(finalDirPath);
-
-            intent.PutExtra("android.provider.extra.INITIAL_URI", uri);
-
-            Logger.Log("uri: " + uri.ToString());
-
-            try {
-                AndroidCore.context.StartActivity(intent);
-            } catch (ActivityNotFoundException ignored) {
-
-            }
+        public static string RemapPathForApi300OrAbove(string path)
+        {
+            string suffix = path.Substring(Environment.ExternalStorageDirectory.AbsolutePath.Length);
+            string documentId = "STORAGE_PRIMARY:" + suffix.Substring(1);
+            return DocumentsContract.BuildDocumentUri(
+                "com.android.externalstorage.documents",
+                documentId
+            ).ToString();
         }
     }
 }
