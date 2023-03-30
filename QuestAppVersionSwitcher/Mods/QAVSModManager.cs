@@ -87,7 +87,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
             try
 			{
-				IMod mod = modManager.TryParseMod(path).Result;
+				IMod mod = modManager.TryParseMod(ppatath).Result;
 				mod.Install().Wait();
 				runningOperations.Remove(operationId);
 			} catch (Exception e)
