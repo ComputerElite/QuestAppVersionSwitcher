@@ -99,6 +99,7 @@ namespace QuestAppVersionSwitcher.Core
             if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
             coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
 			CoreVars.cosmetics = Cosmetics.LoadCosmetics();
+            Logger.displayLogInConsole = true;
 			QAVSModManager.Init();
             qAVSWebserver.Start();
         }

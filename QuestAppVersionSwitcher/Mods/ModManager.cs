@@ -113,8 +113,8 @@ namespace QuestAppVersionSwitcher.Mods
 
         public async Task CreateModDirectories()
         {
-            FileManager.CreateDirectoryIfNotExisting(ModsPath);
-            FileManager.CreateDirectoryIfNotExisting(LibsPath);
+            FolderPermission.CreateDirectoryIfNotExisting(ModsPath);
+            FolderPermission.CreateDirectoryIfNotExisting(LibsPath);
             FileManager.CreateDirectoryIfNotExisting(ModsExtractPath);
         }
 
@@ -122,6 +122,7 @@ namespace QuestAppVersionSwitcher.Mods
         {
             Logger.Log("Loading mods . . .");
             await CreateModDirectories();
+            Logger.Log("Created directories");
 
             // If a config file exists, we'll need to load our mods from it
             if (File.Exists(ConfigPath))

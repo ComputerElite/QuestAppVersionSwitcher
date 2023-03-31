@@ -56,8 +56,7 @@ namespace QuestAppVersionSwitcher
 
         public static void Copy(string from, string to)
         {
-            Stream file =
-                AndroidCore.context.ContentResolver.OpenOutputStream(Uri.Parse(RemapPathForApi300OrAbove(to)));
+            Stream file = GetOutputStream(to);
             StreamWriter sw = new StreamWriter(file);
             sw.Write(File.ReadAllBytes(from));
             sw.Dispose();
@@ -65,10 +64,52 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectory(string dir)
         {
-            Logger.Log(RemapPathForApi300OrAbove(Directory.GetParent(dir).FullName));
-            DocumentFile parent = DocumentFile.FromTreeUri(AndroidCore.context, Uri.Parse(RemapPathForApi300OrAbove(Directory.GetParent(dir).FullName)));
+            DocumentFile parent = GetAccessToFile(Directory.GetParent(dir).FullName);
             Logger.Log(parent.CanWrite().ToString());
             parent.CreateDirectory(Path.GetFileName(dir));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dir">Expected as /sdcard/Android/data/...</param>
+        /// <returns></returns>
+        public static DocumentFile GetAccessToFile(string dir)
+        {
+            Logger.Log("Trying to get access to " + dir);
+            string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
+            string diff = dir.Replace(start + "/", "");
+            string[] dirs = diff.Split('/');
+            DocumentFile startDir = DocumentFile.FromTreeUri(AndroidCore.context, Uri.Parse(RemapPathForApi300OrAbove(start).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/")));
+            DocumentFile currentDir = startDir;
+            foreach (string dirName in dirs)
+            {
+                currentDir = currentDir.FindFile(dirName);
+            }
+            return currentDir;
+        }
+
+        public static Stream GetOutputStream(string path)
+        {
+            DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
+            string name = Path.GetFileName(path);
+            if (directory.FindFile(name) != null) directory.FindFile(name).Delete();
+            return AndroidCore.context.ContentResolver.OpenOutputStream(directory.CreateFile("application/octet-stream", name).Uri);
+        }
+
+        public static void Delete(string path)
+        {
+            DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
+            string name = Path.GetFileName(path);
+            if (directory.FindFile(name) != null) directory.FindFile(name).Delete();
+        }
+
+        public static void CreateDirectoryIfNotExisting(string path)
+        {
+            Logger.Log("Creating directory " + path+ " if it doesn't exist");
+            DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
+            string name = Path.GetFileName(path);
+            if (directory.FindFile(name) == null) directory.CreateDirectory(name);
         }
     }
     
@@ -92,6 +133,7 @@ namespace QuestAppVersionSwitcher
             {
                 if (activityResult.Data.Data != null)
                 {
+                    Logger.Log(activityResult.Data.Data.ToString());
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         activityResult.Data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);

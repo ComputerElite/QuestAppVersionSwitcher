@@ -186,7 +186,7 @@ namespace QuestAppVersionSwitcher.Mods
 
             foreach(string f in filesToRemove)
             {
-                if (File.Exists(f)) File.Delete(f);
+                if (File.Exists(f)) FolderPermission.Delete(f);
             }
 
             IsInstalled = false;
@@ -207,6 +207,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
 
             string coverPath = Path.Combine(_provider.GetExtractDirectory(Id), Manifest.CoverImagePath);
+            if (!File.Exists(coverPath)) return new byte[0];
             return File.ReadAllBytes(coverPath);
         }
 
