@@ -712,6 +712,11 @@ document.getElementById("grantAccess").onclick = () => {
     })
 }
 
+document.getElementById("requestManageStorageAppPermission").onclick = () => {
+    fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
+    })
+}
+
 document.getElementById("requestAppPermission").onclick = () => {
     fetch("grantaccess?package=" + config.currentApp).then(res => {
         res.text().then(text => {

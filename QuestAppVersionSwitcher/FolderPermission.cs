@@ -17,7 +17,6 @@ using Java.Lang;
 using Java.Util.Logging;
 using QuestAppVersionSwitcher.Core;
 using File = System.IO.File;
-using Logger = ComputerUtils.Android.Logging.Logger;
 
 namespace QuestAppVersionSwitcher
 {
@@ -30,7 +29,6 @@ namespace QuestAppVersionSwitcher
             {
                 FileManager.CreateDirectoryIfNotExisting(dirInExtenalStorage);
             }
-            Logger.Log(RemapPathForApi300OrAbove(dirInExtenalStorage));
             Intent intent = new Intent(Intent.ActionOpenDocumentTree)
                 .PutExtra(
                     DocumentsContract.ExtraInitialUri,
@@ -41,7 +39,6 @@ namespace QuestAppVersionSwitcher
         public static string RemapPathForApi300OrAbove(string path)
         {
             string suffix = path;
-            Logger.Log(suffix);
             if (suffix.StartsWith("/sdcard")) suffix = suffix.Substring("/sdcard".Length);
             if (path.StartsWith(Environment.ExternalStorageDirectory.AbsolutePath))
             {
@@ -57,26 +54,24 @@ namespace QuestAppVersionSwitcher
         public static void Copy(string from, string to)
         {
             Stream file = GetOutputStream(to);
-            StreamWriter sw = new StreamWriter(file);
-            sw.Write(File.ReadAllBytes(from));
-            sw.Dispose();
+            file.Write(File.ReadAllBytes(from));
+            file.Close();
+            file.Dispose();
         }
 
         public static void CreateDirectory(string dir)
         {
             DocumentFile parent = GetAccessToFile(Directory.GetParent(dir).FullName);
-            Logger.Log(parent.CanWrite().ToString());
             parent.CreateDirectory(Path.GetFileName(dir));
         }
 
         /// <summary>
-        /// 
+        /// ONLY WORKS FOR /sdcard/Android/data/...!!!!!!!
         /// </summary>
         /// <param name="dir">Expected as /sdcard/Android/data/...</param>
         /// <returns></returns>
         public static DocumentFile GetAccessToFile(string dir)
         {
-            Logger.Log("Trying to get access to " + dir);
             string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
             string diff = dir.Replace(start + "/", "");
             string[] dirs = diff.Split('/');
@@ -84,6 +79,7 @@ namespace QuestAppVersionSwitcher
             DocumentFile currentDir = startDir;
             foreach (string dirName in dirs)
             {
+                if (currentDir.FindFile(dirName) == null) currentDir.CreateDirectory(dirName); // Create directory if it doesn't exist
                 currentDir = currentDir.FindFile(dirName);
             }
             return currentDir;
@@ -106,7 +102,6 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
-            Logger.Log("Creating directory " + path+ " if it doesn't exist");
             DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
             string name = Path.GetFileName(path);
             if (directory.FindFile(name) == null) directory.CreateDirectory(name);
@@ -133,7 +128,6 @@ namespace QuestAppVersionSwitcher
             {
                 if (activityResult.Data.Data != null)
                 {
-                    Logger.Log(activityResult.Data.Data.ToString());
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         activityResult.Data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);

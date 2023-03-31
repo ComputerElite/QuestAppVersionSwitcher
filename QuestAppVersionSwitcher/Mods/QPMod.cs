@@ -125,7 +125,7 @@ namespace QuestAppVersionSwitcher.Mods
                 try
                 {
                     string dir = Directory.GetParent(k.Value).FullName;
-                    if (!Directory.Exists(dir)) FolderPermission.CreateDirectory(dir);
+                    FolderPermission.CreateDirectoryIfNotExisting(dir);
                     FolderPermission.Copy(k.Key, k.Value);
                     //File.Copy(k.Key, k.Value, true);
                 } catch(Exception e)

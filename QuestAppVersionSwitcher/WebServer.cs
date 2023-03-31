@@ -30,6 +30,7 @@ using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
 using Android.OS;
+using Android.Provider;
 using Socket = System.Net.Sockets.Socket;
 using Java.Lang;
 using Exception = System.Exception;
@@ -825,6 +826,19 @@ namespace QuestAppVersionSwitcher
                 string package = serverRequest.queryString.Get("package");
                 if (serverRequest.queryString.Get("obb") == null) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
                 else FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                serverRequest.SendString("", "text/plain", 200);
+                return true;
+            }));
+            server.AddRoute("GET", "/grantmanagestorageappaccess", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                Intent intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission, Android.Net.Uri.Parse("package:" + package));
+                AndroidCore.context.StartActivity(intent);
                 serverRequest.SendString("", "text/plain", 200);
                 return true;
             }));
