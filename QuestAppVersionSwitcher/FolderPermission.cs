@@ -35,7 +35,7 @@ namespace QuestAppVersionSwitcher
                     Uri.Parse(RemapPathForApi300OrAbove(dirInExtenalStorage)));
             l.Launch(intent);
         }
-
+        
         public static string RemapPathForApi300OrAbove(string path)
         {
             string suffix = path;
