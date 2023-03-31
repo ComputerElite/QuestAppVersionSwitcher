@@ -53,10 +53,15 @@ namespace QuestAppVersionSwitcher
 
         public static void Copy(string from, string to)
         {
-            Stream file = GetOutputStream(to);
-            file.Write(File.ReadAllBytes(from));
-            file.Close();
-            file.Dispose();
+            try
+            {
+                Stream file = GetOutputStream(to);
+                file.Write(File.ReadAllBytes(from));
+                file.Close();
+            } catch (Exception e)
+            {
+                ComputerUtils.Android.Logging.Logger.Log(e.ToString());
+            }
         }
 
         public static void CreateDirectory(string dir)
