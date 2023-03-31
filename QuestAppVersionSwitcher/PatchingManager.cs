@@ -112,7 +112,7 @@ namespace QuestAppVersionSwitcher
             apkArchive.Dispose();
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing apk", ""));
             
-            ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes);
+            ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes).Wait();
 
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Almost done. Hang tight", ""));
             WebClient c = new WebClient();
