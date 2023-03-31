@@ -29,6 +29,7 @@ using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
+using Android.OS;
 using Socket = System.Net.Sockets.Socket;
 using Java.Lang;
 using Exception = System.Exception;
@@ -39,6 +40,7 @@ using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
 using Org.BouncyCastle.Math.EC.Endo;
 using Android.Widget;
+using Environment = Android.OS.Environment;
 
 namespace QuestAppVersionSwitcher
 {
@@ -609,12 +611,14 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("A Backup with this name already exists. Please choose a different name", "text/plain", 400);
                     return true;
                 }
+                Logger.Log("Creating backup in " + backupDir + " for " + package);
                 serverRequest.SendString("Creating Backup. Please wait until it has finished. This can take up to 2 minutes", "text/plain", 202);
                 text = "Creating Backup. Please wait until it has finished. This can take up to 2 minutes";
                 code = 202;
                 Directory.CreateDirectory(backupDir);
                 if (!AndroidService.IsPackageInstalled(package))
                 {
+                    Logger.Log(package + " is not isntalled. Aborting backup");
                     text = package + " is not installed. Please select a different app.";
                     code = 400;
                     return true;
@@ -629,14 +633,25 @@ namespace QuestAppVersionSwitcher
                     {
                         text = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
                         code = 202;
+                        Logger.Log("Copying APK from " + apkDir + " to " + backupDir + "app.apk");
                         File.Copy(apkDir, backupDir + "app.apk");
                     } else
                     {
+                        Logger.Log("Only backing up app data. Skipping apk");
                         File.WriteAllText(backupDir + "onlyappdata.txt", "This backup only contains app data.");
                     }
                     text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
                     code = 202;
-                    if(Directory.Exists(gameDataDir)) FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
+                    try
+                    {
+                        if(Directory.Exists(gameDataDir)) FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
+                    }
+                    catch (Exception e)
+                    {
+                        text = e.ToString();
+                        code = 500;
+                        return true;
+                    }
 
                     if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
                     {
@@ -798,6 +813,19 @@ namespace QuestAppVersionSwitcher
                     FileManager.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package, true);
                 }
                 serverRequest.SendString(Directory.Exists(backupDir + package).ToString(), "text/plain", 200);
+                return true;
+            }));
+            server.AddRoute("GET", "/grantaccess", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                if (serverRequest.queryString.Get("obb") == null) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
+                else FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                serverRequest.SendString("", "text/plain", 200);
                 return true;
             }));
             server.AddRoute("GET", "/restoregamedata", new Func<ServerRequest, bool>(serverRequest =>

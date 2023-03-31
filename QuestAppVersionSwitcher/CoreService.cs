@@ -14,11 +14,14 @@ using System.Net;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+using Android.Content.PM;
 using Android.Media.Audiofx;
+using Android.OS;
 using Android.Provider;
 using Com.Xamarin.Formsviewgroup;
 using ComputerUtils.Android;
 using Xamarin.Essentials;
+using Environment = Android.OS.Environment;
 
 namespace QuestAppVersionSwitcher.Core
 {
@@ -31,18 +34,37 @@ namespace QuestAppVersionSwitcher.Core
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public async void Start()
         {
-            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
-            FolderPermission.openDirectory(Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/com.beatgames.beatsaber");
+            //Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
 			// Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 			// Check permissions and request if needed
-			if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
             {
-                if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted) return;
+                if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
+                {
+                    if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted) return;
+                }
+                if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() != PermissionStatus.Granted)
+                {
+                    if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
+                }
             }
-            if (await Permissions.CheckStatusAsync<Permissions.StorageRead>() != PermissionStatus.Granted)
+            else
             {
-                if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
+                try
+                {
+                    // Try creating a directory in /sdcard/ to check if we got permission to write there
+                    if (Directory.Exists(coreVars.QAVSPermTestDir)) Directory.Delete(coreVars.QAVSPermTestDir, true);
+                    Directory.CreateDirectory(coreVars.QAVSPermTestDir);
+                    Directory.Delete(coreVars.QAVSPermTestDir, true);
+                }
+                catch (Exception e)
+                {
+                    // Manage storage permission
+                    Android.Net.Uri uri = Android.Net.Uri.Parse("package:com.ComputerElite.questappversionswitcher");
+                    Intent i = new Intent(Settings.ActionManageAppAllFilesAccessPermission, uri);
+                    AndroidCore.context.StartActivity(i);
+                }
             }
             
 

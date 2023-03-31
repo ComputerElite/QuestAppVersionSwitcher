@@ -197,6 +197,14 @@
                     <div class="buttonLabel">Change the app you want to manage</div>
                 </div>
                 <div class="buttonContainer">
+                    <div class="button" id="requestAppPermission">Request app directory permission</div>
+                    <div class="buttonLabel">Requests permissions to access the currently selected apps data directory</div>
+                </div>
+                <div class="buttonContainer">
+                    <div class="button" id="requestAppObbPermission">Request app obb permission</div>
+                    <div class="buttonLabel">Requests permissions to access the currently selected apps obb directory</div>
+                </div>
+                <div class="buttonContainer">
                     <div class="button" id="checkUpdate">Check for QuestAppVersionSwitcher updates</div>
                     <div class="buttonLabel">Checks if updates for QuestAppVersionSwitcher exist</div>
                 </div>
@@ -422,11 +430,27 @@
                     </div>
                 </div>
             </div>
-            <div id="step4" class="restoreStep hidden">
+            <div id="step4.1" class="restoreStep hidden">
                 <div class="contentHeader headerMargin">
                     Step 2.1
                 </div>
-                After the install completed, press the restore App Data button.
+                Grant access permission
+                <br>
+                This will give QuestAppVersionSwitcher access to the games folder so it can install mods and restore app data and obbs.
+                <br>
+                Press <code>Use this folder</code> on both prompts you'll get after you press <code>Grant access</code>
+                <div id="step4.1box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer">
+                        <div class="button" id="grantAccess">Grant access</div>
+                    </div>
+                </div>
+            </div>
+            <div id="step4" class="restoreStep hidden">
+                <div class="contentHeader headerMargin">
+                    Step 2.2
+                </div>
+                After you granted access to the folder, press the restore App Data button.
                 <br>
                 This will restore the app data and obbs you backed up. If you wish to not restore App Data and obbs simply press the skip button
                 <div id="step4box" class="textBox"></div>

@@ -687,6 +687,17 @@ document.getElementById("install").onclick = () => {
     fetch("restoreapp?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
         res.text().then(text => {
             if (res.status == 200) {
+                GotoStep("4.1")
+            }
+            else TextBoxError("step4.1box", text)
+        })
+    })
+}
+
+document.getElementById("grantAccess").onclick = () => {
+    fetch("grantaccess?package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+            if (res.status == 200) {
                 fetch("containsgamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                     res.text().then(text => {
                         if (text == "False") {
@@ -696,10 +707,22 @@ document.getElementById("install").onclick = () => {
                         }
                     })
                 })
-            }
-            else TextBoxError("step3box", text)
+            } else TextBoxError("step3box", text)
         })
+    })
+}
 
+document.getElementById("requestAppPermission").onclick = () => {
+    fetch("grantaccess?package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+        })
+    })
+}
+
+document.getElementById("requestAppObbPermission").onclick = () => {
+    fetch("grantaccess?obb=true&package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+        })
     })
 }
 

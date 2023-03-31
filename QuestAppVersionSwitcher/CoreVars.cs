@@ -14,6 +14,7 @@ namespace QuestAppVersionSwitcher.Core
         public PatchingPermissions patchingPermissions = new PatchingPermissions();
 		public static Cosmetics cosmetics = new Cosmetics();
 		public readonly string QAVSDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/";
+        public readonly string QAVSPermTestDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher-permTest/";
         public readonly string QAVSTmpDowngradeDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/tmpDowngrade/";
         public readonly string QAVSTmpPatchingDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/tmpPatching/";
         public readonly string QAVSTmpModsDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/tmpMods/";

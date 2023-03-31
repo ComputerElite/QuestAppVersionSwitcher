@@ -13,6 +13,10 @@ using ComputerUtils.Android.Logging;
 using Google.Android.Material.Snackbar;
 using QuestAppVersionSwitcher.Core;
 using System.IO;
+using Android.Content;
+using Android.Provider;
+using AndroidX.Activity.Result.Contract;
+using AlertDialog = Android.App.AlertDialog;
 
 namespace QuestAppVersionSwitcher
 {
@@ -33,7 +37,11 @@ namespace QuestAppVersionSwitcher
             CoreVars.fileDir = "/sdcard/Android/data/com.ComputerElite.questappversionswitcher/files/";
             CoreService.browser = webView;
             AndroidCore.context = this;
+            AndroidCore.activity = this;
             AndroidCore.assetManager = this.Assets;
+            
+            FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());
 
             // Start all services
             CoreService core = new CoreService();
