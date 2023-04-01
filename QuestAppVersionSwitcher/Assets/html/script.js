@@ -246,15 +246,18 @@ function UpdateModsAndLibs() {
 function UploadMod() {
     var input = document.createElement('input');
     input.type = 'file';
+    input.multiple = true;
     input.click();
     input.onchange = () => {
         if(input.files.length > 0) {
-            fetch(`/mods/install?filename=${input.files[0].name}`, {
-                method: "POST",
-                body: input.files[0]
-            }).then(res => {
-                UpdateShownCosmetics()
-            })
+            for(const file of input.files) {
+                fetch(`/mods/install?filename=${file.name}`, {
+                    method: "POST",
+                    body: file
+                }).then(res => {
+                    UpdateShownCosmetics()
+                })
+            }
         }
     }
 }

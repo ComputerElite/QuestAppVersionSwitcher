@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Org.BouncyCastle.Asn1.Pkcs;
 
 namespace QuestAppVersionSwitcher.Mods
 {
@@ -71,33 +72,68 @@ namespace QuestAppVersionSwitcher.Mods
             InstallMod(f.Path, fileName);
         }
 
+        public static bool installingMod = false;
+        public static List<QueuedMod> installQueue = new List<QueuedMod>();
+
+        public class QueuedMod
+        {
+            public string path;
+            public string filename;
+            public int queuedOperationId;
+
+            public QueuedMod(string path, string filename, int operationId)
+            {
+                this.path = path;
+                this.filename = filename;
+                queuedOperationId = operationId;
+            }
+        }
+
+        public static void InstallFirstModFromQueue()
+        {
+            if (installingMod || installQueue.Count <= 0) return;
+            runningOperations.Remove(installQueue[0].queuedOperationId);
+            installingMod = true;
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + installQueue[0].filename });
+
+            if(!SupportsFormat(Path.GetExtension(installQueue[0].filename)))
+            {
+                File.Move(installQueue[0].path, Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename);
+                installQueue[0].path = Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename;
+                CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(installQueue[0].filename), installQueue[0].path, true);
+                runningOperations.Remove(operationId);
+                installQueue.RemoveAt(0);
+                installingMod = false;
+                InstallFirstModFromQueue();
+                return;
+            }
+            try
+            {
+                IMod mod = modManager.TryParseMod(installQueue[0].path).Result;
+                mod.Install().Wait();
+                runningOperations.Remove(operationId);
+            } catch (Exception e)
+            {
+                runningOperations.Remove(operationId);
+                operationId = operations;
+                operations++;
+                runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher" });
+            }
+            modManager.ForceSave();
+            installQueue.RemoveAt(0);
+            installingMod = false;
+            InstallFirstModFromQueue();
+        }
+
         public static void InstallMod(string path, string fileName)
         {
             int operationId = operations;
             operations++;
-            runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + fileName });
-
-            if(!SupportsFormat(Path.GetExtension(fileName)))
-            {
-                File.Move(path, Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName);
-                path = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName;
-				CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(fileName), path, true);
-				runningOperations.Remove(operationId);
-				return;   
-            }
-            try
-			{
-				IMod mod = modManager.TryParseMod(path).Result;
-				mod.Install().Wait();
-				runningOperations.Remove(operationId);
-			} catch (Exception e)
-			{
-				runningOperations.Remove(operationId);
-                operationId = operations;
-				operations++;
-				runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher" });
-			}
-            modManager.ForceSave();
+            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.Other, name = "Mod install queued: " + fileName});
+            installQueue.Add(new QueuedMod(path, fileName, operationId));
+            InstallFirstModFromQueue();
         }
 
         public static void UninstallMod(string id)
