@@ -32,6 +32,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ComputerUtils.Android.Logging;
 using Org.BouncyCastle.Asn1;
@@ -47,6 +48,8 @@ using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.IO.Pem;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Store;
+using QuestAppVersionSwitcher.ClientModels;
+using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core;
 using QuestPatcher.Core.Apk;
 using PemReader = Org.BouncyCastle.OpenSsl.PemReader;
@@ -298,6 +301,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         /// Using existing hashes reduces signing time, since only the files within the APK that have actually changed have to get signed.</param>
         public static async Task SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Preparing apk aligning and signing", ""));
             //await using Stream manifestFile = apkArchive.CreateAndOpenEntry("META-INF/MANIFEST.MF");
             await using Stream manifestFile = new MemoryStream();
             //await using Stream signaturesFile = apkArchive.CreateAndOpenEntry("META-INF/BS.SF");
@@ -365,14 +369,17 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
                 await rsaFile.WriteAsync(keyFile);
             }
 
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Aligning apk", ""));
             Logger.Log("Aligning Apk");
             ApkAligner.AlignApk(path);
 
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing apk. This may take 2 minutes. Please wait.", ""));
             Logger.Log("Make APK Signature Scheme v2");
             FileStream fs = new FileStream(path, FileMode.Open);
             using FileMemory memory = new FileMemory(fs);
-            using MemoryStream ms = new MemoryStream();
-            using FileMemory outMemory = new FileMemory(ms);
+            TempFile t = new TempFile();
+            using FileStream tmp = new FileStream(t.Path, FileMode.Create);
+            using FileMemory outMemory = new FileMemory(tmp);
             memory.Position = memory.Length() - 22;
             while(memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
             {
@@ -432,14 +439,14 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             fs.Position = 0;
             outMemory.WriteBytes(memory.ReadBytes(cd));
             signingBlock.Write(outMemory);
-            eocd.OffsetOfCD = (int)ms.Position;
+            eocd.OffsetOfCD = (int)tmp.Position;
             outMemory.WriteBytes(memory.ReadBytes((int) (eocdPosition - cd)));
             eocd.Write(outMemory);
 
-            fs.SetLength(0);
-            ms.Position = 0;
-            ms.CopyTo(fs);
             fs.Close();
+            tmp.Close();
+            if(File.Exists(path)) File.Delete(path);
+            File.Move(t.Path, path);
         }
 
         public static async Task<List<byte[]>> GetSectionDigests(FileStream fs, long startOffset, long endOffset)

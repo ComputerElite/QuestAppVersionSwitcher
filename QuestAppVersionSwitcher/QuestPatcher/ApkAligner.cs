@@ -4,7 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ComputerUtils.Android.Logging;
+using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core.Apk;
+using Xamarin.Forms;
+using File = System.IO.File;
 
 namespace QuestPatcher.Core
 {
@@ -14,9 +17,11 @@ namespace QuestPatcher.Core
 
         public static void AlignApk(string path)
         {
-            FileStream fs = new FileStream(path, FileMode.Open);
-            FileMemory memory = new FileMemory(fs);
-            FileMemory outMemory = new FileMemory(new MemoryStream());
+            using FileStream fs = new FileStream(path, FileMode.Open);
+            using FileMemory memory = new FileMemory(fs);
+            TempFile t = new TempFile();
+            using FileStream tmp = new FileStream(t.Path, FileMode.Create);
+            using FileMemory outMemory = new FileMemory(tmp);
             memory.Position = memory.Length() - 22;
             while(memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
             {
@@ -63,15 +68,10 @@ namespace QuestPatcher.Core
             eocd.NumberOfCDsOnDisk = (short) cDs.Count;
             eocd.SizeOfCD = (int) (outMemory.Position - eocd.OffsetOfCD);
             eocd.Write(outMemory);
-            memory.Dispose();
-            Logger.Log("It's done! But copying to file...");
-            fs = new FileStream(path, FileMode.Open);
-            fs.SetLength(0);
-            outMemory.Stream.Position = 0;
-            outMemory.Stream.CopyTo(fs);
             fs.Close();
-            fs.Dispose();
-            outMemory.Dispose();
+            tmp.Close();
+            if (File.Exists(path)) File.Delete(path);
+            File.Move(t.Path, path);
         }
 
     }
