@@ -153,6 +153,11 @@ namespace QuestAppVersionSwitcher
         }
 	}
 
+    public class AndroidDevice
+    {
+        public int sdkVersion { get; set; } = 0;
+    }
+    
     public enum LoggedInStatus
     {
         NotLoggedIn = 0,
@@ -382,6 +387,14 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/android/device", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                serverRequest.SendString(JsonSerializer.Serialize(new AndroidDevice()
+                {
+                    sdkVersion = (int)Build.VERSION.SdkInt
+                }), "application/json");
                 return true;
             }));
 			server.AddRoute("GET", "/android/launch", new Func<ServerRequest, bool>(serverRequest =>

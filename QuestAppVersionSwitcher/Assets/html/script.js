@@ -21,6 +21,15 @@ function IsOnQuest() {
     return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
 
+fetch("android/device").then(res => res.json().then(res => {
+    if(res.sdkVersion <= 29) {
+        // Android 10 and below don't need new storage perms
+        document.getElementById("requestAppManage").style.display = "none"
+        document.getElementById("requestAppObb").style.display = "none"
+        document.getElementById("requestAppData").style.display = "none"
+    }
+}))
+
 function LaunchApp() {
     fetch("/android/launch");
 }

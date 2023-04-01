@@ -34,13 +34,12 @@ namespace QuestAppVersionSwitcher.Core
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public async void Start()
         {
-            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
 			// Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 			// Check permissions and request if needed
             if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
             {
-                if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
+                if (await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
                 {
                     if (await Permissions.RequestAsync<Permissions.StorageWrite>() != PermissionStatus.Granted) return;
                 }
@@ -93,6 +92,8 @@ namespace QuestAppVersionSwitcher.Core
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
             FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
             FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
+            
+            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
 
             // Download file copies file
             ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);
