@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,20 +46,6 @@ namespace QuestPatcher.Core.Apk
                     memory.WriteBytes(Data);
                 }
             }
-            
-            public void Write(Stream memory)
-            {
-                StreamWriterExtension.WriteULong(memory, (ulong)Length() - 8);
-                
-                StreamWriterExtension.WriteUInt(memory, ID);
-                if(Data == null)
-                {
-                    StreamWriterExtension.WriteInt(memory, Value);
-                } else
-                {
-                    StreamWriterExtension.WriteBytes(memory, Data);
-                }
-            }
 
         }
 
@@ -80,15 +65,6 @@ namespace QuestPatcher.Core.Apk
             Values.ForEach(value => value.Write(memory));
             memory.WriteULong(size);
             memory.WriteString(MAGIC);
-        }
-        
-        public void Write(Stream memory)
-        {
-            ulong size = (ulong) Values.Sum(values => values.Length()) + 8 + 16;
-            StreamWriterExtension.WriteULong(memory, size);
-            Values.ForEach(value => value.Write(memory));
-            StreamWriterExtension.WriteULong(memory, size);
-            StreamWriterExtension.WriteString(memory, MAGIC);
         }
 
     }

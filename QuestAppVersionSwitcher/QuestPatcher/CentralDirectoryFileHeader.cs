@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,32 +51,6 @@ namespace QuestPatcher.Core.Apk
             ExtraField = memory.ReadBytes(extraFieldLength);
             FileComment = memory.ReadString(fileCommentLength);
         }
-        
-        public CentralDirectoryFileHeader(Stream memory)
-        {
-            int signature = StreamReaderExtension.ReadInt(memory);
-            if(signature != SIGNATURE)
-                throw new Exception("Invalid CentralDirectoryFileHeader signature " + signature.ToString("X4"));
-            VersionMadeBy = StreamReaderExtension.ReadShort(memory);
-            VersionNeeded = StreamReaderExtension.ReadShort(memory);
-            GeneralPurposeFlag = StreamReaderExtension.ReadShort(memory);
-            CompressionMethod = StreamReaderExtension.ReadShort(memory);
-            FileLastModificationTime = StreamReaderExtension.ReadShort(memory);
-            FileLastModificationDate = StreamReaderExtension.ReadShort(memory);
-            CRC32 = StreamReaderExtension.ReadInt(memory);
-            CompressedSize = StreamReaderExtension.ReadInt(memory);
-            UncompressedSize = StreamReaderExtension.ReadInt(memory);
-            var fileNameLength = StreamReaderExtension.ReadShort(memory);
-            var extraFieldLength = StreamReaderExtension.ReadShort(memory);
-            var fileCommentLength = StreamReaderExtension.ReadShort(memory);
-            DiskNumberFileStart = StreamReaderExtension.ReadShort(memory);
-            InternalFileAttributes = StreamReaderExtension.ReadShort(memory);
-            ExternalFileAttributes = StreamReaderExtension.ReadInt(memory);
-            Offset = StreamReaderExtension.ReadInt(memory);
-            FileName = StreamReaderExtension.ReadString(memory, fileNameLength);
-            ExtraField = StreamReaderExtension.ReadBytes(memory, extraFieldLength);
-            FileComment = StreamReaderExtension.ReadString(memory, fileCommentLength);
-        }
 
         public void Write(FileMemory memory)
         {
@@ -101,33 +74,6 @@ namespace QuestPatcher.Core.Apk
             memory.WriteString(FileName);
             memory.WriteBytes(ExtraField);
             memory.WriteString(FileComment);
-        }
-        
-        public void Write(Stream memory)
-        {
-            
-            StreamWriterExtension.WriteInt(memory, SIGNATURE);
-            StreamWriterExtension.WriteShort(memory, VersionMadeBy);
-            StreamWriterExtension.WriteShort(memory, VersionNeeded);
-            StreamWriterExtension.WriteShort(memory, GeneralPurposeFlag);
-            StreamWriterExtension.WriteShort(memory, CompressionMethod);
-            StreamWriterExtension.WriteShort(memory, FileLastModificationTime);
-            StreamWriterExtension.WriteShort(memory, FileLastModificationDate);
-            StreamWriterExtension.WriteInt(memory, CRC32);
-            StreamWriterExtension.WriteInt(memory, CompressedSize);
-            StreamWriterExtension.WriteInt(memory, UncompressedSize);
-            
-            StreamWriterExtension.WriteShort(memory, (short)FileMemory.StringLength(FileName));
-            StreamWriterExtension.WriteShort(memory, (short)ExtraField.Length);
-            StreamWriterExtension.WriteShort(memory, (short) FileMemory.StringLength(FileComment));
-            StreamWriterExtension.WriteShort(memory, DiskNumberFileStart);
-            StreamWriterExtension.WriteShort(memory, InternalFileAttributes);
-            StreamWriterExtension.WriteInt(memory, ExternalFileAttributes);
-            StreamWriterExtension.WriteInt(memory, Offset);
-            
-            StreamWriterExtension.WriteString(memory, FileName);
-            StreamWriterExtension.WriteBytes(memory, ExtraField);
-            StreamWriterExtension.WriteString(memory, FileComment);
         }
     }
 }

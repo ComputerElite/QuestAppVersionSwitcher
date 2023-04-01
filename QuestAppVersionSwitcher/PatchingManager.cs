@@ -110,6 +110,7 @@ namespace QuestAppVersionSwitcher
             PatchManifest(apkArchive);
             Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes = AddLibs(apkArchive);
             apkArchive.Dispose();
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing and aligning apk", ""));
             
             ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes).Wait();
 
