@@ -695,19 +695,29 @@ document.getElementById("install").onclick = () => {
 }
 
 document.getElementById("grantAccess").onclick = () => {
-    fetch("grantaccess?package=" + config.currentApp).then(res => {
+    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.text().then(text => {
-            if (res.status == 200) {
-                fetch("containsgamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+            if (text == "True") {
+                fetch("grantaccess?package=" + config.currentApp).then(res => {
                     res.text().then(text => {
-                        if (text == "False") {
-                            GotoStep(5)
-                        } else {
-                            GotoStep(4)
-                        }
+                        if (res.status == 200) {
+                            fetch("containsgamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                                res.text().then(text => {
+                                    if (text == "False") {
+                                        GotoStep(5)
+                                    } else {
+                                        GotoStep(4)
+                                    }
+                                })
+                            })
+                        } else TextBoxError("step3box", text)
                     })
                 })
-            } else TextBoxError("step3box", text)
+            }
+            else {
+                TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
+                GotoStep(3)
+            }
         })
     })
 }
