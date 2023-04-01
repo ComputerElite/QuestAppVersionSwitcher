@@ -83,25 +83,14 @@ namespace QuestPatcher.Core.Apk
 
         public static short ReadShort(Stream r)
         {
-            byte[] buffer = new byte[2];
-            r.Read(buffer, 0, 2);
-            return BitConverter.ToInt16(buffer, 0);
+            return BitConverter.ToInt16(ReadBytes(r, 2), 0);
         }
 
         public static string ReadString(Stream r, int length)
         {
-            byte[] buffer = new byte[length];
-            r.Read(buffer, 0, length);
-            return Encoding.UTF8.GetString(buffer);
+            return Encoding.UTF8.GetString(ReadBytes(r, length));
         }
 
-        public static byte[] ReadBytes(Stream r, short length)
-        {
-            byte[] buffer = new byte[length];
-            r.Read(buffer, 0, length);
-            return buffer;
-        }
-        
         public static byte[] ReadBytes(Stream r, int length)
         {
             byte[] buffer = new byte[length];

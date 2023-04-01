@@ -70,8 +70,10 @@ namespace QuestPatcher.Core
                 eocd.NumberOfCDs = (short) cDs.Count;
                 eocd.NumberOfCDsOnDisk = (short) cDs.Count;
                 eocd.SizeOfCD = (int) (outFs.Position - eocd.OffsetOfCD);
+                Logger.Log(eocd.NumberOfCDs.ToString());
                 eocd.Write(outFs);
                 fs.Close();
+                outFs.Close();
                 Logger.Log("Aligning done. Deleting " + path + " and replacing it with " + temp.Path);
                 QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Aligning done, removing temporary apk", ""));
                 if(File.Exists(path)) File.Delete(path);

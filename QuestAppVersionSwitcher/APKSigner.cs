@@ -373,6 +373,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Aligning apk", ""));
             Logger.Log("Aligning Apk");
             ApkAligner.AlignApk(path);
+            return;
             
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing apk", ""));
             Logger.Log("Make APK Signature Scheme v2");
