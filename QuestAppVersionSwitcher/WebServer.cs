@@ -829,6 +829,20 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("", "text/plain", 200);
                 return true;
             }));
+            
+            server.AddRoute("GET", "/gotaccess", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                if (serverRequest.queryString.Get("package") == null)
+                {
+                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    return true;
+                }
+                string package = serverRequest.queryString.Get("package");
+                string dir = Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package;
+                if (serverRequest.queryString.Get("obb") != null) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                serverRequest.SendString(FolderPermission.GotAccessTo(dir).ToString(), "text/plain", 200);
+                return true;
+            }));
             server.AddRoute("GET", "/grantmanagestorageappaccess", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)

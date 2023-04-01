@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Android.App;
 using Android.Content;
 using Android.Net;
@@ -11,11 +13,12 @@ using AndroidX.Activity.Result.Contract;
 using AndroidX.DocumentFile.Provider;
 using ComputerUtils.Android;
 using ComputerUtils.Android.FileManaging;
+using ComputerUtils.Android.Logging;
 using Google.Android.Material.Dialog;
 using Java.IO;
 using Java.Lang;
-using Java.Util.Logging;
 using QuestAppVersionSwitcher.Core;
+using Xamarin.Forms.Internals;
 using File = System.IO.File;
 
 namespace QuestAppVersionSwitcher
@@ -34,6 +37,17 @@ namespace QuestAppVersionSwitcher
                     DocumentsContract.ExtraInitialUri,
                     Uri.Parse(RemapPathForApi300OrAbove(dirInExtenalStorage)));
             l.Launch(intent);
+        }
+
+        public static bool GotAccessTo(string dirInExtenalStorage)
+        {
+            string uri = RemapPathForApi300OrAbove(dirInExtenalStorage).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/");
+            List<UriPermission> perms = AndroidCore.context.ContentResolver.PersistedUriPermissions.ToList();
+            foreach (UriPermission p in perms)
+            {
+                if (p.Uri.ToString() == uri) return true;
+            }
+            return false;
         }
         
         public static string RemapPathForApi300OrAbove(string path)

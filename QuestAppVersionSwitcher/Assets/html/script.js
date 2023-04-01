@@ -687,7 +687,15 @@ document.getElementById("install").onclick = () => {
     fetch("restoreapp?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
         res.text().then(text => {
             if (res.status == 200) {
-                GotoStep("4.1")
+                fetch("gotaccess?package=" + config.currentApp).then(res => {
+                    res.text().then(text => {
+                        if (text == "True") {
+                            GotoStep(4)
+                        } else {
+                            GotoStep("4.1")
+                        }
+                    })
+                })
             }
             else TextBoxError("step4.1box", text)
         })

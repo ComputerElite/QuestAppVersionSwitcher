@@ -34,7 +34,7 @@ namespace QuestAppVersionSwitcher.Core
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public async void Start()
         {
-            //Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
+            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
 			// Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 			// Check permissions and request if needed
