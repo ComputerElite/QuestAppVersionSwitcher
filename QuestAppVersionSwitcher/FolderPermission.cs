@@ -56,8 +56,16 @@ namespace QuestAppVersionSwitcher
             try
             {
                 Stream file = GetOutputStream(to);
-                file.Write(File.ReadAllBytes(from));
-                file.Close();
+                
+                if (file.CanWrite)
+                {
+                    var readStream = File.OpenRead(from);
+                    readStream.CopyTo(file);
+                    // Close stuff
+                    file.Close();
+                    readStream.Close();
+                }
+                
             } catch (Exception e)
             {
                 ComputerUtils.Android.Logging.Logger.Log(e.ToString());
@@ -82,6 +90,12 @@ namespace QuestAppVersionSwitcher
             string[] dirs = diff.Split('/');
             DocumentFile startDir = DocumentFile.FromTreeUri(AndroidCore.context, Uri.Parse(RemapPathForApi300OrAbove(start).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/")));
             DocumentFile currentDir = startDir;
+
+            // Not sure if needed, probably remove
+            if (dirs == null)
+            {
+                return currentDir;
+            }
             foreach (string dirName in dirs)
             {
                 if (currentDir.FindFile(dirName) == null) currentDir.CreateDirectory(dirName); // Create directory if it doesn't exist
@@ -107,8 +121,12 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
+            // Remove trailing slash because it causes problems
+            if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
             DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
             string name = Path.GetFileName(path);
+            // If name is empty no need to create directory
+            if (name == "") return;
             if (directory.FindFile(name) == null) directory.CreateDirectory(name);
         }
     }
