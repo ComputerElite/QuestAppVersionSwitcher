@@ -32,6 +32,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using ComputerUtils.Android.Logging;
 using Org.BouncyCastle.Asn1;
@@ -47,6 +48,8 @@ using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.IO.Pem;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Store;
+using QuestAppVersionSwitcher.ClientModels;
+using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core;
 using QuestPatcher.Core.Apk;
 using PemReader = Org.BouncyCastle.OpenSsl.PemReader;
@@ -298,6 +301,8 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         /// Using existing hashes reduces signing time, since only the files within the APK that have actually changed have to get signed.</param>
         public static async Task SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
+            
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Starting apk sign", ""));
             //await using Stream manifestFile = apkArchive.CreateAndOpenEntry("META-INF/MANIFEST.MF");
             await using Stream manifestFile = new MemoryStream();
             //await using Stream signaturesFile = apkArchive.CreateAndOpenEntry("META-INF/BS.SF");
@@ -365,29 +370,31 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
                 await rsaFile.WriteAsync(keyFile);
             }
 
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Aligning apk", ""));
             Logger.Log("Aligning Apk");
             ApkAligner.AlignApk(path);
-
+            
+            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing apk", ""));
             Logger.Log("Make APK Signature Scheme v2");
+            
             FileStream fs = new FileStream(path, FileMode.Open);
-            using FileMemory memory = new FileMemory(fs);
-            using MemoryStream ms = new MemoryStream();
-            using FileMemory outMemory = new FileMemory(ms);
-            memory.Position = memory.Length() - 22;
-            while(memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
+            TempFile temp = new TempFile();
+            FileStream outFs = new FileStream(temp.Path, FileMode.Create);
+            fs.Position = fs.Length - 22;
+            while(StreamReaderExtension.ReadInt(fs) != EndOfCentralDirectory.SIGNATURE)
             {
-                memory.Position -= 4 + 1;
+                fs.Position -= 4 + 1;
             }
-            memory.Position -= 4;
-            var eocdPosition = memory.Position;
-            EndOfCentralDirectory eocd = new EndOfCentralDirectory(memory);
+            fs.Position -= 4;
+            var eocdPosition = fs.Position;
+            EndOfCentralDirectory eocd = new EndOfCentralDirectory(fs);
             if(eocd == null)
                 return;
             var cd = eocd.OffsetOfCD;
-            memory.Position = cd-16-8;
+            fs.Position = cd-16-8;
             
-            var d = memory.ReadULong();
-            var d2 = memory.ReadString(16);
+            var d = StreamReaderExtension.ReadULong(fs);
+            var d2 = StreamReaderExtension.ReadString(fs, 16);
             var section1 = await GetSectionDigests(fs, 0, cd);
             var section3 = await GetSectionDigests(fs, cd, eocdPosition);
             var section4 = await GetSectionDigests(fs, eocdPosition, fs.Length);
@@ -430,16 +437,16 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             signingBlock.Values.Add(block.ToIDValuePair());
 
             fs.Position = 0;
-            outMemory.WriteBytes(memory.ReadBytes(cd));
-            signingBlock.Write(outMemory);
-            eocd.OffsetOfCD = (int)ms.Position;
-            outMemory.WriteBytes(memory.ReadBytes((int) (eocdPosition - cd)));
-            eocd.Write(outMemory);
-
-            fs.SetLength(0);
-            ms.Position = 0;
-            ms.CopyTo(fs);
+            StreamWriterExtension.WriteBytes(outFs, StreamReaderExtension.ReadBytes(fs, cd));
+            signingBlock.Write(outFs);
+            eocd.OffsetOfCD = (int)fs.Position;
+            StreamWriterExtension.WriteBytes(outFs, StreamReaderExtension.ReadBytes(fs, (int)(eocdPosition - cd)));
+            eocd.Write(outFs);
+            
             fs.Close();
+            outFs.Close();
+            if(File.Exists(path)) File.Delete(path);
+            File.Move(temp.Path, path);
         }
 
         public static async Task<List<byte[]>> GetSectionDigests(FileStream fs, long startOffset, long endOffset)

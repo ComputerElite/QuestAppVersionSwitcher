@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,6 +41,25 @@ namespace QuestPatcher.Core.Apk
             FileName = memory.ReadString(fileNameLength);
             ExtraField = memory.ReadBytes(extraFieldLength);
         }
+        
+        public LocalFileHeader(Stream memory)
+        {
+            int signature = StreamReaderExtension.ReadInt(memory);
+            if(signature != SIGNATURE)
+                throw new Exception("Invalid LocalFileHeader signature " + signature.ToString("X4"));
+            VersionNeeded = StreamReaderExtension.ReadShort(memory);
+            GeneralPurposeFlag = StreamReaderExtension.ReadShort(memory);
+            CompressionMethod = StreamReaderExtension.ReadShort(memory);
+            FileLastModificationTime = StreamReaderExtension.ReadShort(memory);
+            FileLastModificationDate = StreamReaderExtension.ReadShort(memory);
+            CRC32 = StreamReaderExtension.ReadInt(memory);
+            CompressedSize = StreamReaderExtension.ReadInt(memory);
+            UncompressedSize = StreamReaderExtension.ReadInt(memory);
+            var fileNameLength = StreamReaderExtension.ReadShort(memory);
+            var extraFieldLength = StreamReaderExtension.ReadShort(memory);
+            FileName =StreamReaderExtension.ReadString(memory, fileNameLength);
+            ExtraField = StreamReaderExtension.ReadBytes(memory, extraFieldLength);
+        }
 
         public void Write(FileMemory memory)
         {
@@ -56,6 +76,26 @@ namespace QuestPatcher.Core.Apk
             memory.WriteShort((short)ExtraField.Length);
             memory.WriteString(FileName);
             memory.WriteBytes(ExtraField);
+        }
+        
+        public void Write(Stream memory)
+        {
+            StreamWriterExtension.WriteInt(memory, SIGNATURE);
+            StreamWriterExtension.WriteShort(memory, VersionNeeded);
+            StreamWriterExtension.WriteShort(memory, GeneralPurposeFlag);
+            StreamWriterExtension.WriteShort(memory, CompressionMethod);
+            StreamWriterExtension.WriteShort(memory, FileLastModificationTime);
+            StreamWriterExtension.WriteShort(memory, FileLastModificationDate);
+            StreamWriterExtension.WriteShort(memory, VersionNeeded);
+            StreamWriterExtension.WriteInt(memory, CRC32);
+            StreamWriterExtension.WriteInt(memory, CompressedSize);
+            StreamWriterExtension.WriteInt(memory, UncompressedSize);
+            
+            StreamWriterExtension.WriteShort(memory, (short)FileMemory.StringLength(FileName));
+            StreamWriterExtension.WriteShort(memory, (short)ExtraField.Length);
+            StreamWriterExtension.WriteString(memory, FileName);
+            StreamWriterExtension.WriteBytes(memory, ExtraField);
+
         }
 
     }
