@@ -902,9 +902,12 @@ document.getElementById("abortPassword").onclick = () => {
     CloseGetPasswordPopup()
 }
 document.getElementById("confirmPassword").onclick = () => {
-    options.password = document.getElementById("passwordConfirm").value
+    options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
-    fetch("/download?body=" + JSON.stringify(options).replace(/&/g, "and")).then(res => {
+    fetch("/download", {
+        method: "POST",
+        body: JSON.stringify(options)
+    }).then(res => {
         res.text().then(text => {
             if (res.status == 403) {
                 TextBoxError("step7box", text)
@@ -923,7 +926,10 @@ function StopDownload(name) {
 
 document.getElementById("logs").onclick = () => {
     TextBoxText("logsText", "Collecting information.. please allow us up to 30 seconds to collect everything")
-    fetch("/questappversionswitcher/uploadlogs?password=" + document.getElementById("logspwd").value).then(res => {
+    fetch("/questappversionswitcher/uploadlogs", {
+        method: "POST",
+        body: encodeURIComponent(document.getElementById("logspwd").value)
+    }).then(res => {
         res.text().then(text => {
             if (res.status == 403) {
                 TextBoxError("logsText", text)
@@ -947,12 +953,15 @@ document.getElementById("confirmLogin").onclick = () => {
 }
 
 document.getElementById("tokenPassword").onclick = () => {
-    options.password = document.getElementById("passwordConfirm").value
+    options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
-    fetch("/token?body=" + JSON.stringify({
-        token: params.get("token"),
-        password: document.getElementById("passwordToken").value
-    })).then(res => {
+    fetch("/token", {
+        method: "POST",
+        body: JSON.stringify({
+            token: params.get("token"),
+            password: encodeURIComponent(document.getElementById("passwordToken").value)
+        })
+    }).then(res => {
         res.text().then(text => {
             if (res.status == 200) {
                 TextBoxGood("step8box", text)

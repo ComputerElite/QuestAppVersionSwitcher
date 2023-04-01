@@ -453,7 +453,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Uninstall request sent");
                 return true;
             }));
-            server.AddRoute("GET", "/questappversionswitcher/uploadlogs", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("POST", "/questappversionswitcher/uploadlogs", new Func<ServerRequest, bool>(request =>
             {
                 Logger.Log("\n\n------Log upload requested------");
 				QAVSReport report = new QAVSReport();
@@ -466,13 +466,13 @@ namespace QuestAppVersionSwitcher
                 {
                     try
                     {
-						if (GetSHA256OfString(request.queryString.Get("password")) != CoreService.coreVars.password)
+						if (GetSHA256OfString(request.bodyString) != CoreService.coreVars.password)
 						{
 							request.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
 							return true;
 						}
                         GraphQLClient.log = false;
-						GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.queryString.Get("password"));
+						GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.bodyString);
 						ViewerData<OculusUserWrapper> entitlements = GraphQLClient.GetActiveEntitelments();
 						foreach (Entitlement e in entitlements.data.viewer.user.active_entitlements.nodes)
 						{
@@ -927,9 +927,9 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
                 return true;
             }));
-            server.AddRoute("GET", "/token", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
             {
-                TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.queryString.Get("body"));
+                TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
                 if (r.token.Contains("%"))
                 {
                     serverRequest.SendString("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", "text/plain", 400);
@@ -952,9 +952,9 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Set token");
                 return true;
             }));
-            server.AddRoute("GET", "/download", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
             {
-                DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.queryString.Get("body"));
+                DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
                 if (GetSHA256OfString(r.password) != CoreService.coreVars.password)
                 {
                     serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
