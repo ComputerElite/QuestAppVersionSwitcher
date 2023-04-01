@@ -125,9 +125,18 @@ namespace QuestAppVersionSwitcher.Mods
                 try
                 {
                     string dir = Directory.GetParent(k.Value).FullName;
-                    FolderPermission.CreateDirectoryIfNotExisting(dir);
-                    FolderPermission.Copy(k.Key, k.Value);
-                    //File.Copy(k.Key, k.Value, true);
+                    // If file is in android folder use SAF
+                    if (k.Value.Contains("Android/data") || k.Value.Contains("Android/obb"))
+                    {
+                        FolderPermission.CreateDirectoryIfNotExisting(dir);
+                        FolderPermission.Copy(k.Key, k.Value);
+                    }
+                    else
+                    {
+                        // If file is not in android folder use normal file copy
+                        if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                        File.Copy(k.Key, k.Value, true);
+                    }
                 } catch(Exception e)
                 {
                     Logger.Log(e.ToString(), LoggingType.Error);
@@ -148,7 +157,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
 
             Logger.Log($"Uninstalling mod {Id} . . .");
-
+            
             List<string> filesToRemove = new List<string>();
             // Remove mod SOs so that the mod will not load
             foreach (string modFilePath in Manifest.ModFileNames)
@@ -186,7 +195,22 @@ namespace QuestAppVersionSwitcher.Mods
 
             foreach(string f in filesToRemove)
             {
-                if (File.Exists(f)) FolderPermission.Delete(f);
+                if (File.Exists(f))
+                {
+                    // If file is in android folder 
+                    if (f.Contains("Android/data") || f.Contains("Android/obb"))
+                    {
+                        // Delete using SAF
+                        if (File.Exists(f)) FolderPermission.Delete(f);
+                    }
+                    else
+                    {
+                        // If file is in normal folder
+                        // Delete the file using normal method
+                        File.Delete(f);
+                    }
+                }
+                
             }
 
             IsInstalled = false;
