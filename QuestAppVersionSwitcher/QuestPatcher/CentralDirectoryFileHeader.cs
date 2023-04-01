@@ -105,6 +105,7 @@ namespace QuestPatcher.Core.Apk
         
         public void Write(Stream memory)
         {
+            
             StreamWriterExtension.WriteInt(memory, SIGNATURE);
             StreamWriterExtension.WriteShort(memory, VersionMadeBy);
             StreamWriterExtension.WriteShort(memory, VersionNeeded);
@@ -115,6 +116,7 @@ namespace QuestPatcher.Core.Apk
             StreamWriterExtension.WriteInt(memory, CRC32);
             StreamWriterExtension.WriteInt(memory, CompressedSize);
             StreamWriterExtension.WriteInt(memory, UncompressedSize);
+            
             StreamWriterExtension.WriteShort(memory, (short)FileMemory.StringLength(FileName));
             StreamWriterExtension.WriteShort(memory, (short)ExtraField.Length);
             StreamWriterExtension.WriteShort(memory, (short) FileMemory.StringLength(FileComment));
@@ -122,6 +124,7 @@ namespace QuestPatcher.Core.Apk
             StreamWriterExtension.WriteShort(memory, InternalFileAttributes);
             StreamWriterExtension.WriteInt(memory, ExternalFileAttributes);
             StreamWriterExtension.WriteInt(memory, Offset);
+            
             StreamWriterExtension.WriteString(memory, FileName);
             StreamWriterExtension.WriteBytes(memory, ExtraField);
             StreamWriterExtension.WriteString(memory, FileComment);
