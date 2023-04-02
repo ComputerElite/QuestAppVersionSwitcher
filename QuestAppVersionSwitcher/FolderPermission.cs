@@ -31,7 +31,7 @@ namespace QuestAppVersionSwitcher
         {
             if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
             {
-                FileManager.CreateDirectoryIfNotExisting(dirInExtenalStorage);
+                CreateDirectory(dirInExtenalStorage);
             }
             Intent intent = new Intent(Intent.ActionOpenDocumentTree)
                 .PutExtra(
@@ -148,8 +148,8 @@ namespace QuestAppVersionSwitcher
         /// <returns></returns>
         public static DocumentFile GetAccessToFile(string dir)
         {
-            string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
-            if(dir.Contains("/Android/obb/")) start = "/sdcard/Android/obb/" + CoreService.coreVars.currentApp;
+            string start = "/sdcard/Android/data";
+            if(dir.Contains("/Android/obb/")) start = "/sdcard/Android/obb";
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");

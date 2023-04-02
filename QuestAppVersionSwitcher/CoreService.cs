@@ -112,6 +112,11 @@ namespace QuestAppVersionSwitcher.Core
             Logger.displayLogInConsole = true;
 			QAVSModManager.Init();
             qAVSWebserver.Start();
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
+            {
+                if(!FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
+                if(!FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb")) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb");
+            }
         }
     }
     

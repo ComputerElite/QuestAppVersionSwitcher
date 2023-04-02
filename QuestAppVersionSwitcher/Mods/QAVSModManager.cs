@@ -152,6 +152,7 @@ namespace QuestAppVersionSwitcher.Mods
                 }
             }
 
+            // {"success": true, "msg": "Success/Error: blah blah"}
             runningOperations.Remove(operationId);
         }
 
