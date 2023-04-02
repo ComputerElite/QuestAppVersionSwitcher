@@ -806,13 +806,6 @@ document.getElementById("requestAppPermission").onclick = () => {
     })
 }
 
-document.getElementById("requestAppObbPermission").onclick = () => {
-    fetch("grantaccess?obb=true&package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-        })
-    })
-}
-
 document.getElementById("restoreappdata").onclick = () => {
     fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.text().then(text => {
