@@ -1,6 +1,9 @@
+import { MetaProvider, Title, Link, Meta } from '@solidjs/meta';
+
 export default function BackupPage() {
     return (
         <div>
+            <Title>sdfsafsda</Title>
             <div class="contentHeader">
                 Backup
                 <div class="contentHeaderDescription">Backup your game and restore backups</div>

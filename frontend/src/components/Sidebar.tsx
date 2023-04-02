@@ -1,6 +1,7 @@
 import { Routes, Route, A } from "@solidjs/router";
 import { For } from "solid-js";
 import "./Sidebar.scss"
+import { config } from "../store";
 
 let gameInstalled = true;
 
@@ -24,7 +25,7 @@ export default function Sidebar() {
             <div class="header">
                 <div style="width: 100%;">Welcome to Quest App Version Switcher</div>
                 <div style="font-size: 80%; width: 100%;">
-                    Managing <div class="inline packageName">some game</div>
+                    Managing <div class="inline packageName">{config()?.currentApp?? "some app"}</div>
                 </div>
             </div>
             

@@ -451,6 +451,11 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
+"@solidjs/meta@^0.28.3":
+  version "0.28.3"
+  resolved "https://registry.yarnpkg.com/@solidjs/meta/-/meta-0.28.3.tgz#3176f47ef712e93165c24403c57645ac9df61686"
+  integrity sha512-rZnvDhPILrBeRIr31pnfGdBMHeamsUj44GLK1j6nnDBMCX4VWO5hwTwpaLsgRgPkRD6U9zTtt33bKNVb92rSSg==
+
 "@solidjs/router@^0.8.2":
   version "0.8.2"
   resolved "https://registry.yarnpkg.com/@solidjs/router/-/router-0.8.2.tgz#3dd82fd052cb8654a2948989ed3e17cf6b25b04d"
@@ -868,6 +873,11 @@ solid-refresh@^0.5.0:
     "@babel/generator" "^7.21.1"
     "@babel/helper-module-imports" "^7.18.6"
     "@babel/types" "^7.21.2"
+
+solid-toast@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/solid-toast/-/solid-toast-0.5.0.tgz#ed31363aad38434a67c1da1c423fd1492460c6ba"
+  integrity sha512-t770JakjyS2P9b8Qa1zMLOD51KYKWXbTAyJePVUoYex5c5FH5S/HtUBUbZAWFcqRCKmAE8KhyIiCvDZA8bOnxQ==
 
 "source-map-js@>=0.6.2 <2.0.0", source-map-js@^1.0.2:
   version "1.0.2"

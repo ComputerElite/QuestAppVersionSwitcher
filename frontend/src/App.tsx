@@ -1,5 +1,5 @@
 import { Component, createEffect, createSignal } from 'solid-js';
-
+import toast, { Toaster } from 'solid-toast';
 import logo from './logo.svg';
 import './legacy.css';
 import Sidebar from './components/Sidebar';
@@ -12,39 +12,39 @@ import CosmeticsPage from './pages/CosmeticsPage';
 import ModsPage from './pages/ModsPage';
 import PatchingPage from './pages/PatchingPage';
 import ToolsPage from './pages/ToolsPage';
+import { MetaProvider } from '@solidjs/meta';
+
 
 
 const App: Component = () => {
-  let [count, setCount] = createSignal(0);
-
-  createEffect(() => {
-    console.log('count', count());
-
-    fetch('http://localhost:50002/api/mods/mods')
-  });
 
   return (
-    <Router source={hashIntegration()} >
-      <div class='menuContainer'>
-        <Sidebar />
-        <div class="content">
-          <div class="contentItem">
-            <Routes>
-              <Route path="/" element={<Navigate href={"/backup"} />} />
-              <Route path="/backup" element={<BackupPage />} />
-              <Route path="/downgrade" element={<DowngradePage />} />
-              <Route path="/downloads" element={<DownloadProgressPage />} />
-              <Route path="/patching" element={<PatchingPage />} />
-              <Route path="/mods" element={<ModsPage />} />
-              <Route path="/cosmetics" element={<CosmeticsPage />} />
-              <Route path="/getMods" element={<GetModsPage />} />
-              <Route path="/tools" element={<ToolsPage />} />
-            </Routes>
+    <MetaProvider>
+      <Router source={hashIntegration()} >
+        <div class='menuContainer'>
+          <Sidebar />
+          <div class="content">
+            <div class="contentItem">
+              <Routes>
+                <Route path="/" element={<Navigate href={"/backup"} />} />
+                <Route path="/backup" element={<BackupPage />} />
+                <Route path="/downgrade" element={<DowngradePage />} />
+                <Route path="/downloads" element={<DownloadProgressPage />} />
+                <Route path="/patching" element={<PatchingPage />} />
+                <Route path="/mods" element={<ModsPage />} />
+                <Route path="/cosmetics" element={<CosmeticsPage />} />
+                <Route path="/getMods" element={<GetModsPage />} />
+                <Route path="/tools" element={<ToolsPage />} />
+              </Routes>
+            </div>
           </div>
         </div>
-      </div>
-    </Router>
-
+        <Toaster 
+          gutter={8}
+          position="bottom-left"
+        />
+      </Router>
+    </MetaProvider>
   );
 };
 

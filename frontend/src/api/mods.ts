@@ -18,6 +18,7 @@ export interface ILibrary {
     PackageVersion: string;
     Porter?: string,
     Robinson?: string,
+    hasCover: boolean,
     IsInstalled: boolean,
     IsLibrary: true,
     FileCopyTypes: Array<any>
@@ -42,13 +43,32 @@ export async function getModsList(): Promise<ModListResponse> {
     return await response.json();
 };
 
-export async function UploadMod(file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch('/api/mods/upload', {
+export async function UploadMod(file: File): Promise<boolean> {
+    const response = await fetch(`/api/mods/install?filename=${file.name}`, {
         method: 'POST',
-        body: formData
+        body: file
     });
-    return await response.json();
+
+    return true;
+}
+
+
+/**
+ * Deletes a mod completely from quest
+ * @param id 
+ * @returns 
+ */
+export async function DeleteMod(id: string): Promise<boolean> {
+    const response = await fetch(`/api/mods/delete?id=${id}`, {method: "POST"});
+    return true;
+}
+
+
+/**
+ * Disable or enable mods
+ * @param id 
+ * @param enable 
+ */
+export async function UpdateModState(id: string, enable: boolean) {
+    await fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"});
 }

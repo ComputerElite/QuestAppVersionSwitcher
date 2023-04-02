@@ -1,5 +1,9 @@
 ﻿/* Loader */
 
+body {
+    background-color: #242424;
+}
+
 .loaderContainer {
     width: 150px;
     height: 150px;

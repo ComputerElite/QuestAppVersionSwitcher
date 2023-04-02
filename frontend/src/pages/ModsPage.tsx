@@ -1,58 +1,150 @@
-import { For, Show, createEffect, createSignal } from "solid-js";
-import { ILibrary, IMod, getModsList } from "../api/mods";
+import { For, Index, JSX, Show, batch, createEffect, createSignal, mapArray, onCleanup, onMount } from "solid-js";
+import { DeleteMod, ILibrary, IMod, UpdateModState, UploadMod, getModsList } from "../api/mods";
 import image from "./../assets/DefaultCover.png"
+import "./ModsPage.scss";
+import { modsList, mutateMods, refetchMods } from "../state/mods";
+import { CompareStringsAlphabetically, Sleep } from "../util";
+import toast from "solid-toast";
 
-export default function ModsPage() {
-  var loading = false;
+async function UploadModClick() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.multiple = true;
+  input.click();
+  input.addEventListener("change", async function (e) {
 
-  let [mods, setMods] = createSignal<Array<IMod>>([]);
-  let [libs, setLibs] = createSignal<Array<ILibrary>>([]);
+    if (this.files && this.files.length > 0) {
+      for (const file of this.files) {
+        await UploadMod(file);
+      }
+    }
+    console.log("done")
+    refetchMods();
+    toast.success("Mods installed");
+  })
+}
 
-  createEffect(() => {
-    console.log("mods", mods());
-    console.log("libs", libs());
-  });
 
-  createEffect(async () => {
-    try {
-      let data = await getModsList();
-      setMods(data.mods);
-      setLibs(data.libs);
+async function onFileDrop(e: DragEvent) {
+  e.preventDefault();
+  e.stopPropagation();
 
-      console.log("success")
-    } catch (e) {
-      console.error(e);
+  // If dropped items aren't files, reject them
+  if (!e.dataTransfer) return;
+
+  // If it's files, process them and send them to the server one by one
+  if (e.dataTransfer) {
+    let filesToUpload: Array<File> = [];
+
+
+    // Try 2 ways of getting files 
+    if (e.dataTransfer.items) {
+      // Use DataTransferItemList interface to access the file(s)
+      [...e.dataTransfer.items].forEach((item, i) => {
+        // If dropped items aren't files, reject them
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) {
+            console.log(`… file[${i}].name = ${file.name}`);
+            filesToUpload.push(file);
+          }
+        }
+      });
+    } else {
+      // Use DataTransfer interface to access the file(s)
+      [...e.dataTransfer.files].forEach((file, i) => {
+        filesToUpload.push(file);
+      });
     }
 
-  });
+    let url = e.dataTransfer.getData("URL");
+    if (url) {
+      console.log("URL", url);
+    }
+
+    if (filesToUpload.length > 0) {
+      for (const file of filesToUpload)
+        await UploadMod(file);
+
+      refetchMods();
+      toast.success("Mods installed");
+    }
+
+  }
+
+}
+
+export default function ModsPage() {
+  const [isDragging, setIsDragging] = createSignal(false);
+  const [dragCounter, setDragCounter] = createSignal(0);
+
+  function ondragenter(e: DragEvent) {
+   
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragCounter() + 1 >= 0) {
+      setIsDragging(true);
+    }
+    setDragCounter(dragCounter() + 1);
+  }
+  function ondragleave(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(dragCounter() - 1);
+    if (dragCounter() <= 0) {
+      setIsDragging(false);
+    }
+  }
+
+  function ondragover(e: DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function ondrop(e: DragEvent) {
+    onFileDrop(e);
+    setIsDragging(false);
+  }
+
+  onMount(async () => {
+    window.addEventListener("drop", ondrop);
+    window.addEventListener("dragover", ondragover);
+    window.addEventListener("dragleave", ondragleave);
+    window.addEventListener("dragenter", ondragenter);
+    console.log("mounted")
+  })
+
+  onCleanup(() => {
+    window.removeEventListener("drop", ondrop);
+    window.removeEventListener("dragover", ondragover);
+    window.removeEventListener("dragleave", ondragleave);
+    window.removeEventListener("dragenter", ondragenter);
+    console.log("unmounted")
+  })
 
   return (
-    <div>
-      <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
-      <div class="button topMargin" onClick="LaunchApp()">Launch Game</div>
-      <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
-      <div id="operations">
-        <h2 id="ongoingCount">Ongoing operations:</h2>
-        <Show when={loading}>
-          <div class="loaderContainer" style="margin-bottom: 10px;">
-            <div class="loaderBarRight"></div>
-            <div class="loaderBarLeft"></div>
-            <div class="loaderBarTop"></div>
-            <div class="loaderBarBottom"></div>
-            <div class="loaderSpinningCircle"></div>
-            <div class="loaderMiddleCircle"></div>
-            <div class="loaderCircleHole"></div>
-            <div class="loaderSquare"></div>
-          </div>
-        </Show>
+    <div
+      class="modsPage"
+>
 
-        <div class="infiniteList" id="operationsList">
-
-        </div>
+      <div classList={{
+        "dragOverlay": true,
+        "active": isDragging()
+      }
+      }>
+        <div class="dragOverlayText">Drop to install</div>
       </div>
+
       <h2>Installed Mods</h2>
+      <div style={{
+        display: "flex",
+        gap: "1rem",
+      }}>
+        <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
+        <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
+      </div>
       <div class="infiniteList" id="modsList">
-        <For each={mods()}>
+        <For each={modsList()?.filter((s) => !s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))} fallback={<div>No mods</div>}  >
           {(mod) => (
             <ModCard mod={mod} />
           )}
@@ -61,22 +153,35 @@ export default function ModsPage() {
       </div>
       <h2>Installed Libraries</h2>
       <div class="infiniteList" id="libsList">
-        <For each={libs()}>
+        <Index each={modsList()?.filter((s) => s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))} fallback={<div>No mods</div>}>
           {(mod) => (
-            <ModCard mod={mod} />
+            <ModCard mod={mod()} />
           )}
-        </For>
+        </Index>
       </div>
     </div>
   )
 }
 
+async function ToggleModState(modId: string, newState: boolean) {
+  await UpdateModState(modId, newState);
+  await Sleep(300);
+  refetchMods();
+  toast.success(`Mod ${modId} is ${newState ? "enabled" : "disabled"}`)
+}
+
+async function DeleteModClick(mod: IMod) {
+  await DeleteMod(mod.Id);
+  await Sleep(300);
+  refetchMods();
+  toast.success(`Mod ${mod.Name} is deleted`)
+}
 
 function ModCard({ mod }: { mod: IMod }) {
   return (
     <div class="mod">
       <div class="leftRightSplit">
-        <img class="modCover" src={image} />
+        <img class="modCover" src={(mod.HasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
         <div class="upDownSplit spaceBetween">
           <div class="upDownSplit">
             <div class="leftRightSplit nomargin">
@@ -86,16 +191,18 @@ function ModCard({ mod }: { mod: IMod }) {
             <div class="smallText">{mod.Description}</div>
           </div>
 
-          <div class="button" onclick="DeleteMod('Nya')">Delete</div>
+          <div class="button" onClick={() => { DeleteModClick(mod) }} >Delete</div>
         </div>
       </div>
       <div class="upDownSplit spaceBetween relative">
-        <div class="smallText margin20">
-          (by FrozenAlex)
-        </div>
+        <Show when={mod.Author}>
+          <div class="smallText margin20">
+            {mod.Author}
+          </div>
+        </Show>
 
         <label class="switch">
-          <input onchange="UpdateModState('Nya', false)" type="checkbox" checked="" />
+          <input type="checkbox" checked={mod.IsInstalled} onChange={() => ToggleModState(mod.Id, !mod.IsInstalled)} />
           <span class="slider round"></span>
         </label>
 
