@@ -852,7 +852,7 @@ namespace QuestAppVersionSwitcher
                 }
                 string package = serverRequest.queryString.Get("package");
                 string dir = Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package;
-                if (serverRequest.queryString.Get("obb") != null) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                if (serverRequest.queryString.Get("obb") != null) dir = Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package;
                 serverRequest.SendString(FolderPermission.GotAccessTo(dir).ToString(), "text/plain", 200);
                 return true;
             }));
