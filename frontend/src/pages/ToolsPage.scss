@@ -1,0 +1,42 @@
+.toolsPage {
+    .contentHeader {
+        margin-bottom: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        
+    }
+    .contentHeaderDescription {
+        color: #e0e0e0;
+        margin-left: 15px;
+    }
+
+    .button {
+        margin: 10px 0 0 0;
+        padding: 10px;
+        background-color: #006569;
+    }
+    .button:first-child{
+        margin: 0;
+    }
+    .button:hover{
+        background-color: #00575a;
+    }
+
+    .buttonsContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: start  ;
+    }
+    .contentHeader {
+        margin-bottom: 0;
+    }
+    p {
+        color: #d9d9d9;
+    }
+
+    #loggedInMsg {
+        font-size: 1rem;
+        
+    }
+}
