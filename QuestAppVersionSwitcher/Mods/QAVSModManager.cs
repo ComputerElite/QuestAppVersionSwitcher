@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ComputerUtils.Android.FileManaging;
+using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
+using Exception = System.Exception;
 
 namespace QuestAppVersionSwitcher.Mods
 {
@@ -24,8 +27,9 @@ namespace QuestAppVersionSwitcher.Mods
         ModDelete,
         DependencyDownload,
         Other,
-		Error
-	}
+		Error,
+        ModDownload
+    }
 
     public class QAVSOperation
     {
@@ -171,6 +175,35 @@ namespace QuestAppVersionSwitcher.Mods
                 }
             }
             runningOperations.Remove(operationId);
+        }
+
+        public static void InstallModFromUrl(string url)
+        {
+            string extension = Path.GetExtension(url.Split('?')[0]);
+            string fileName = "downloaded" + DateTime.Now.Ticks;
+            if (extension == "") extension = ".qmod";
+            string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
+            DownloadManager m = new DownloadManager();
+            int operationId = operations;
+            operations++;
+            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.ModDownload, name = "Downloading mod: " + Path.GetFileName(url.Split('?')[0])});
+            m.DownloadFinishedEvent += (manager) =>
+            {
+                //CoreService.browser.EvaluateJavascript("ShowToast('Downloaded, now installing', '#FFFFFF', '#222222')", null);
+                Thread t = new Thread(() =>
+                {
+                    runningOperations.Remove(operationId);
+                    InstallMod(modPath, Path.GetFileName(modPath));
+                    FileManager.DeleteFileIfExisting(modPath);
+                });
+                t.Start();
+            };
+            m.DownloadCanceled += manager =>
+            {
+                runningOperations.Remove(operationId);
+            };
+            m.StartDownload(url, modPath);
+            QAVSWebserver.managers.Add(m);
         }
 
         public static void EnableMod(string id)

@@ -17,23 +17,7 @@ namespace QuestAppVersionSwitcher
 		{
 			Logger.Log("Downloading mod from " + url);
 			CoreService.browser.EvaluateJavascript("ShowToast('Downloading', '#FFFFFF', '#222222')", null);
-			string extension = Path.GetExtension(url.Split('?')[0]);
-			string fileName = "downloaded" + DateTime.Now.Ticks;
-            if (extension == "") extension = ".qmod";
-			string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
-			DownloadManager m = new DownloadManager();
-            m.DownloadFinishedEvent += (manager) =>
-            {
-                CoreService.browser.EvaluateJavascript("ShowToast('Downloaded, now installing', '#FFFFFF', '#222222')", null);
-                Thread t = new Thread(() =>
-                {
-					QAVSModManager.InstallMod(modPath, Path.GetFileName(modPath));
-                    FileManager.DeleteFileIfExisting(modPath);
-                });
-                t.Start();
-            };
-            m.StartDownload(url, modPath);
-            QAVSWebserver.managers.Add(m);
+            QAVSModManager.InstallModFromUrl(url);
         }
     }
 }

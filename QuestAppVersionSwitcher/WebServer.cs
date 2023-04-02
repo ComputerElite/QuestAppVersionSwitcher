@@ -227,6 +227,12 @@ namespace QuestAppVersionSwitcher
                 request.SendString("Trying to install", "application/json");
                 return true;
             }));
+            server.AddRoute("POST", "/mods/installfromurl", new Func<ServerRequest, bool>(request =>
+            {
+                QAVSModManager.InstallModFromUrl(request.bodyString);
+                request.SendString("Trying to install from " + request.bodyString, "application/json");
+                return true;
+            }));
             server.AddRoute("GET", "/mods/cover", new Func<ServerRequest, bool>(request =>
             {
                 request.SendData(QAVSModManager.GetModCover(request.queryString.Get("id")), "image/xyz");
@@ -862,12 +868,11 @@ namespace QuestAppVersionSwitcher
                 string package = serverRequest.queryString.Get("package");
                 if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
                 {
-                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
+                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
                 }
                 else
                 {
-                    
-                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
+                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package)).ToString(), "text/plain", 200);
                 }
                 return true;
             }));

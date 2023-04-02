@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using QuestAppVersionSwitcher.Mods;
 
 namespace QuestAppVersionSwitcher
 {
@@ -16,6 +17,7 @@ namespace QuestAppVersionSwitcher
     {
         public delegate void DownloadFinished(DownloadManager manager);
         public event DownloadFinished DownloadFinishedEvent;
+        public event DownloadFinished DownloadCanceled;
         public string tmpPath = "";
         public bool isObb = false;
         public string packageName = "";
@@ -26,6 +28,7 @@ namespace QuestAppVersionSwitcher
 		{
 			canceled = true;
 			downloader.CancelAsync();
+            if(DownloadCanceled != null) DownloadCanceled(this);
             SetEmpty(false);
 			this.backupName = "Download Canceled";
 			this.textColor = "#EE0000";
@@ -111,8 +114,7 @@ namespace QuestAppVersionSwitcher
         {
             WebClient downloader = new WebClient();
             downloader.Headers.Add("User-Agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
-            FileManager.CreateDirectoryIfNotExisting(CoreVars.fileDir);
-            string p = CoreVars.fileDir + DateTime.Now.Ticks;
+            string p = new TempFile().Path;
             tmpPath = p;
             List<long> lastBytesPerSec = new List<long>();
             DateTime lastUpdate = DateTime.Now;
