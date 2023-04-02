@@ -148,12 +148,10 @@ namespace QuestAppVersionSwitcher
         public static DocumentFile GetAccessToFile(string dir)
         {
             string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
-            Logger.Log(dir);
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");
             }
-            Logger.Log(dir);
             string diff = dir.Replace(start, "");
             if (diff.StartsWith("/")) diff = diff.Substring(1);
             string[] dirs = diff.Split('/');
@@ -263,7 +261,6 @@ namespace QuestAppVersionSwitcher
             {
                 try
                 {
-                    Logger.Log(file.Uri.ToString());
                     if (file.IsDirectory)
                     {
                         // Handle directory
