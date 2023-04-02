@@ -18,6 +18,7 @@ using Google.Android.Material.Dialog;
 using Java.IO;
 using Java.Lang;
 using QuestAppVersionSwitcher.Core;
+using QuestAppVersionSwitcher.Mods;
 using Xamarin.Forms.Internals;
 using File = System.IO.File;
 
@@ -156,6 +157,7 @@ namespace QuestAppVersionSwitcher
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+                    QAVSModManager.Update();
                 }
             }
         }
@@ -168,6 +170,7 @@ namespace QuestAppVersionSwitcher
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         activityResult.Data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+                    QAVSModManager.Update();
                 }
             }
         }
