@@ -42,10 +42,12 @@ namespace QuestAppVersionSwitcher
             
             FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());
-
-            // Start all services
-            CoreService core = new CoreService();
-            core.Start();
+            
+            
+            CoreService.launcher = AndroidCore.activity.RegisterForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(), new ManageStoragePermissionCallback());
+            
+            CoreService.Start();
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

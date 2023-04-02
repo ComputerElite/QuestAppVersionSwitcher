@@ -18,6 +18,7 @@ using Android.Content.PM;
 using Android.Media.Audiofx;
 using Android.OS;
 using Android.Provider;
+using AndroidX.Activity.Result;
 using Com.Xamarin.Formsviewgroup;
 using ComputerUtils.Android;
 using Xamarin.Essentials;
@@ -32,7 +33,9 @@ namespace QuestAppVersionSwitcher.Core
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
-        public async void Start()
+        public static ActivityResultLauncher launcher;
+
+        public static async void Start()
         {
 			// Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
@@ -47,6 +50,7 @@ namespace QuestAppVersionSwitcher.Core
                 {
                     if (await Permissions.RequestAsync<Permissions.StorageRead>() != PermissionStatus.Granted) return;
                 }
+                AfterPermissionGrantStart();
             }
             else
             {
@@ -56,15 +60,20 @@ namespace QuestAppVersionSwitcher.Core
                     if (Directory.Exists(coreVars.QAVSPermTestDir)) Directory.Delete(coreVars.QAVSPermTestDir, true);
                     Directory.CreateDirectory(coreVars.QAVSPermTestDir);
                     Directory.Delete(coreVars.QAVSPermTestDir, true);
+                    AfterPermissionGrantStart();
                 }
                 catch (Exception e)
                 {
                     // Manage storage permission
                     Android.Net.Uri uri = Android.Net.Uri.Parse("package:com.ComputerElite.questappversionswitcher");
                     Intent i = new Intent(Settings.ActionManageAppAllFilesAccessPermission, uri);
-                    AndroidCore.context.StartActivity(i);
+                    launcher.Launch(i);
                 }
             }
+        }
+
+        public static void AfterPermissionGrantStart()
+        {
             
 
             //Set webbrowser settings
@@ -103,6 +112,14 @@ namespace QuestAppVersionSwitcher.Core
             Logger.displayLogInConsole = true;
 			QAVSModManager.Init();
             qAVSWebserver.Start();
+        }
+    }
+    
+    public class ManageStoragePermissionCallback : Java.Lang.Object, IActivityResultCallback
+    {
+        public void OnActivityResult(Java.Lang.Object result)
+        {
+            CoreService.AfterPermissionGrantStart();
         }
     }
 }
