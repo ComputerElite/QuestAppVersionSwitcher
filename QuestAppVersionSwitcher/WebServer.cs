@@ -823,13 +823,8 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
                     return true;
                 }
-                string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
-                if (Directory.Exists(backupDir + "obb/" + package))
-                {
-                    FolderPermission.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package);
-                }
 
-                i.containsAppData = Directory.Exists(backupDir + package);
+                i.containsAppData = Directory.Exists(backupDir + package) || Directory.Exists(backupDir + "obb/" + package);
                 i.isPatchedApk = File.Exists(backupDir + "isPatched.txt");
                 serverRequest.SendString(JsonSerializer.Serialize(i), "text/plain", 200);
                 return true;
@@ -908,6 +903,20 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
+                
+                if (Directory.Exists(backupDir + "obb/" + package))
+                {
+                    try
+                    {
+                        FolderPermission.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e.ToString(), LoggingType.Error);
+                        serverRequest.SendString("Obbs of " + package + " were unable to be restored: " + e, "text/plain", 500);
+                        return true;
+                    }
+                }
                 if (!Directory.Exists(backupDir + package))
                 {
                     serverRequest.SendString("This backup doesn't contain a game data backup. Please skip this step", "text/plain", 400);
@@ -919,7 +928,8 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e)
                 {
-                    serverRequest.SendString("Game data of " + package + " was unable to be restored: " + e.Message, "text/plain", 500);
+                    Logger.Log(e.ToString(), LoggingType.Error);
+                    serverRequest.SendString("App data of " + package + " was unable to be restored: " + e, "text/plain", 500);
                     return true;
                 }
                 serverRequest.SendString("Game data restored", "text/plain", 200);

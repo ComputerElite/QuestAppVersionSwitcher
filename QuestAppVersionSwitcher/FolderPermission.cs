@@ -42,6 +42,7 @@ namespace QuestAppVersionSwitcher
 
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
+            if(!Directory.Exists(dirInExtenalStorage)) return false;
             string uri = RemapPathForApi300OrAbove(dirInExtenalStorage).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/");
             List<UriPermission> perms = AndroidCore.context.ContentResolver.PersistedUriPermissions.ToList();
             foreach (UriPermission p in perms)
@@ -225,19 +226,22 @@ namespace QuestAppVersionSwitcher
         public static void InternalDirectoryCopy(string source, DocumentFile destDir)
         {
             Logger.Log("Starting directory copy: string, DocumentFile");
+            if (destDir == null) return;
+            Logger.Log(source + " -> " + destDir.Uri);
             
             // Delete all files and directories in destination directory
             foreach (DocumentFile f in destDir.ListFiles())
             {
                 f.Delete();
             }
+            
+            Logger.Log("Cleared dest");
 
             DirectoryInfo dir = new DirectoryInfo(source);
-            DirectoryInfo[] dirs = dir.GetDirectories();
+            Logger.Log("Got dir info");
 
             // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
+            foreach (FileInfo file in dir.GetFiles())
             {
                 try
                 {
@@ -247,8 +251,10 @@ namespace QuestAppVersionSwitcher
                 catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e.ToString(), LoggingType.Error); }
             }
             
-            foreach (DirectoryInfo subdir in dirs)
+            Logger.Log("Copied all files");
+            foreach (DirectoryInfo subdir in dir.GetDirectories())
             {
+                Logger.Log("Continuing with subdir " + subdir.Name);
                 InternalDirectoryCopy(subdir.FullName, destDir.CreateDirectory(subdir.Name));
             }
         }
