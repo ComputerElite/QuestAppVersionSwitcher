@@ -692,7 +692,7 @@ document.getElementById("uninstall2").onclick = () => {
     fetch(`isonlyappdata?package=${config.currentApp}&backupname=${selectedBackup}`).then(res => {
         res.text().then(text => {
             if(text == "true") {
-                GotoStep(4)
+                GotoStep("4.1")
             } else {
                 fetch(`android/uninstallpackage?package=${config.currentApp}`).then(res => {
                     if (res.status == 230) GotoStep(3)
@@ -853,7 +853,7 @@ document.getElementById("restoreBackup").onclick = () => {
         return
     }
     OpenRestorePopup()
-    if(document.getElementById("restoreAppData").checked) GotoStep(4)
+    if(document.getElementById("restoreAppData").checked) GotoStep("4.1")
 }
 
 function GotoStep(step) {

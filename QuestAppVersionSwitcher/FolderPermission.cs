@@ -148,10 +148,6 @@ namespace QuestAppVersionSwitcher
         public static DocumentFile GetAccessToFile(string dir)
         {
             string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
-            {
-                FileManager.CreateDirectoryIfNotExisting(start);
-            }
             Logger.Log(dir);
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
