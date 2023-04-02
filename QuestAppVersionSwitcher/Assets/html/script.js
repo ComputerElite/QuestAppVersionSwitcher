@@ -41,6 +41,20 @@ function BrowserGo(direction) {
 function OpenSite(url) {
     location = url
 }
+function CheckFolderPermission() {
+    fetch("gotaccess?package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+            if (text == "True") {
+                // Do nothing, we already got access to the folder
+            } else {
+                OpenRestorePopup();
+                GotoStep("12")
+            }
+        })
+    })
+}
+
+
 
 let toasts = 0;
 let currentToasts = 0;
@@ -411,10 +425,15 @@ function TokenUIUpdate() {
     })
 }
 
+var firstConfigFetch = true;
 function UpdateUI(closeLists = false) {
     UpdateShownCosmetics()
     fetch("questappversionswitcher/config").then(res => res.json().then(res => {
         config = res
+        if(firstConfigFetch) {
+            firstConfigFetch = false;
+            CheckFolderPermission();
+        }
         Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
             if(config.currentApp) e.innerHTML = config.currentApp
             else e.innerHTML = "No app selected"
@@ -545,9 +564,11 @@ function ShowAppList() {
 
 function ChangeApp(package) {
     console.log("Changing app to " + package)
+    config.currentApp = package
     fetch("questappversionswitcher/changeapp?body=" + package).then(() => UpdateUI(true))
     UpdateUI(true)
     UpdateCosmeticsTypes()
+    CheckFolderPermission()
 }
 
 document.getElementById("exit").onclick = () => {
@@ -738,6 +759,14 @@ document.getElementById("grantAccess").onclick = () => {
                 TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
                 GotoStep(3)
             }
+        })
+    })
+}
+
+document.getElementById("grantAccess2").onclick = () => {
+    fetch("grantaccess?package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+            CloseRestorePopup();
         })
     })
 }

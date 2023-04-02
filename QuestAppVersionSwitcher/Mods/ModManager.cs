@@ -184,6 +184,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         internal void ModLoadedCallback(IMod mod)
         {
+            mod.hasCover = mod.OpenCover().Length > 0;
             (mod.IsLibrary ? Libraries : Mods).Add(mod);
             _modConfig?.Mods.Add(mod);
             foreach (var copyType in mod.FileCopyTypes)

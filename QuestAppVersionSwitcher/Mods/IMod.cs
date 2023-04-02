@@ -16,6 +16,8 @@ namespace QuestAppVersionSwitcher.Mods
         /// Unique ID of the mod, must not contain spaces
         /// </summary>
         string Id { get; }
+        
+        bool hasCover { get; set; }
 
         /// <summary>
         /// Human readable name of the mod

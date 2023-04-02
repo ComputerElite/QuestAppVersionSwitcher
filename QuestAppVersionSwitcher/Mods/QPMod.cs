@@ -18,6 +18,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         public string Id => Manifest.Id;
         public string Name => Manifest.Name;
+        public bool hasCover { get; set; } = false;
         public string? Description => Manifest.Description;
         public SemanticVersioning.Version Version => Manifest.Version;
         public string VersionString => Manifest.Version.ToString();
