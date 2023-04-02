@@ -632,7 +632,7 @@ namespace QuestAppVersionSwitcher
                 Directory.CreateDirectory(backupDir);
                 if (!AndroidService.IsPackageInstalled(package))
                 {
-                    Logger.Log(package + " is not isntalled. Aborting backup");
+                    Logger.Log(package + " is not installed. Aborting backup");
                     text = package + " is not installed. Please select a different app.";
                     code = 400;
                     return true;
@@ -658,7 +658,7 @@ namespace QuestAppVersionSwitcher
                     code = 202;
                     try
                     {
-                        if(Directory.Exists(gameDataDir)) FileManager.DirectoryCopy(gameDataDir, backupDir + package, true);
+                        if(Directory.Exists(gameDataDir)) FolderPermission.DirectoryCopy(gameDataDir, backupDir + package);
                     }
                     catch (Exception e)
                     {
@@ -912,7 +912,7 @@ namespace QuestAppVersionSwitcher
                 }
                 try
                 {
-                    FileManager.DirectoryCopy(backupDir + package, gameDataDir, true);
+                    FolderPermission.DirectoryCopy(backupDir + package, gameDataDir);
                 }
                 catch (Exception e)
                 {

@@ -55,10 +55,12 @@ namespace QuestAppVersionSwitcher
         {
             string suffix = path;
             if (suffix.StartsWith("/sdcard")) suffix = suffix.Substring("/sdcard".Length);
-            if (path.StartsWith(Environment.ExternalStorageDirectory.AbsolutePath))
+            if (suffix.StartsWith(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 suffix = path.Substring(Environment.ExternalStorageDirectory.AbsolutePath.Length);
             }
+
+            if (suffix.Length < 1) suffix = "/";
             string documentId = "primary:" + suffix.Substring(1);
             return DocumentsContract.BuildDocumentUri(
                 "com.android.externalstorage.documents",
@@ -70,6 +72,7 @@ namespace QuestAppVersionSwitcher
         {
             try
             {
+                Logger.Log("Copying " + from + " to " + to);
                 Stream file = GetOutputStream(to);
                 
                 if (file.CanWrite)
@@ -83,7 +86,51 @@ namespace QuestAppVersionSwitcher
                 
             } catch (Exception e)
             {
-                ComputerUtils.Android.Logging.Logger.Log(e.ToString());
+                Logger.Log(e.ToString());
+            }
+        }
+        
+        public static void Copy(DocumentFile source, string to)
+        {
+            try
+            {
+                Logger.Log("Copying " + source.Name + " to " + to);
+                Stream file = System.IO.File.OpenWrite(to);
+                
+                if (file.CanWrite)
+                {
+                    Stream readStream = AndroidCore.context.ContentResolver.OpenInputStream(source.Uri);
+                    readStream.CopyTo(file);
+                    // Close stuff
+                    file.Close();
+                    readStream.Close();
+                }
+                
+            } catch (Exception e)
+            {
+                Logger.Log(e.ToString());
+            }
+        }
+        
+        public static void Copy(string source, DocumentFile to)
+        {
+            try
+            {
+                Logger.Log("Copying " + source + " to " + to);
+                Stream file = AndroidCore.context.ContentResolver.OpenInputStream(to.Uri);
+                
+                if (file.CanWrite)
+                {
+                    Stream readStream = File.OpenRead(source);
+                    readStream.CopyTo(file);
+                    // Close stuff
+                    file.Close();
+                    readStream.Close();
+                }
+                
+            } catch (Exception e)
+            {
+                Logger.Log(e.ToString());
             }
         }
 
@@ -101,7 +148,14 @@ namespace QuestAppVersionSwitcher
         public static DocumentFile GetAccessToFile(string dir)
         {
             string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
-            string diff = dir.Replace(start + "/", "");
+            Logger.Log(dir);
+            if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
+            {
+                dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");
+            }
+            Logger.Log(dir);
+            string diff = dir.Replace(start, "");
+            if (diff.StartsWith("/")) diff = diff.Substring(1);
             string[] dirs = diff.Split('/');
             DocumentFile startDir = DocumentFile.FromTreeUri(AndroidCore.context, Uri.Parse(RemapPathForApi300OrAbove(start).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/")));
             DocumentFile currentDir = startDir;
@@ -113,6 +167,7 @@ namespace QuestAppVersionSwitcher
             }
             foreach (string dirName in dirs)
             {
+                if(dirName == "") continue;
                 if (currentDir.FindFile(dirName) == null) currentDir.CreateDirectory(dirName); // Create directory if it doesn't exist
                 currentDir = currentDir.FindFile(dirName);
             }
@@ -143,6 +198,87 @@ namespace QuestAppVersionSwitcher
             // If name is empty no need to create directory
             if (name == "") return;
             if (directory.FindFile(name) == null) directory.CreateDirectory(name);
+        }
+
+        public static void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // If the destination directory exists, delete it 
+            if (Directory.Exists(destDirName)) Delete(destDirName);
+            string androidFolder = "Android/data/" + CoreService.coreVars.currentApp;
+
+            if (sourceDirName.Contains(androidFolder) && destDirName.Contains(androidFolder))
+            {
+                // This case should never happen during application use
+            } else if (sourceDirName.Contains(androidFolder))
+            {
+                InternalDirectoryCopy(GetAccessToFile(sourceDirName), destDirName);
+            } else if (destDirName.Contains(androidFolder))
+            {
+                InternalDirectoryCopy(sourceDirName, GetAccessToFile(destDirName));
+            }
+            else
+            {
+                FileManager.DirectoryCopy(sourceDirName, destDirName, true);
+            }
+        }
+
+        public static void InternalDirectoryCopy(string source, DocumentFile destDir)
+        {
+            Logger.Log("Starting directory copy: string, DocumentFile");
+            
+            // Delete all files and directories in destination directory
+            foreach (DocumentFile f in destDir.ListFiles())
+            {
+                f.Delete();
+            }
+
+            DirectoryInfo dir = new DirectoryInfo(source);
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                try
+                {
+                    Logger.Log("Copying " + file.Name);
+                    Copy(file.FullName, destDir.CreateFile("application/octet-stream", file.Name));
+                }
+                catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e.ToString(), LoggingType.Error); }
+            }
+            
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                InternalDirectoryCopy(subdir.FullName, destDir.CreateDirectory(subdir.Name));
+            }
+        }
+
+        public static void InternalDirectoryCopy(DocumentFile dir, string destDirName)
+        {
+            Logger.Log("Starting directory copy: DocumentFile, string");
+            if(Directory.Exists(destDirName)) Directory.Delete(destDirName, true);
+            Directory.CreateDirectory(destDirName);
+            
+            foreach (DocumentFile file in dir.ListFiles())
+            {
+                try
+                {
+                    Logger.Log(file.Uri.ToString());
+                    if (file.IsDirectory)
+                    {
+                        // Handle directory
+                        string tempPath = System.IO.Path.Combine(destDirName, file.Name);
+                        InternalDirectoryCopy(file, tempPath);
+                    }
+                    else
+                    {
+                        // Handle file
+                        string tempPath = Path.Combine(destDirName, file.Name);
+                        Copy(file, tempPath);
+                    }
+                }
+                catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e, LoggingType.Error); }
+            }
         }
     }
     
