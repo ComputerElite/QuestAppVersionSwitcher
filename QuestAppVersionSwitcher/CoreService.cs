@@ -60,15 +60,16 @@ namespace QuestAppVersionSwitcher.Core
                     if (Directory.Exists(coreVars.QAVSPermTestDir)) Directory.Delete(coreVars.QAVSPermTestDir, true);
                     Directory.CreateDirectory(coreVars.QAVSPermTestDir);
                     Directory.Delete(coreVars.QAVSPermTestDir, true);
-                    AfterPermissionGrantStart();
                 }
                 catch (Exception e)
                 {
                     // Manage storage permission
                     Android.Net.Uri uri = Android.Net.Uri.Parse("package:com.ComputerElite.questappversionswitcher");
                     Intent i = new Intent(Settings.ActionManageAppAllFilesAccessPermission, uri);
-                    launcher.Launch(i);
+                    AndroidCore.context.StartActivity(i);
+                    return;
                 }
+                AfterPermissionGrantStart();
             }
         }
 
@@ -112,11 +113,6 @@ namespace QuestAppVersionSwitcher.Core
             Logger.displayLogInConsole = true;
 			QAVSModManager.Init();
             qAVSWebserver.Start();
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
-            {
-                if(!FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
-                if(!FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb")) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb");
-            }
         }
     }
     

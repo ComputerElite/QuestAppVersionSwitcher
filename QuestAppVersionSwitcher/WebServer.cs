@@ -837,8 +837,17 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
-                FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
+                {
+                    FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
+                    FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb");
+                }
+                else
+                {
+                    
+                    FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
+                    FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                }
                 serverRequest.SendString("", "text/plain", 200);
                 return true;
             }));
@@ -851,7 +860,15 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package)).ToString(), "text/plain", 200);
+                if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
+                {
+                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
+                }
+                else
+                {
+                    
+                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
+                }
                 return true;
             }));
             server.AddRoute("GET", "/grantmanagestorageappaccess", new Func<ServerRequest, bool>(serverRequest =>

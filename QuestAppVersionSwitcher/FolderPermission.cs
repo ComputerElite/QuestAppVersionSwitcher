@@ -31,7 +31,7 @@ namespace QuestAppVersionSwitcher
         {
             if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
             {
-                CreateDirectory(dirInExtenalStorage);
+                if(!Directory.Exists(dirInExtenalStorage)) CreateDirectory(dirInExtenalStorage);
             }
             Intent intent = new Intent(Intent.ActionOpenDocumentTree)
                 .PutExtra(
@@ -118,7 +118,7 @@ namespace QuestAppVersionSwitcher
             try
             {
                 Logger.Log("Copying " + source + " to " + to);
-                Stream file = AndroidCore.context.ContentResolver.OpenInputStream(to.Uri);
+                Stream file = AndroidCore.context.ContentResolver.OpenOutputStream(to.Uri);
                 
                 if (file.CanWrite)
                 {
