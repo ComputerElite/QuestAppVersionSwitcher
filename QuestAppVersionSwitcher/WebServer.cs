@@ -866,7 +866,12 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
+                if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+                {
+                    serverRequest.SendString("True", "text/plain", 200);
+
+                }
+                else if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
                 {
                     serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
                 }
