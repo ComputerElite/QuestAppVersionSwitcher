@@ -42,6 +42,7 @@ function OpenSite(url) {
     location = url
 }
 function CheckFolderPermission() {
+    if(!config.currentApp) return;
     fetch("gotaccess?package=" + config.currentApp).then(res => {
         res.text().then(text => {
             if (text == "True") {
@@ -735,6 +736,24 @@ document.getElementById("install").onclick = () => {
     })
 }
 
+document.getElementById("grantManageAccess").onclick = () => {
+    fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
+        res.text().then(text => {
+            if (res.status == 200) {
+                fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                    res.json().then(j => {
+                        if (j.containsAppData) {
+                            GotoStep(4)
+                        } else {
+                            GotoStep(5)
+                        }
+                    })
+                })
+            } else TextBoxError("step3box", text)
+        })
+    })
+}
+
 document.getElementById("grantAccess").onclick = () => {
     fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.text().then(text => {
@@ -742,12 +761,16 @@ document.getElementById("grantAccess").onclick = () => {
                 fetch("grantaccess?package=" + config.currentApp).then(res => {
                     res.text().then(text => {
                         if (res.status == 200) {
-                            fetch("containsgamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-                                res.text().then(text => {
-                                    if (text == "False") {
-                                        GotoStep(5)
+                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                                res.json().then(j => {
+                                    if(j.isPatchedApk) {
+                                        GotoStep("4.2")
                                     } else {
-                                        GotoStep(4)
+                                        if (j.containsAppData) {
+                                            GotoStep(4)
+                                        } else {
+                                            GotoStep(5)
+                                        }
                                     }
                                 })
                             })

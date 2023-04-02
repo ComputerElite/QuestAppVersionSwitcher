@@ -148,6 +148,7 @@ namespace QuestAppVersionSwitcher
         public static DocumentFile GetAccessToFile(string dir)
         {
             string start = "/sdcard/Android/data/" + CoreService.coreVars.currentApp;
+            if(dir.Contains("/Android/obb/")) start = "/sdcard/Android/obb/" + CoreService.coreVars.currentApp;
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");
@@ -203,14 +204,15 @@ namespace QuestAppVersionSwitcher
             // If the destination directory exists, delete it 
             if (Directory.Exists(destDirName)) Delete(destDirName);
             string androidFolder = "Android/data/" + CoreService.coreVars.currentApp;
+            string obbFolder = "Android/obb/" + CoreService.coreVars.currentApp;
 
-            if (sourceDirName.Contains(androidFolder) && destDirName.Contains(androidFolder))
+            if ((sourceDirName.Contains(androidFolder) || sourceDirName.Contains(obbFolder)) && (destDirName.Contains(androidFolder) || destDirName.Contains(obbFolder)))
             {
                 // This case should never happen during application use
-            } else if (sourceDirName.Contains(androidFolder))
+            } else if (sourceDirName.Contains(androidFolder) || sourceDirName.Contains(obbFolder))
             {
                 InternalDirectoryCopy(GetAccessToFile(sourceDirName), destDirName);
-            } else if (destDirName.Contains(androidFolder))
+            } else if (destDirName.Contains(androidFolder) || destDirName.Contains(obbFolder))
             {
                 InternalDirectoryCopy(sourceDirName, GetAccessToFile(destDirName));
             }

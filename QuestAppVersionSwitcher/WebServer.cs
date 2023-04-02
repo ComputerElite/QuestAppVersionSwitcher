@@ -672,7 +672,7 @@ namespace QuestAppVersionSwitcher
                         text = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
                         code = 202;
                         Directory.CreateDirectory(backupDir + "obb/" + package);
-                        FileManager.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package, true);
+                        FolderPermission.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package);
                     }
                 }
                 catch (Exception e)
@@ -791,7 +791,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString("Started apk install", "text/plain", 200);
                 return true;
             }));
-            server.AddRoute("GET", "/containsgamedata", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/backupinfo", new Func<ServerRequest, bool>(serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
@@ -803,6 +803,8 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("backupname key needed", "text/plain", 400);
                     return true;
                 }
+
+                BackupInfo i = new BackupInfo();
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
                 if (!IsNameFileNameSafe(backupname))
@@ -824,9 +826,12 @@ namespace QuestAppVersionSwitcher
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
                 if (Directory.Exists(backupDir + "obb/" + package))
                 {
-                    FileManager.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package, true);
+                    FolderPermission.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package);
                 }
-                serverRequest.SendString(Directory.Exists(backupDir + package).ToString(), "text/plain", 200);
+
+                i.containsAppData = Directory.Exists(backupDir + package);
+                i.isPatchedApk = File.Exists(backupDir + "isPatched.txt");
+                serverRequest.SendString(JsonSerializer.Serialize(i), "text/plain", 200);
                 return true;
             }));
             server.AddRoute("GET", "/grantaccess", new Func<ServerRequest, bool>(serverRequest =>
@@ -837,8 +842,8 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                if (serverRequest.queryString.Get("obb") == null) FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
-                else FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
+                FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
+                FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
                 serverRequest.SendString("", "text/plain", 200);
                 return true;
             }));
@@ -851,9 +856,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                string dir = Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package;
-                if (serverRequest.queryString.Get("obb") != null) dir = Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package;
-                serverRequest.SendString(FolderPermission.GotAccessTo(dir).ToString(), "text/plain", 200);
+                serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package)).ToString(), "text/plain", 200);
                 return true;
             }));
             server.AddRoute("GET", "/grantmanagestorageappaccess", new Func<ServerRequest, bool>(serverRequest =>
@@ -1138,6 +1141,12 @@ namespace QuestAppVersionSwitcher
         {
             return server.ips;
         }
+    }
+
+    public class BackupInfo
+    {
+        public bool containsAppData { get; set; } = false;
+        public bool isPatchedApk { get; set; } = false;
     }
 
     public class MultiCastContent

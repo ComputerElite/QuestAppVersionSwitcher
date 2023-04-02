@@ -120,6 +120,7 @@ namespace QuestAppVersionSwitcher
             string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
             File.Move(appLocation, backupDir + "app.apk");
+            File.WriteAllText(backupDir + "isPatched.txt", "This backup was patched by QAVS. It contains the manage external storage permission.");
             Logger.Log("Moved apk");
 
             QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Done", backupName));
