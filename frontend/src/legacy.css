@@ -467,9 +467,12 @@ iframe {
 }
 
 .modCover {
-    width: 20vw;
-    height: 11.25vw;
-    margin-right: 20px
+    width: 270px;
+    min-width: 270px;
+    height: 170px;
+    min-height: 170px;
+    margin-right: 20px;
+    object-fit: cover;
 }
 
 #other {

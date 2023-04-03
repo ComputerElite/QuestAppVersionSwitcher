@@ -21,7 +21,7 @@ export default function GetModsPage() {
 
 
     return (
-        <div class="getModsPage">
+        <div class="contentItem getModsPage">
             <h2 class="contentHeader">
                 Sites to get mods and cosmetics from
                 

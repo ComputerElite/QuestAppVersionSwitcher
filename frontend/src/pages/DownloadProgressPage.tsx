@@ -1,6 +1,6 @@
 export default function DownloadProgressPage() {
   return (
-    <div>
+    <div class="contentItem">
       <div id="progressBarContainers" style="width: 95%;">
 
       </div>

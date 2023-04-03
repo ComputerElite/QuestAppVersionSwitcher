@@ -2,7 +2,7 @@ import "./ToolsPage.scss"
 
 export default function ToolsPage() {
   return (
-    <div class="toolsPage">
+    <div class=" contentItem toolsPage">
       <div class="contentHeader">
         Tools
         <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>

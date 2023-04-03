@@ -124,7 +124,7 @@ export default function ModsPage() {
 
   return (
     <div
-      class="modsPage"
+      class=" contentItem modsPage"
 >
 
       <div classList={{
@@ -181,11 +181,11 @@ function ModCard({ mod }: { mod: IMod }) {
   return (
     <div class="mod">
       <div class="leftRightSplit">
-        <img class="modCover" src={(mod.HasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
+        <img class="modCover" src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
         <div class="upDownSplit spaceBetween">
           <div class="upDownSplit">
             <div class="leftRightSplit nomargin">
-              <div>Nya</div>
+              <div>{mod.Name}</div>
               <div class="smallText version">{mod.VersionString}</div>
             </div>
             <div class="smallText">{mod.Description}</div>

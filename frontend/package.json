@@ -19,6 +19,7 @@
     "@solidjs/meta": "^0.28.3",
     "@solidjs/router": "^0.8.2",
     "sass": "^1.60.0",
+    "solid-icons": "^1.0.4",
     "solid-js": "^1.6.10",
     "solid-toast": "^0.5.0"
   }

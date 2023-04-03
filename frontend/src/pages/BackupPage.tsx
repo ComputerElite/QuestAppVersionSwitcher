@@ -2,7 +2,7 @@ import { MetaProvider, Title, Link, Meta } from '@solidjs/meta';
 
 export default function BackupPage() {
     return (
-        <div>
+        <div class='contentItem'>
             <Title>sdfsafsda</Title>
             <div class="contentHeader">
                 Backup

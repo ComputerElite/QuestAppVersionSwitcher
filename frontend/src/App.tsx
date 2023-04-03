@@ -24,22 +24,22 @@ const App: Component = () => {
         <div class='menuContainer'>
           <Sidebar />
           <div class="content">
-            <div class="contentItem">
-              <Routes>
-                <Route path="/" element={<Navigate href={"/backup"} />} />
-                <Route path="/backup" element={<BackupPage />} />
-                <Route path="/downgrade" element={<DowngradePage />} />
-                <Route path="/downloads" element={<DownloadProgressPage />} />
-                <Route path="/patching" element={<PatchingPage />} />
-                <Route path="/mods" element={<ModsPage />} />
-                <Route path="/cosmetics" element={<CosmeticsPage />} />
-                <Route path="/getMods" element={<GetModsPage />} />
-                <Route path="/tools" element={<ToolsPage />} />
-              </Routes>
-            </div>
+
+            <Routes>
+              <Route path="/" element={<Navigate href={"/backup"} />} />
+              <Route path="/backup" element={<BackupPage />} />
+              <Route path="/downgrade" element={<DowngradePage />} />
+              <Route path="/downloads" element={<DownloadProgressPage />} />
+              <Route path="/patching" element={<PatchingPage />} />
+              <Route path="/mods" element={<ModsPage />} />
+              <Route path="/cosmetics" element={<CosmeticsPage />} />
+              <Route path="/getMods" element={<GetModsPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
+            </Routes>
+
           </div>
         </div>
-        <Toaster 
+        <Toaster
           gutter={8}
           position="bottom-left"
         />

@@ -1,6 +1,6 @@
 export default function BackupPage() {
   return (
-    <div>
+    <div class="contentItem">
       <div class="buttonContainer"><div class="button" >Launch Game</div></div>
       <div class="buttonContainer"><div class="button" id="installCosmeticButton" >Install a Cosmetic from Disk</div></div>
       <h2>Cosmetics type</h2>
