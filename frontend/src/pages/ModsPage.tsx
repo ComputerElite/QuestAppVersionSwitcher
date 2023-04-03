@@ -1,10 +1,11 @@
-import { For, Index, JSX, Show, batch, createEffect, createSignal, mapArray, onCleanup, onMount } from "solid-js";
+import { For, Index, JSX, Show, batch, createEffect, createMemo, createSignal, mapArray, onCleanup, onMount } from "solid-js";
 import { DeleteMod, ILibrary, IMod, UpdateModState, UploadMod, getModsList } from "../api/mods";
 import image from "./../assets/DefaultCover.png"
 import "./ModsPage.scss";
 import { modsList, mutateMods, refetchMods } from "../state/mods";
 import { CompareStringsAlphabetically, Sleep } from "../util";
 import toast from "solid-toast";
+import { Title } from "@solidjs/meta";
 
 async function UploadModClick() {
   var input = document.createElement('input');
@@ -79,7 +80,7 @@ export default function ModsPage() {
   const [dragCounter, setDragCounter] = createSignal(0);
 
   function ondragenter(e: DragEvent) {
-   
+
     e.preventDefault();
     e.stopPropagation();
     if (dragCounter() + 1 >= 0) {
@@ -122,10 +123,15 @@ export default function ModsPage() {
     console.log("unmounted")
   })
 
+  let filteredData = createMemo<{ mods?: Array<IMod>, libs?: Array<IMod> }>(() => ({
+    mods: modsList()?.filter((s) => !s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name)),
+    libs: modsList()?.filter((s) => s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))
+  }));
+
   return (
     <div
       class=" contentItem modsPage"
->
+    >
 
       <div classList={{
         "dragOverlay": true,
@@ -143,17 +149,22 @@ export default function ModsPage() {
         <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
         <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
       </div>
-      <div class="infiniteList" id="modsList">
-        <For each={modsList()?.filter((s) => !s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))} fallback={<div>No mods</div>}  >
+      <div classList={{
+        "infiniteList": true,
+        "empty": filteredData().mods?.length == 0
+      }} id="modsList">
+        <For each={filteredData().mods} fallback={<div>Emptiness..</div>}  >
           {(mod) => (
             <ModCard mod={mod} />
           )}
-
         </For>
       </div>
       <h2>Installed Libraries</h2>
-      <div class="infiniteList" id="libsList">
-        <Index each={modsList()?.filter((s) => s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))} fallback={<div>No mods</div>}>
+      <div classList={{
+        "infiniteList": true,
+        "empty": filteredData()?.mods?.length == 0
+      }} id="libsList">
+        <Index each={filteredData()?.libs} fallback={<div class="emptyText">No mods</div>}>
           {(mod) => (
             <ModCard mod={mod()} />
           )}
@@ -180,6 +191,7 @@ async function DeleteModClick(mod: IMod) {
 function ModCard({ mod }: { mod: IMod }) {
   return (
     <div class="mod">
+      <Title>Mods</Title>
       <div class="leftRightSplit">
         <img class="modCover" src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
         <div class="upDownSplit spaceBetween">

@@ -1,6 +1,7 @@
 import { For, createMemo } from "solid-js"
 
 import "./GetModsPage.scss";
+import { Title } from "@solidjs/meta";
 
 
 export default function GetModsPage() {
@@ -22,6 +23,7 @@ export default function GetModsPage() {
 
     return (
         <div class="contentItem getModsPage">
+            <Title>Get Mods</Title>
             <h2 class="contentHeader">
                 Sites to get mods and cosmetics from
                 

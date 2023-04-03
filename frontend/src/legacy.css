@@ -387,9 +387,22 @@ body {
     background-color: #1F1F1F;
     height: fit-content;
     color: #FFFFFF;
-    width: fit-content;
-    width: 90%;
+
     z-index: 5;
+    min-height: 200px;
+}
+.infiniteList .empty {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #1F1F1F;
+    height: fit-content;
+    color: #FFFFFF;
+    width: 100%;
+    z-index: 5;
+    border: none;
+    border-radius: 0;
+    font-size: 1em;
+    padding: 5px;
 }
 
 select {

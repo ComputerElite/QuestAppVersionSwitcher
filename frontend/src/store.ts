@@ -9,4 +9,4 @@ export const [initialized, setInitialized] = createSignal<boolean>(false)
 // CurrentApplication
 export const [currentApplication, setCurrentApplication] = createSignal<string | null>(null)
 
-export const [config, { mutate: mutateSettings, refetch: refetchSettings }] = createResource(getConfig);
+export const [config, { mutate: mutateSettings, refetch: refetchSettings }] = createResource(getConfig, { storage: createSignal });

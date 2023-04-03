@@ -17,7 +17,7 @@ interface getPatchingModStatusResponse {
  * Gets the status of the patching mod
  * @returns 
  */
-export async function getPatchingModStatus(): Promise<getPatchingModStatusResponse> {
+export async function getPatchedModdingStatus(): Promise<getPatchingModStatusResponse> {
     let result = await fetch("/api/patching/getmodstatus");
     return await result.json();
 }

@@ -1,6 +1,9 @@
+import { Title } from "@solidjs/meta";
+
 export default function PatchingPage() {
   return (
     <div class="contentItem">
+      <Title>Patching</Title>
       <div class="button" id="changeApp3">Change app</div>
       <h3>Currently selected game: <div class="inline packageName">some game</div></h3>
       <div id="patchStatus">Loading...</div>

@@ -1,8 +1,11 @@
+import { Title } from "@solidjs/meta"
 import "./ToolsPage.scss"
+import { exitApp } from "../api/app"
 
 export default function ToolsPage() {
   return (
     <div class=" contentItem toolsPage">
+      <Title>Tools</Title>
       <div class="contentHeader">
         Tools
         <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
@@ -62,7 +65,7 @@ export default function ToolsPage() {
             <div class="contentHeaderDescription">Configure the QuestAppVersionSwitcher WebServer</div>
           </div>
           <div class="buttonContainer">
-            <div class="button" id="exit">Exit</div>
+            <div class="button" onClick={()=>{exitApp()}}>Exit</div>
             <div class="buttonLabel">Exits QuestAppVersionSwitcher</div>
           </div>
           <div class="buttonContainer">
