@@ -15,4 +15,16 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
+  resolve: {
+    alias: {
+      '@': '/src',
+    }
+  },
+  css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@import "@/assets/global.scss"; `
+        }
+      }
+  }
 });

@@ -3,8 +3,6 @@ import { For } from "solid-js";
 import "./Sidebar.scss"
 import { config } from "../store";
 
-let gameInstalled = true;
-
 let links = [
     { name: "Backup", href: "/backup" },
     { name: "Downgrade", href: "/downgrade" },
@@ -17,18 +15,14 @@ let links = [
 ]
 
 export default function Sidebar() {
-
-
     return (
         <div class="sidebar">
-            
             <div class="header">
                 <div style="width: 100%; font-size: 1em;">Quest App Version Switcher</div>
                 <div style="font-size: 70%; width: 100%;">
                      <div style="color: #F9F" title="Managed" class="inline packageName">{config()?.currentApp?? "some app"}</div>
                 </div>
             </div>
-            
             <For each={links} >
                 {(link) => (
                     <A href={link.href} class="menuItem" activeClass="selected" >{link.name}</A>

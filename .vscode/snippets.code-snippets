@@ -1,0 +1,11 @@
+{
+	"resp": {
+		"scope": "scss",
+		"prefix": "resp",
+		"body": [
+			"@include respond-to (\"${1|small,medium,large|}\") {",
+				"\t$2",
+			"}"
+		],
+	}
+}
