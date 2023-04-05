@@ -43,6 +43,7 @@ using ComputerUtils.Updating;
 using Org.BouncyCastle.Math.EC.Endo;
 using Android.Widget;
 using Xamarin.Forms;
+using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
 using Path = System.IO.Path;
 using WebView = Android.Webkit.WebView;
@@ -173,6 +174,7 @@ namespace QuestAppVersionSwitcher
         HttpServer server = new HttpServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '&', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public static List<DownloadManager> managers = new List<DownloadManager>();
+        public static List<GameDownloadManager> gameDownloadManagers = new List<GameDownloadManager>();
         public SHA256 hasher = SHA256.Create();
         public static string patchText = "";
         public static int patchCode = 202;
@@ -1034,17 +1036,10 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
                     return true;
                 }
-                DownloadManager m = new DownloadManager();
-                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId, false, r.packageName);
-                m.DownloadFinishedEvent += DownloadCompleted;
-                foreach (ObbEntry obb in r.obbList)
-                {
-                    
-                    DownloadManager mm = new DownloadManager();
-                    mm.StartDownload(obb.id, r.password, r.version, r.app, r.parentId, true, r.packageName, obb.name);
-                    mm.DownloadFinishedEvent += DownloadCompleted;
-                }
-                managers.Add(m);
+
+                GameDownloadManager gdm = new GameDownloadManager(r);
+                gameDownloadManagers.Add(gdm);
+                gdm.StartDownload();
                 serverRequest.SendString("Added to downloads. Check download progress tab.");
                 return true;
             }));
@@ -1053,14 +1048,23 @@ namespace QuestAppVersionSwitcher
 				managers.Find(x => x.backupName == serverRequest.queryString.Get("name")).StopDownload();
 				return true;
 			}));
+            server.AddRoute("GET", "/cancelgamedownload", new Func<ServerRequest, bool>(serverRequest =>
+            {
+                gameDownloadManagers.Find(x => x.id == serverRequest.queryString.Get("id")).Cancel();
+                return true;
+            }));
 			server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
             {
-                List<DownloadProgress> progress = new List<DownloadProgress>();
+                DownloadStatus status = new DownloadStatus();
                 foreach (DownloadManager m in managers)
                 {
-                    progress.Add(m);
+                    status.individualDownloads.Add(m);
                 }
-                serverRequest.SendString(JsonSerializer.Serialize(progress));
+                foreach (GameDownloadManager gdm in gameDownloadManagers)
+                {
+                    status.gameDownloads.Add(gdm);
+                }
+                serverRequest.SendString(JsonSerializer.Serialize(status));
                 return true;
             }));
             server.AddRoute("GET", "/questappversionswitcher/checkupdate", new Func<ServerRequest, bool>(request =>
@@ -1135,26 +1139,7 @@ namespace QuestAppVersionSwitcher
             return BitConverter.ToString(hasher.ComputeHash(Encoding.UTF8.GetBytes(input))).Replace("-", "");
         }
 
-        public void DownloadCompleted(DownloadManager m)
-        {
-            if(m.isObb)
-            {
-                string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/obb/";
-                FileManager.CreateDirectoryIfNotExisting(bbackupDir);
-                FileManager.DeleteFileIfExisting(bbackupDir + m.obbFileName);
-                File.Move(m.tmpPath, bbackupDir + m.obbFileName);
-                Logger.Log("Moved obb");
-                return;
-            }
-            // Is apk
-            string packageName = GetAPKPackageName(m.tmpPath);
-			string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + m.backupName + "/";
-            FileManager.RecreateDirectoryIfExisting(backupDir);
-            File.Move(m.tmpPath, backupDir + "app.apk");
-            Logger.Log("Moved apk");
-        }
-
-        public string GetAPKPackageName(string path)
+        public static string GetAPKPackageName(string path)
         {
 			// Is apk
 			MemoryStream manifestStream = new MemoryStream();

@@ -515,23 +515,41 @@ setInterval(() => {
 setInterval(() => {
     fetch("/downloads").then(res => {
         var m = ""
+        var gdms = ""
         res.json().then(json => {
-            for(const d of json) {
+            for(const d of json.individualDownloads) {
                 m += `<div class="downloadContainer">
                     <div class="downloadProgressContainer">
                         <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
                     </div>
-                    <input type="button" class="DownloadText" value="Cancel" onclick="StopDownload('${d.backupName}')">
+                    ${d.isCancelable ? `<input type="button" class="DownloadText" value="Cancel" onclick="StopDownload('${d.backupName}')">` : ``}
                     <div class="DownloadText" style="color: ${d.textColor};">
-                        ${d.backupName} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
+                        ${d.text} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
+                    </div>
+                </div>`
+            }
+            for(const d of json.gameDownloads) {
+                gdms += `<div class="downloadContainer">
+                    <div class="downloadProgressContainer">
+                        <div class="downloadProgressBar" style="width: ${d.progress}%;"></div>
+                    </div>
+                    <input type="button" class="DownloadText" value="Cancel" onclick="StopGameDownload('${d.id}')">
+                    <div class="DownloadText" style="color: ${d.textColor};">
+                        ${d.canceled ? "Canceled " : ""}${d.status} ${d.progressString} ${d.filesDownloaded} / ${d.filesToDownload}
                     </div>
                 </div>`
             }
             if (m == "") m = "<h2>No downloads running</h2>"
+            if (gdms == "") m = "<h2>No game downloads running</h2>"
             document.getElementById("progressBarContainers").innerHTML = m
+            document.getElementById("gameProgressBarContainers").innerHTML = gdms
         })
     })
 }, 500)
+
+function StopGameDownload(id) {
+    fetch("/cancelgamedownload?id=" + id)
+}
 
 function ShowAppList() {
     document.getElementById("appList").innerHTML = undefinedLoader

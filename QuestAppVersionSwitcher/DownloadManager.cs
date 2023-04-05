@@ -51,6 +51,7 @@ namespace QuestAppVersionSwitcher
             long lastBytes = 0;
             this.name = app + " " + version;
             this.backupName = this.name + " Downgraded";
+            this.text = this.isObb ? obbFileName : app + ".apk";
             foreach (char r in QAVSWebserver.ReservedChars)
             {
                 this.backupName = this.backupName.Replace(r, '_');

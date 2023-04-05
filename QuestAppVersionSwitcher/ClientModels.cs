@@ -12,6 +12,12 @@ namespace QuestAppVersionSwitcher.ClientModels
         public ModdedJson moddedJson { get; set; } = null;
     }
 
+    public class DownloadStatus
+    {
+        public List<GameDownloadManager> gameDownloads { get; set; } = new List<GameDownloadManager>();
+        public List<DownloadProgress> individualDownloads { get; set; } = new List<DownloadProgress>();
+    }
+
     public class MessageAndValue<T>
     {
         public string msg { get; set; } = "";
@@ -79,6 +85,7 @@ namespace QuestAppVersionSwitcher.ClientModels
     public class DownloadProgress
     {
         public string packageName { get; set; } = "";
+        public string text { get; set; } = "";
         public string version { get; set; } = "";
         public double percentage { get; set; } = 0.0;
         public string percentageString { get; set; } = "";
@@ -93,5 +100,6 @@ namespace QuestAppVersionSwitcher.ClientModels
         public string name { get; set; } = "";
         public string backupName { get; set; } = "";
         public string textColor { get; set; } = "#EEEEEE";
+        public bool isCancelable { get; set; } = true;
     }
 }
