@@ -71,6 +71,11 @@ namespace QuestAppVersionSwitcher
 
         public static void Copy(string from, string to)
         {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                File.Copy(from, to, true);
+                return;
+            }
             try
             {
                 Logger.Log("Copying " + from + " to " + to);
@@ -184,6 +189,11 @@ namespace QuestAppVersionSwitcher
 
         public static void Delete(string path)
         {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                File.Delete(path);
+                return;
+            }
             DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
             string name = Path.GetFileName(path);
             if (directory.FindFile(name) != null) directory.FindFile(name).Delete();
@@ -191,6 +201,11 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                FileManager.CreateDirectoryIfNotExisting(path);
+                return;
+            }
             // Remove trailing slash because it causes problems
             if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
             DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
@@ -202,6 +217,11 @@ namespace QuestAppVersionSwitcher
 
         public static void DirectoryCopy(string sourceDirName, string destDirName)
         {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                FileManager.DirectoryCopy(sourceDirName, destDirName, true);
+                return;
+            }
             // If the destination directory exists, delete it 
             if (Directory.Exists(destDirName)) Delete(destDirName);
             string androidFolder = "Android/data/" + CoreService.coreVars.currentApp;

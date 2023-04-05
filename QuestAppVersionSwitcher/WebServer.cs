@@ -277,6 +277,26 @@ namespace QuestAppVersionSwitcher
                 request.SendString(JsonSerializer.Serialize(status), "application/json");
                 return true;
             }));
+            server.AddRoute("GET", "/opensettings", new Func<ServerRequest, bool>(request =>
+            {
+                AndroidCore.context.StartActivity(new Intent(Android.Provider.Settings.ActionSettings));
+                request.SendString("Alright", "application/json");
+                return true;
+            }));
+            server.AddRoute("GET", "/deleteallmods", new Func<ServerRequest, bool>(request =>
+            {
+                PatchingStatus status = PatchingManager.GetPatchingStatus();
+                if(status == null)
+                {
+                    status = new PatchingStatus
+                    {
+                        isInstalled = false,
+                        canBePatched = false,
+                    };
+                }
+                request.SendString(JsonSerializer.Serialize(status), "application/json");
+                return true;
+            }));
             
             server.AddRoute("GET", "/patching/patchapk", new Func<ServerRequest, bool>(request =>
             {
@@ -1049,7 +1069,6 @@ namespace QuestAppVersionSwitcher
 			}));
 			server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
-            Thread.Sleep(1500);
             if (CoreService.coreVars.loginStep == 1)
             {
                 CoreService.coreVars.loginStep = 0;
