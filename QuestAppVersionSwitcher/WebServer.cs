@@ -279,7 +279,7 @@ namespace QuestAppVersionSwitcher
             }));
             server.AddRoute("GET", "/opensettings", new Func<ServerRequest, bool>(request =>
             {
-                AndroidCore.context.StartActivity(new Intent(Android.Provider.Settings.ActionSettings));
+                AndroidCore.context.StartActivity(AndroidCore.context.PackageManager.GetLaunchIntentForPackage("com.android.settings"));
                 request.SendString("Alright", "application/json");
                 return true;
             }));

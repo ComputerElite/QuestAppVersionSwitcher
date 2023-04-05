@@ -786,18 +786,6 @@ document.getElementById("grantAccess").onclick = () => {
     })
 }
 
-document.getElementById("deleteAllMods").onclick = () => {
-    fetch("deleteallmods").then(res => {
-        res.text().then(t => {
-            if(res.status == 200) {
-                TextBoxGood("updateTextBox", t)
-            } else {
-                TextBoxError("updateTextBox", t)
-            }
-        })
-    });
-}
-
 document.getElementById("openSettings").onclick = () => {
     fetch("opensettings").then(res => {
         res.text().then(t => {
