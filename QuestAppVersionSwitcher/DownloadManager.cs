@@ -20,7 +20,6 @@ namespace QuestAppVersionSwitcher
         public event DownloadFinished DownloadCanceled;
         public string tmpPath = "";
         public bool isObb = false;
-        public string packageName = "";
 		public WebClient downloader = new WebClient();
         public bool canceled = false;
         
@@ -38,6 +37,7 @@ namespace QuestAppVersionSwitcher
 		public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName)
         {
             this.packageName = packageName;
+            this.version = version;
             this.isObb = isObb;
             string decodedToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
             downloader = new WebClient();

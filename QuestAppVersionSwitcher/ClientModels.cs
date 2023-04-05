@@ -84,6 +84,8 @@ namespace QuestAppVersionSwitcher.ClientModels
 
     public class DownloadProgress
     {
+        public string packageName { get; set; } = "";
+        public string version { get; set; } = "";
         public double percentage { get; set; } = 0.0;
         public string percentageString { get; set; } = "";
         public long done { get; set; } = 0;
