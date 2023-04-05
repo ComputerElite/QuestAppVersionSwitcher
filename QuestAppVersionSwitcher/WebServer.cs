@@ -205,6 +205,19 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             }));
+            server.AddRoute("DELETE", "/mods/operation", new Func<ServerRequest, bool>(request =>
+            {
+                int operation = int.Parse(request.bodyString);
+                if (!QAVSModManager.runningOperations.ContainsKey(operation))
+                {
+                    request.SendString("A operation with the key " + operation + " does not exist", "text/plain", 400);
+                    return true;
+                }
+
+                QAVSModManager.runningOperations.Remove(operation);
+                request.SendString("Removed operation " + operation + " from running Operations", "application/json");
+                return true;
+            }));
             server.AddRoute("GET", "/patching/getpatchoptions", new Func<ServerRequest, bool>(request =>
             {
                 request.SendString(JsonSerializer.Serialize(CoreService.coreVars.patchingPermissions), "application/json");

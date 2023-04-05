@@ -247,7 +247,7 @@ namespace QuestAppVersionSwitcher.Mods
         {
             int operationId = QAVSModManager.operations;
             QAVSModManager.operations++;
-            QAVSModManager.runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id });
+            QAVSModManager.runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, operationId = operationId });
             Logger.Log($"Preparing dependency of {dependency.Id} version {dependency.VersionRange}");
             int existingIndex = installedInBranch.FindIndex(downloadedDep => downloadedDep == dependency.Id);
             if (existingIndex != -1)
