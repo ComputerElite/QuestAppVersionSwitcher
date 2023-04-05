@@ -786,18 +786,6 @@ document.getElementById("grantAccess").onclick = () => {
     })
 }
 
-document.getElementById("openSettings").onclick = () => {
-    fetch("opensettings").then(res => {
-        res.text().then(t => {
-            if(res.status == 200) {
-                TextBoxGood("updateTextBox", t)
-            } else {
-                TextBoxError("updateTextBox", t)
-            }
-        })
-    });
-}
-
 document.getElementById("grantAccess2").onclick = () => {
     fetch("grantaccess?package=" + config.currentApp).then(res => {
         res.text().then(text => {
