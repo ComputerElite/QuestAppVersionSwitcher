@@ -39,27 +39,14 @@ namespace QuestAppVersionSwitcher.ClientModels
         public List<string> browserIPs { get; set; } = new List<string>();
     }
 
-    public class AppBackup
+    public enum BackupInfoVersion
     {
-        public string backupName { get; set; } = "";
-        public string backupLocation { get; set; } = "";
-        public bool containsGamedata { get; set; } = false;
-        public long backupSize { get; set; } = 0;
-        public string backupSizeString { get; set; } = "";
-
-        public AppBackup(string name, bool gamedata, string location, long size, string sizestr)
-        {
-            this.backupName = name;
-            this.containsGamedata = gamedata;
-            this.backupLocation = location;
-            this.backupSize = size;
-            this.backupSizeString = sizestr;
-        }
+        V1
     }
 
     public class BackupList
     {
-        public List<AppBackup> backups { get; set; } = new List<AppBackup>();
+        public List<BackupInfo> backups { get; set; } = new List<BackupInfo>();
         public string lastRestored { get; set; } = "";
         public long backupsSize { get; set; } = 0;
         public string backupsSizeString { get; set; } = "";
@@ -79,7 +66,14 @@ namespace QuestAppVersionSwitcher.ClientModels
         public string app { get; set; } = "";
         public string parentId { get; set; } = "";
         public bool isObb { get; set; } = false;
+        public List<ObbEntry> obbList { get; set; } = new List<ObbEntry>();
         public string packageName { get; set; } = "";
+    }
+
+    public class ObbEntry
+    {
+        public string id { get; set; } = "";
+        public string name { get; set; } = "";
     }
 
     public class DownloadProgress

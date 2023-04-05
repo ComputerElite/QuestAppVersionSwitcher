@@ -22,6 +22,7 @@ namespace QuestAppVersionSwitcher
         public bool isObb = false;
 		public WebClient downloader = new WebClient();
         public bool canceled = false;
+        public string obbFileName = "";
         
         public void StopDownload()
 		{
@@ -34,8 +35,9 @@ namespace QuestAppVersionSwitcher
             if (File.Exists(tmpPath)) File.Delete(tmpPath);
 		}
 
-		public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName)
+		public void StartDownload(string binaryid, string password, string version, string app, string appId, bool isObb, string packageName, string obbFileName = "")
         {
+            this.obbFileName = obbFileName;
             this.packageName = packageName;
             this.version = version;
             this.isObb = isObb;

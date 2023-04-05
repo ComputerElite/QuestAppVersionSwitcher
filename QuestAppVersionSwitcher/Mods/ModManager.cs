@@ -21,7 +21,7 @@ namespace QuestAppVersionSwitcher.Mods
         public string ModsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/mods/";
         public string LibsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/libs/";
 
-        private string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
+        public string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
         public string ModsExtractPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/installedMods/";
 
         private readonly Dictionary<string, IModProvider> _modProviders = new Dictionary<string, IModProvider>();
@@ -131,8 +131,7 @@ namespace QuestAppVersionSwitcher.Mods
 
                 try
                 {
-                    await using Stream configStream = File.OpenRead(ConfigPath);
-                    ModConfig? modConfig = await JsonSerializer.DeserializeAsync<ModConfig>(configStream, _configSerializationOptions);
+                    ModConfig? modConfig = JsonSerializer.Deserialize<ModConfig>(File.ReadAllText(ConfigPath), _configSerializationOptions);
                     if (modConfig != null)
                     {
                         modConfig.Mods.ForEach(ModLoadedCallback);
@@ -187,6 +186,7 @@ namespace QuestAppVersionSwitcher.Mods
             mod.hasCover = mod.OpenCover().Length > 0;
             (mod.IsLibrary ? Libraries : Mods).Add(mod);
             _modConfig?.Mods.Add(mod);
+            
             foreach (var copyType in mod.FileCopyTypes)
             {
                 _otherFilesManager.RegisterFileCopy(CoreService.coreVars.currentApp, copyType);

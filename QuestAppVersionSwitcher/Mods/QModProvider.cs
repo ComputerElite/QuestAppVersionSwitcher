@@ -239,9 +239,9 @@ namespace QuestAppVersionSwitcher.Mods
 
         public override async Task LoadMods()
         {
-            List<string> modFiles = Directory.GetFiles(_modManager.ModsPath).ToList();
-            modFiles.ForEach(x => x = Path.GetFileName(x));
-            List<string> libFiles = Directory.GetFiles(_modManager.LibsPath).ToList();
+            Logger.Log("Checking mod status");
+            List<string> modFiles = FolderPermission.GetFiles(_modManager.ModsPath);
+            List<string> libFiles = FolderPermission.GetFiles(_modManager.LibsPath);
             for(int i = 0; i < modFiles.Count; i++)
             {
                 modFiles[i] = Path.GetFileName(modFiles[i]);

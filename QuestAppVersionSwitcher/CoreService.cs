@@ -34,9 +34,15 @@ namespace QuestAppVersionSwitcher.Core
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public static ActivityResultLauncher launcher;
+        public static bool started = false;
 
         public static async void Start()
         {
+            if (started)
+            {
+                AfterPermissionGrantStart();
+                return;
+            }
 			// Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
 			ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
 			// Check permissions and request if needed
@@ -66,7 +72,7 @@ namespace QuestAppVersionSwitcher.Core
                     // Manage storage permission
                     Android.Net.Uri uri = Android.Net.Uri.Parse("package:com.ComputerElite.questappversionswitcher");
                     Intent i = new Intent(Settings.ActionManageAppAllFilesAccessPermission, uri);
-                    AndroidCore.context.StartActivity(i);
+                    launcher.Launch(i);
                     return;
                 }
                 AfterPermissionGrantStart();
@@ -75,8 +81,6 @@ namespace QuestAppVersionSwitcher.Core
 
         public static void AfterPermissionGrantStart()
         {
-            
-
             //Set webbrowser settings
             browser.SetWebChromeClient(new WebChromeClient());
             browser.Settings.JavaScriptEnabled = true;
@@ -93,26 +97,29 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.AllowFileAccess = true;
             browser.SetDownloadListener(new DownloadListener());
             CookieManager.Instance.SetAcceptThirdPartyCookies(browser, true);
+            
+            Logger.displayLogInConsole = true;
 
             // Create all directories and files
-            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
-            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
-            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
-            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpPatchingDir);
-            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
-            FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
-            FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
-            
-            Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
+            if (!started)
+            {
+                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
+                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
+                FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
+                FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpPatchingDir);
+                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
+                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
+                FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
+                Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
+                ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);
+                if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
+                coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
+                QAVSModManager.Init();
+                CoreVars.cosmetics = Cosmetics.LoadCosmetics();
+            }
 
-            // Download file copies file
-            ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json", coreVars.QAVSFileCopiesFile);
-            if (!File.Exists(coreVars.QAVSConfigLocation)) File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
-            coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
-			CoreVars.cosmetics = Cosmetics.LoadCosmetics();
-            Logger.displayLogInConsole = true;
-			QAVSModManager.Init();
             qAVSWebserver.Start();
+            started = true;
         }
     }
     

@@ -215,6 +215,24 @@ namespace QuestAppVersionSwitcher
             if (directory.FindFile(name) == null) directory.CreateDirectory(name);
         }
 
+        /// <summary>
+        /// Deletes all files in a directory
+        /// </summary>
+        /// <param name="dir"></param>
+        public static void DeleteDirectoryContent(string dir)
+        {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                FileManager.RecreateDirectoryIfExisting(dir);
+                return;
+            }
+            DocumentFile destDir = GetAccessToFile(dir);
+            foreach (DocumentFile f in destDir.ListFiles())
+            {
+                f.Delete();
+            }
+        }
+        
         public static void DirectoryCopy(string sourceDirName, string destDirName)
         {
             if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
@@ -304,6 +322,28 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e, LoggingType.Error); }
             }
+        }
+
+        /// <summary>
+        /// Gets all files of a directory
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static List<string> GetFiles(string path)
+        {
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            {
+                return Directory.GetFiles(path).ToList();
+            }
+
+            if (path.EndsWith(Path.DirectorySeparatorChar)) path = path.Substring(0, path.Length - 1);
+            DocumentFile directory = GetAccessToFile(path);
+            List<string> files = new List<string>();
+            foreach (DocumentFile f in directory.ListFiles())
+            {
+                if (!f.IsDirectory) files.Add(f.Name);
+            }
+            return files;
         }
     }
     

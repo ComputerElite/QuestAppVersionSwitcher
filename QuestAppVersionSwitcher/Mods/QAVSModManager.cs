@@ -262,5 +262,14 @@ namespace QuestAppVersionSwitcher.Mods
             }
             return new byte[0];
         }
+
+        public static void DeleteAllMods()
+        {
+            FileManager.RecreateDirectoryIfExisting(modManager.ModsExtractPath);
+            FolderPermission.DeleteDirectoryContent(modManager.ModsPath);
+            FolderPermission.DeleteDirectoryContent(modManager.LibsPath);
+            File.Delete(modManager.ConfigPath);
+            Update();
+        }
     }
 }

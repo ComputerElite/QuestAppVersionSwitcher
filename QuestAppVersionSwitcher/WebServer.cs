@@ -29,6 +29,7 @@ using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
+using Android.Graphics;
 using Android.OS;
 using Android.Provider;
 using Socket = System.Net.Sockets.Socket;
@@ -41,7 +42,10 @@ using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
 using Org.BouncyCastle.Math.EC.Endo;
 using Android.Widget;
+using Xamarin.Forms;
 using Environment = Android.OS.Environment;
+using Path = System.IO.Path;
+using WebView = Android.Webkit.WebView;
 
 namespace QuestAppVersionSwitcher
 {
@@ -167,7 +171,7 @@ namespace QuestAppVersionSwitcher
     public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
-        public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
+        public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '&', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public static List<DownloadManager> managers = new List<DownloadManager>();
         public SHA256 hasher = SHA256.Create();
         public static string patchText = "";
@@ -301,18 +305,11 @@ namespace QuestAppVersionSwitcher
                 request.SendString("Alright", "application/json");
                 return true;
             }));
-            server.AddRoute("GET", "/deleteallmods", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("GET", "/mods/deleteallmods", new Func<ServerRequest, bool>(request =>
             {
-                PatchingStatus status = PatchingManager.GetPatchingStatus();
-                if(status == null)
-                {
-                    status = new PatchingStatus
-                    {
-                        isInstalled = false,
-                        canBePatched = false,
-                    };
-                }
-                request.SendString(JsonSerializer.Serialize(status), "application/json");
+                
+                QAVSModManager.DeleteAllMods();
+                request.SendString("Deleted all mods", "application/json");
                 return true;
             }));
             
@@ -849,7 +846,6 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
 
-                BackupInfo i = new BackupInfo();
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
                 if (!IsNameFileNameSafe(backupname))
@@ -869,9 +865,8 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
 
-                i.containsAppData = Directory.Exists(backupDir + package) || Directory.Exists(backupDir + "obb/" + package);
-                i.isPatchedApk = File.Exists(backupDir + "isPatched.txt");
-                serverRequest.SendString(JsonSerializer.Serialize(i), "text/plain", 200);
+                
+                serverRequest.SendString(JsonSerializer.Serialize(GetBackupInfo(backupDir)), "text/plain", 200);
                 return true;
             }));
             server.AddRoute("GET", "/grantaccess", new Func<ServerRequest, bool>(serverRequest =>
@@ -1040,8 +1035,15 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 DownloadManager m = new DownloadManager();
-                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId, r.isObb, r.packageName);
+                m.StartDownload(r.binaryId, r.password, r.version, r.app, r.parentId, false, r.packageName);
                 m.DownloadFinishedEvent += DownloadCompleted;
+                foreach (ObbEntry obb in r.obbList)
+                {
+                    
+                    DownloadManager mm = new DownloadManager();
+                    mm.StartDownload(obb.id, r.password, r.version, r.app, r.parentId, true, r.packageName, obb.name);
+                    mm.DownloadFinishedEvent += DownloadCompleted;
+                }
                 managers.Add(m);
                 serverRequest.SendString("Added to downloads. Check download progress tab.");
                 return true;
@@ -1095,22 +1097,37 @@ namespace QuestAppVersionSwitcher
                 CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+
+            if (CoreService.started) return;
             Thread t = new Thread(() =>
             {
-				Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-                IPAddress ip = IPAddress.Parse("232.0.53.6");
-				s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip));
-				s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
-				IPEndPoint ipep = new IPEndPoint(ip, 53500);
-				s.Connect(ipep);
-                
-				while (true)
+                try
                 {
-					s.Send(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new MultiCastContent { ips = GetIPs(), port = CoreService.coreVars.serverPort })));
-					Thread.Sleep(5000);
-				}
+
+                    Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                    IPAddress ip = IPAddress.Parse("232.0.53.6");
+                    s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.AddMembership, new MulticastOption(ip));
+                    s.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastTimeToLive, 2);
+                    IPEndPoint ipep = new IPEndPoint(ip, 53500);
+                    s.Connect(ipep);
+                
+                    while (true)
+                    {
+                        s.Send(Encoding.ASCII.GetBytes(JsonSerializer.Serialize(new MultiCastContent { ips = GetIPs(), port = CoreService.coreVars.serverPort })));
+                        Thread.Sleep(5000);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("Couldn't set up multicase: " + e, LoggingType.Warning);
+                }
             });
             t.Start();
+        }
+
+        public void ShowWebsite()
+        {
+            throw new NotImplementedException();
         }
 
         public string GetSHA256OfString(string input)
@@ -1124,8 +1141,8 @@ namespace QuestAppVersionSwitcher
             {
                 string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/obb/";
                 FileManager.CreateDirectoryIfNotExisting(bbackupDir);
-                FileManager.DeleteFileIfExisting(bbackupDir + "main.obb");
-                File.Move(m.tmpPath, bbackupDir + "main.obb");
+                FileManager.DeleteFileIfExisting(bbackupDir + m.obbFileName);
+                File.Move(m.tmpPath, bbackupDir + m.obbFileName);
                 Logger.Log("Moved obb");
                 return;
             }
@@ -1179,15 +1196,44 @@ namespace QuestAppVersionSwitcher
 			return version;
 		}
 
+        public BackupInfo GetBackupInfo(string path, bool loadAnyway = false)
+        {
+            BackupInfo info = new BackupInfo();
+            if (File.Exists(path + "info.json") && !loadAnyway)
+            {
+                info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(path + "info.json"));
+                if (info.BackupInfoVersion < BackupInfoVersion.V1) return GetBackupInfo(path, true);
+                return info;
+            }
+
+            string pathWithoutSlash = path.EndsWith(Path.DirectorySeparatorChar)
+                ? path.Substring(0, path.Length - 1)
+                : path;
+            info.backupName = Path.GetFileName(pathWithoutSlash);
+            info.containsAppData = Directory.Exists(pathWithoutSlash + "/" + Directory.GetParent(pathWithoutSlash).Name);
+            info.backupLocation = path;
+            info.backupSize = FileManager.GetDirSize(pathWithoutSlash);
+            info.backupSizeString = SizeConverter.ByteSizeToString(info.backupSize);
+            info.containsApk = File.Exists(pathWithoutSlash + "/app.apk");
+            if (info.containsApk)
+            {
+                ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk");
+                PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
+                info.gameVersion = s.version;
+                info.isPatchedApk = s.isPatched;
+                apk.Dispose();
+            }
+            return info;
+        }
+
 		public BackupList GetBackups(string package)
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/";
             BackupList backups = new BackupList();
             foreach (string d in Directory.GetDirectories(backupDir))
             {
-                long size = FileManager.GetDirSize(d);
-                backups.backupsSize += size;
-                backups.backups.Add(new AppBackup(Path.GetFileName(d), Directory.Exists(d + "/GameData"), d, size, SizeConverter.ByteSizeToString(size)));
+                backups.backups.Add(GetBackupInfo(d));
+                backups.backupsSize += backups.backups.Last().backupSize;
             }
             if (File.Exists(backupDir + "lastRestored.txt")) backups.lastRestored = File.ReadAllText(backupDir + "lastRestored.txt");
             backups.backupsSizeString = SizeConverter.ByteSizeToString(backups.backupsSize);
@@ -1220,8 +1266,15 @@ namespace QuestAppVersionSwitcher
 
     public class BackupInfo
     {
+        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V1;
+        public string backupName { get; set; } = "";
+        public string backupLocation { get; set; } = "";
         public bool containsAppData { get; set; } = false;
         public bool isPatchedApk { get; set; } = false;
+        public bool containsApk { get; set; } = false;
+        public string gameVersion { get; set; } = "unknown";
+        public long backupSize { get; set; } = 0;
+        public string backupSizeString { get; set; } = "";
     }
 
     public class MultiCastContent

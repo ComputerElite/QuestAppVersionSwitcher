@@ -31,9 +31,17 @@ namespace QuestAppVersionSwitcher.Mods
 
         public OtherFilesManager()
         {
-            var copyIndex = JsonSerializer.Deserialize<Dictionary<string, List<FileCopyType>>>(File.ReadAllText(CoreService.coreVars.QAVSFileCopiesFile));
-            Debug.Assert(copyIndex != null);
-            _copyIndex = copyIndex;
+            if (File.Exists(CoreService.coreVars.QAVSFileCopiesFile))
+            {
+                
+                var copyIndex = JsonSerializer.Deserialize<Dictionary<string, List<FileCopyType>>>(File.ReadAllText(CoreService.coreVars.QAVSFileCopiesFile));
+                Debug.Assert(copyIndex != null);
+                _copyIndex = copyIndex;
+            }
+            else
+            {
+                _copyIndex = new Dictionary<string, List<FileCopyType>>();
+            }
         }
 
         /// <summary>

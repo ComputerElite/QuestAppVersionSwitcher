@@ -48,6 +48,8 @@ function CheckFolderPermission() {
             if (text == "True") {
                 // Do nothing, we already got access to the folder
             } else {
+                if(updateAvailable) return 
+                CloseGetPasswordPopup();
                 OpenRestorePopup();
                 GotoStep("12")
             }
@@ -788,7 +790,7 @@ document.getElementById("grantAccess").onclick = () => {
 }
 
 document.getElementById("deleteAllMods").onclick = () => {
-    fetch("deleteallmods").then(res => {
+    fetch("/mods/deleteallmods").then(res => {
         res.text().then(t => {
             if(res.status == 200) {
                 TextBoxGood("updateTextBox", t)
@@ -934,11 +936,13 @@ function CloseGetPasswordPopup() {
 CheckUpdate()
 
 document.getElementById("checkUpdate").onclick = () => CheckUpdate()
-
+var updateAvailable = false
 function CheckUpdate() {
     TextBoxText("updateTextBox", "Checking for updates...")
     fetch("/questappversionswitcher/checkupdate").then(res => res.json().then(json => {
         if(json.isUpdateAvailable) {
+            updatePromptOpen = true
+            CloseRestorePopup()
             OpenGetPasswordPopup()
             GotoStep(11)
             document.getElementById("updateAvailableText").innerHTML = json.msg + "<br><br>" + json.changelog.replace(/\n/g, "<br>")
@@ -950,6 +954,8 @@ function CheckUpdate() {
 
 document.getElementById("cancelupdate").onclick = () => {
     CloseGetPasswordPopup()
+    updateAvailable = false;
+    CheckFolderPermission()
 }
 
 document.getElementById("updateqavs").onclick = () => {

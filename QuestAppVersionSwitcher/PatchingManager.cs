@@ -242,7 +242,6 @@ namespace QuestAppVersionSwitcher
             }
             ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
             return GetPatchingStatus(apk);
-            
         }
 
         public static PatchingStatus GetPatchingStatus(ZipArchive apk)
