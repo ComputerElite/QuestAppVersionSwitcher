@@ -36,6 +36,7 @@ namespace QuestAppVersionSwitcher.Mods
         public QAVSOperationType type { get; set; } = QAVSOperationType.ModInstall;
         public string name { get; set; } = "";
         public int operationId { get; set; } = 0;
+        public bool isDone { get; set; } = false;
     }
 
     public class QAVSModManager
@@ -97,7 +98,7 @@ namespace QuestAppVersionSwitcher.Mods
         public static void InstallFirstModFromQueue()
         {
             if (installingMod || installQueue.Count <= 0) return;
-            runningOperations.Remove(installQueue[0].queuedOperationId);
+            runningOperations[installQueue[0].queuedOperationId].isDone = true;
             installingMod = true;
             int operationId = operations;
             operations++;
@@ -108,7 +109,7 @@ namespace QuestAppVersionSwitcher.Mods
                 File.Move(installQueue[0].path, Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename);
                 installQueue[0].path = Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename;
                 CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(installQueue[0].filename), installQueue[0].path, true);
-                runningOperations.Remove(operationId);
+                runningOperations[operationId].isDone = true;
                 installQueue.RemoveAt(0);
                 installingMod = false;
                 InstallFirstModFromQueue();
@@ -118,10 +119,10 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 IMod mod = modManager.TryParseMod(installQueue[0].path).Result;
                 mod.Install().Wait();
-                runningOperations.Remove(operationId);
+                runningOperations[operationId].isDone = true;
             } catch (Exception e)
             {
-                runningOperations.Remove(operationId);
+                runningOperations[operationId].isDone = true;
                 operationId = operations;
                 operations++;
                 runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId });
@@ -158,7 +159,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
 
             // {"success": true, "msg": "Success/Error: blah blah"}
-            runningOperations.Remove(operationId);
+            runningOperations[operationId].isDone = true;
         }
 
         public static void DeleteMod(string id)
@@ -175,7 +176,7 @@ namespace QuestAppVersionSwitcher.Mods
                     break;
                 }
             }
-            runningOperations.Remove(operationId);
+            runningOperations[operationId].isDone = true;
         }
 
         public static void InstallModFromUrl(string url)
@@ -193,7 +194,7 @@ namespace QuestAppVersionSwitcher.Mods
                 //CoreService.browser.EvaluateJavascript("ShowToast('Downloaded, now installing', '#FFFFFF', '#222222')", null);
                 Thread t = new Thread(() =>
                 {
-                    runningOperations.Remove(operationId);
+                    runningOperations[operationId].isDone = true;
                     InstallMod(modPath, Path.GetFileName(modPath));
                     FileManager.DeleteFileIfExisting(modPath);
                 });
@@ -201,7 +202,7 @@ namespace QuestAppVersionSwitcher.Mods
             };
             m.DownloadCanceled += manager =>
             {
-                runningOperations.Remove(operationId);
+                runningOperations[operationId].isDone = true;
             };
             m.StartDownload(url, modPath);
             QAVSWebserver.managers.Add(m);
@@ -221,10 +222,10 @@ namespace QuestAppVersionSwitcher.Mods
 					{
 						m.Install().Wait();
 						modManager.ForceSave();
-						runningOperations.Remove(operationId);
+                        runningOperations[operationId].isDone = true;
 					} catch(Exception e)
 					{
-						runningOperations.Remove(operationId);
+                        runningOperations[operationId].isDone = true;
 						operationId = operations;
 						operations++;
 						runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error enabling mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId });
@@ -242,6 +243,12 @@ namespace QuestAppVersionSwitcher.Mods
                 libs = modManager.Libraries,
                 operations = runningOperations.Values.ToList()
             });
+        }
+        
+
+        public static string GetOperations()
+        {
+            return JsonSerializer.Serialize(runningOperations);
         }
 
         public static byte[] GetModCover(string id)

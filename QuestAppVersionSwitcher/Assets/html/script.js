@@ -222,6 +222,7 @@ var otherPermissions = []
 function UpdateModsAndLibs() {
     fetch(`/mods/mods`).then(res => {
         res.json().then(res => {
+            res.operations = res.operations.filter(x => !x.isDone)
             operationsOngoing = res.operations.length > 0
             var mods = ``
             if(!operationsOngoing) {

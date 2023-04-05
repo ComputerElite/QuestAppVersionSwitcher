@@ -205,6 +205,11 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             }));
+            server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
+            {
+                request.SendString(QAVSModManager.GetOperations(), "application/json");
+                return true;
+            }));
             server.AddRoute("DELETE", "/mods/operation", new Func<ServerRequest, bool>(request =>
             {
                 int operation = int.Parse(request.bodyString);
