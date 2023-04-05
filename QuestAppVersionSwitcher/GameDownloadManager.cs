@@ -90,7 +90,7 @@ namespace QuestAppVersionSwitcher
             progress = filesDownloaded / (double)filesToDownload;
             progressString = (progress * 100).ToString("F") + "%";
             
-            for (int i = 0; i < 30 - downloadManagers.Count; i++)
+            for (int i = 0; i < 10 - downloadManagers.Count; i++)
             {
                 if (obbsToDo.Count <= 0) return;
                 DownloadManager m = new DownloadManager();
