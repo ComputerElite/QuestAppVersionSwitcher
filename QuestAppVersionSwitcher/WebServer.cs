@@ -483,6 +483,7 @@ namespace QuestAppVersionSwitcher
             {
                 Logger.Log("\n\n------Log upload requested------");
 				QAVSReport report = new QAVSReport();
+                report.androidVersion = (int)Build.VERSION.SdkInt;
                 report.version = CoreService.version.ToString();
 				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
@@ -1214,6 +1215,7 @@ namespace QuestAppVersionSwitcher
 
 	public class QAVSReport
 	{
+        public int androidVersion { get; set; }
 		public string log { get; set; }
 		public string version { get; set; }
 		public DateTime reportTime { get; set; }
