@@ -110,6 +110,7 @@ namespace QuestAppVersionSwitcher.Mods
                 installQueue[0].path = Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename;
                 CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(installQueue[0].filename), installQueue[0].path, true);
                 runningOperations[operationId].isDone = true;
+                FileManager.DeleteFileIfExisting(installQueue[0].path);
                 installQueue.RemoveAt(0);
                 installingMod = false;
                 InstallFirstModFromQueue();
@@ -128,6 +129,7 @@ namespace QuestAppVersionSwitcher.Mods
                 runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId });
             }
             modManager.ForceSave();
+            FileManager.DeleteFileIfExisting(installQueue[0].path);
             installQueue.RemoveAt(0);
             installingMod = false;
             InstallFirstModFromQueue();
@@ -196,7 +198,6 @@ namespace QuestAppVersionSwitcher.Mods
                 {
                     runningOperations[operationId].isDone = true;
                     InstallMod(modPath, Path.GetFileName(modPath));
-                    FileManager.DeleteFileIfExisting(modPath);
                 });
                 t.Start();
             };

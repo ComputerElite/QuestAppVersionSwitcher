@@ -1208,6 +1208,7 @@ namespace QuestAppVersionSwitcher
                 info.isPatchedApk = s.isPatched;
                 apk.Dispose();
             }
+            File.WriteAllText(path + "info.json", JsonSerializer.Serialize(info));
             return info;
         }
 
