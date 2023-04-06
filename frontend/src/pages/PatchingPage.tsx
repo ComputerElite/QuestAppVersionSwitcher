@@ -1,10 +1,11 @@
 import { Title } from "@solidjs/meta";
+import { showChangeGameModal } from "../modals/ChangeGameModal";
 
 export default function PatchingPage() {
   return (
     <div class="contentItem">
       <Title>Patching</Title>
-      <div class="button" id="changeApp3">Change app</div>
+      <div class="button"  onClick={showChangeGameModal}>Change app</div>
       <h3>Currently selected game: <div class="inline packageName">some game</div></h3>
       <div id="patchStatus">Loading...</div>
       <div class="textbox" id="patchingTextBox"></div>

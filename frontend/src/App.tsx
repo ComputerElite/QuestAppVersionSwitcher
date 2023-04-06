@@ -13,11 +13,11 @@ import ModsPage from './pages/ModsPage';
 import PatchingPage from './pages/PatchingPage';
 import ToolsPage from './pages/ToolsPage';
 import { MetaProvider } from '@solidjs/meta';
+import ModalContainer from './modals/ModalContainer';
 
 
 
 const App: Component = () => {
-
   return (
     <MetaProvider>
       <Router source={hashIntegration()} >
@@ -43,6 +43,7 @@ const App: Component = () => {
           gutter={8}
           position="bottom-left"
         />
+        <ModalContainer/>
       </Router>
     </MetaProvider>
   );

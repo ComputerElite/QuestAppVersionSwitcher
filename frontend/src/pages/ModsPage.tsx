@@ -1,5 +1,5 @@
 import { For, Index, JSX, Show, batch, createEffect, createMemo, createSignal, mapArray, onCleanup, onMount } from "solid-js";
-import { DeleteMod, ILibrary, IMod, UpdateModState, UploadMod, getModsList } from "../api/mods";
+import { DeleteMod, IMod, InstallModFromUrl, UpdateModState, UploadMod, getModsList } from "../api/mods";
 import image from "./../assets/DefaultCover.png"
 import "./ModsPage.scss";
 import { modsList, mutateMods, refetchMods } from "../state/mods";
@@ -60,7 +60,8 @@ async function onFileDrop(e: DragEvent) {
 
     let url = e.dataTransfer.getData("URL");
     if (url) {
-      console.log("URL", url);
+      await InstallModFromUrl(url);
+      await Sleep(2000);
     }
 
     if (filesToUpload.length > 0) {
@@ -148,6 +149,7 @@ export default function ModsPage() {
       }}>
         <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
         <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
+        <div class="button topButtonMargin" onClick={refetchMods}>Refresh</div>
       </div>
       <div classList={{
         "infiniteList": true,

@@ -1,6 +1,7 @@
 import { Title } from "@solidjs/meta"
 import "./ToolsPage.scss"
 import { exitApp } from "../api/app"
+import { showChangeGameModal } from "../modals/ChangeGameModal"
 
 export default function ToolsPage() {
   return (
@@ -15,7 +16,7 @@ export default function ToolsPage() {
         <div class="buttonLabel">Uninstalls the app you selected (needs to be confirmed on android device)</div>
       </div>
       <div class="buttonContainer">
-        <div class="button" id="changeApp">Change app</div>
+        <div class="button"  onClick={showChangeGameModal}>Change app</div>
         <div class="buttonLabel">Change the app you want to manage</div>
       </div>
       <div class="buttonContainer">

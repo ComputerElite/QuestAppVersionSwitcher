@@ -5,7 +5,7 @@ import { getPatchingModStatus } from "../api/patching";
 import { getConfig } from "../api/app";
 
 // Reconclile
-function createDeepSignal<T>(value: T): Signal<T> {
+ function createDeepSignal<T>(value: T): Signal<T> {
     const [store, setStore] = createStore({
       value
     });

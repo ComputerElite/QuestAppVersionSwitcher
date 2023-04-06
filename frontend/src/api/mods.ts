@@ -72,3 +72,15 @@ export async function DeleteMod(id: string): Promise<boolean> {
 export async function UpdateModState(id: string, enable: boolean) {
     await fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"});
 }
+
+
+export async function InstallModFromUrl(url: string): Promise<boolean> {
+    const response = await fetch(`/api/mods/installfromurl`, {
+        method: 'POST',
+        body: url
+    });
+
+    if (response.ok) { return true; }
+
+    return false;
+}

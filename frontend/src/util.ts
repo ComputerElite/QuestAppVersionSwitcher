@@ -1,6 +1,4 @@
-export function IsOnQuest() {
-    return location.host.startsWith("127.0.0.1") || location.host.startsWith("localhost") 
-}
+
 
 /**
  * Sleeps for a given amount of milliseconds
@@ -16,3 +14,9 @@ export function CompareStringsAlphabetically(a: string, b: string) {
 }
 
 
+// User agent string for Oculus Quest webview is hardcoded, so we can just hardcode the check for it as well
+const _isOnQuest = window.navigator.userAgent == "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
+
+export function IsOnQuest() {
+    return _isOnQuest;
+}

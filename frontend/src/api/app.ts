@@ -67,7 +67,7 @@ export async function changePort(port: number) {
     throw new Error("Unknown error");
 }
 
-interface getAppListResponseItem {
+export interface IAppListItem {
     AppName: string;
     PackageName: string;
 }
@@ -76,7 +76,7 @@ interface getAppListResponseItem {
  * Gets the list of apps installed on the quest
  * @param includeBackups include backups in the list of apps (default: true)
  */
-export async function getAppList(includeBackups: boolean = true): Promise<getAppListResponseItem[]> {
+export async function getAppList(includeBackups: boolean = true): Promise<IAppListItem[]> {
     let result = await fetch(
         includeBackups? "/api/android/installedappsandbackups" : "/api/android/installedapps"
     );
