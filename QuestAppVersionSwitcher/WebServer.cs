@@ -1184,16 +1184,16 @@ namespace QuestAppVersionSwitcher
         public BackupInfo GetBackupInfo(string path, bool loadAnyway = false)
         {
             BackupInfo info = new BackupInfo();
-            if (File.Exists(path + "info.json") && !loadAnyway)
+            string pathWithoutSlash = path.EndsWith(Path.DirectorySeparatorChar)
+                ? path.Substring(0, path.Length - 1)
+                : path;
+            if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
             {
-                info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(path + "info.json"));
+                info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
                 if (info.BackupInfoVersion < BackupInfoVersion.V1) return GetBackupInfo(path, true);
                 return info;
             }
 
-            string pathWithoutSlash = path.EndsWith(Path.DirectorySeparatorChar)
-                ? path.Substring(0, path.Length - 1)
-                : path;
             info.backupName = Path.GetFileName(pathWithoutSlash);
             info.containsAppData = Directory.Exists(pathWithoutSlash + "/" + Directory.GetParent(pathWithoutSlash).Name);
             info.backupLocation = path;
@@ -1208,7 +1208,7 @@ namespace QuestAppVersionSwitcher
                 info.isPatchedApk = s.isPatched;
                 apk.Dispose();
             }
-            File.WriteAllText(path + "info.json", JsonSerializer.Serialize(info));
+            File.WriteAllText(pathWithoutSlash + "/info.json", JsonSerializer.Serialize(info));
             return info;
         }
 

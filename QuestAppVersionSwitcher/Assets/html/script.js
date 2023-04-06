@@ -745,7 +745,19 @@ document.getElementById("install").onclick = () => {
                 fetch("gotaccess?package=" + config.currentApp).then(res => {
                     res.text().then(text => {
                         if (text == "True") {
-                            GotoStep(4)
+                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                                res.json().then(j => {
+                                    if(j.isPatchedApk) {
+                                        GotoStep("4.2")
+                                    } else {
+                                        if (j.containsAppData) {
+                                            GotoStep(4)
+                                        } else {
+                                            GotoStep(5)
+                                        }
+                                    }
+                                })
+                            })
                         } else {
                             GotoStep("4.1")
                         }
@@ -758,19 +770,29 @@ document.getElementById("install").onclick = () => {
 }
 
 document.getElementById("grantManageAccess").onclick = () => {
-    fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
+    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.text().then(text => {
-            if (res.status == 200) {
-                fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-                    res.json().then(j => {
-                        if (j.containsAppData) {
-                            GotoStep(4)
-                        } else {
-                            GotoStep(5)
-                        }
+            if (text == "True") {
+                fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
+                    res.text().then(text => {
+                        if (res.status == 200) {
+                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                                res.json().then(j => {
+                                    if (j.containsAppData) {
+                                        GotoStep(4)
+                                    } else {
+                                        GotoStep(5)
+                                    }
+                                })
+                            })
+                        } else TextBoxError("step3box", text)
                     })
                 })
-            } else TextBoxError("step3box", text)
+            }
+            else {
+                TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
+                GotoStep(3)
+            }
         })
     })
 }
