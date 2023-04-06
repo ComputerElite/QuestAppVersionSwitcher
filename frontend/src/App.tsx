@@ -1,7 +1,8 @@
 import { Component, createEffect, createSignal } from 'solid-js';
 import toast, { Toaster } from 'solid-toast';
-import logo from './logo.svg';
-import './legacy.css';
+
+import "normalize.css"
+import "./global.scss";
 import Sidebar from './components/Sidebar';
 import { Routes, Route, Router, hashIntegration, Navigate } from "@solidjs/router";
 import BackupPage from './pages/BackupPage';
@@ -15,16 +16,26 @@ import ToolsPage from './pages/ToolsPage';
 import { MetaProvider } from '@solidjs/meta';
 import ModalContainer from './modals/ModalContainer';
 
+// Fonts
+import "@fontsource/roboto"; // Defaults to weight 400.
+import "@fontsource/roboto/300.css"; // Weight 300.
+import "@fontsource/roboto/500.css"; // Weight 500.
+import "@fontsource/roboto/700.css"; // Weight 700.
+
+
+import style from "./App.module.scss"
+import { ThemeProvider } from '@suid/material';
+import { theme } from './theme';
 
 
 const App: Component = () => {
   return (
     <MetaProvider>
+     <ThemeProvider theme={theme}>
       <Router source={hashIntegration()} >
-        <div class='menuContainer'>
+        <div class={style['AppRoot']}>
           <Sidebar />
-          <div class="content">
-
+          <div class={style.content}>
             <Routes>
               <Route path="/" element={<Navigate href={"/backup"} />} />
               <Route path="/backup" element={<BackupPage />} />
@@ -33,10 +44,9 @@ const App: Component = () => {
               <Route path="/patching" element={<PatchingPage />} />
               <Route path="/mods" element={<ModsPage />} />
               <Route path="/cosmetics" element={<CosmeticsPage />} />
-              <Route path="/getMods" element={<GetModsPage />} />
+              {/* <Route path="/getMods" element={<GetModsPage />} /> */}
               <Route path="/tools" element={<ToolsPage />} />
             </Routes>
-
           </div>
         </div>
         <Toaster
@@ -45,6 +55,7 @@ const App: Component = () => {
         />
         <ModalContainer/>
       </Router>
+      </ThemeProvider>
     </MetaProvider>
   );
 };

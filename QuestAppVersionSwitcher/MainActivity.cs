@@ -44,8 +44,8 @@ namespace QuestAppVersionSwitcher
             AndroidCore.context = this;
             AndroidCore.activity = this;
             AndroidCore.assetManager = this.Assets;
-            AndroidCore.installLauncher = RegisterForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                new InstallLaucherResult());
+            // AndroidCore.installLauncher = RegisterForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+            //     new InstallLaucherResult());
             
             FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());

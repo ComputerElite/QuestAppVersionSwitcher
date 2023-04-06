@@ -1,0 +1,44 @@
+
+:root {
+  /* BG COLORS */
+  /* Primary gradient */
+  --bg-color: #030712;
+  --bg-color-stops: #030712, #111827;
+
+  /*  Secondary dark */
+  --bg-color-secondary: #030712;
+
+  /* TEXT COLORS */
+  --text-color: #fff;
+  --text-color-dark: #000;
+
+  /* ACCENT COLORS */
+  --text-accent: #34d399;
+  --text-accent-stops: #34d399, #22d3ee;
+
+  --accent-color: #34d399;
+  --accent-color-stops: #34d399, #22d3ee;
+}
+
+
+body {
+  margin: 0;
+  background: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  margin: 0px;
+  color: var(--text-color);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+a{ 
+  text-decoration: none;
+}

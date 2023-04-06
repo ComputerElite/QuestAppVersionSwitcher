@@ -115,9 +115,7 @@ export default function BackupPage() {
                     )}
                 </For>
             </List>
-
-
-            {/* <div class="contentHeader headerMargin">
+            <div class="contentHeader headerMargin">
                 Restore backups
                 <div class="contentHeaderDescription">Restores the backup selected above</div>
                 <br />
@@ -132,7 +130,7 @@ export default function BackupPage() {
                     <div class="buttonLabel">Deletes the selected backup</div>
                 </div>
                 <div id="restoreTextBox" class="textBox"></div>
-            </div> */}
+            </div>
 
             {/* <div class="contentHeader headerMargin">
                 Create backups
