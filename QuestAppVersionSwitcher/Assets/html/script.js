@@ -333,7 +333,7 @@ function FormatMod(mod, active = true) {
     return `
     <div class="mod">
         <div class="leftRightSplit">
-            <img class="modCover" src="${mod.hasCover ? `/mods/cover?id=${mod.Id}` : `https://raw.githubusercontent.com/ComputerElite/ComputerElite.github.io/main/assets/ModCover.png`}">
+            <img class="modCover" src="${mod.hasCover ? `/api/mods/cover?id=${mod.Id}` : `https://raw.githubusercontent.com/ComputerElite/ComputerElite.github.io/main/assets/ModCover.png`}">
             <div class="upDownSplit spaceBetween">
                 <div class="upDownSplit">
                     <div class="leftRightSplit nomargin">
@@ -598,7 +598,7 @@ function ShowAppList() {
     document.getElementById("appList").innerHTML = undefinedLoader
     document.getElementById("appList").className = "list"
     document.getElementById("appListContainer").className = "listContainer"
-    fetch("/api/hiddenApps.json").then(res => res.json().then(hiddenApps => {
+    fetch("hiddenApps.json").then(res => res.json().then(hiddenApps => {
         hiddenApps = hiddenApps.map(x => x.PackageName)
         fetch("/api/android/installedappsandbackups").then(res => res.json().then(res => {
             document.getElementById("appList").innerHTML = ""

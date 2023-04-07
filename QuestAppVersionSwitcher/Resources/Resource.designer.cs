@@ -23896,58 +23896,61 @@ namespace QuestAppVersionSwitcher
 			public const int ShellContent = 2131427459;
 			
 			// aapt resource value: 0x7F0B0084
-			public const int support_simple_spinner_dropdown_item = 2131427460;
+			public const int splash = 2131427460;
 			
 			// aapt resource value: 0x7F0B0085
-			public const int Tabbar = 2131427461;
+			public const int support_simple_spinner_dropdown_item = 2131427461;
 			
 			// aapt resource value: 0x7F0B0086
-			public const int test_action_chip = 2131427462;
+			public const int Tabbar = 2131427462;
 			
 			// aapt resource value: 0x7F0B0087
-			public const int test_chip_zero_corner_radius = 2131427463;
+			public const int test_action_chip = 2131427463;
 			
 			// aapt resource value: 0x7F0B0088
-			public const int test_design_checkbox = 2131427464;
+			public const int test_chip_zero_corner_radius = 2131427464;
 			
 			// aapt resource value: 0x7F0B0089
-			public const int test_design_radiobutton = 2131427465;
+			public const int test_design_checkbox = 2131427465;
 			
 			// aapt resource value: 0x7F0B008A
-			public const int test_navigation_bar_item_layout = 2131427466;
+			public const int test_design_radiobutton = 2131427466;
 			
 			// aapt resource value: 0x7F0B008B
-			public const int test_reflow_chipgroup = 2131427467;
+			public const int test_navigation_bar_item_layout = 2131427467;
 			
 			// aapt resource value: 0x7F0B008C
-			public const int test_toolbar = 2131427468;
+			public const int test_reflow_chipgroup = 2131427468;
 			
 			// aapt resource value: 0x7F0B008D
-			public const int test_toolbar_custom_background = 2131427469;
+			public const int test_toolbar = 2131427469;
 			
 			// aapt resource value: 0x7F0B008E
-			public const int test_toolbar_elevation = 2131427470;
+			public const int test_toolbar_custom_background = 2131427470;
 			
 			// aapt resource value: 0x7F0B008F
-			public const int test_toolbar_surface = 2131427471;
-			
-			// aapt resource value: 0x7F0B0094
-			public const int text_view_without_line_height = 2131427476;
+			public const int test_toolbar_elevation = 2131427471;
 			
 			// aapt resource value: 0x7F0B0090
-			public const int text_view_with_line_height_from_appearance = 2131427472;
-			
-			// aapt resource value: 0x7F0B0091
-			public const int text_view_with_line_height_from_layout = 2131427473;
-			
-			// aapt resource value: 0x7F0B0092
-			public const int text_view_with_line_height_from_style = 2131427474;
-			
-			// aapt resource value: 0x7F0B0093
-			public const int text_view_with_theme_line_height = 2131427475;
+			public const int test_toolbar_surface = 2131427472;
 			
 			// aapt resource value: 0x7F0B0095
-			public const int Toolbar = 2131427477;
+			public const int text_view_without_line_height = 2131427477;
+			
+			// aapt resource value: 0x7F0B0091
+			public const int text_view_with_line_height_from_appearance = 2131427473;
+			
+			// aapt resource value: 0x7F0B0092
+			public const int text_view_with_line_height_from_layout = 2131427474;
+			
+			// aapt resource value: 0x7F0B0093
+			public const int text_view_with_line_height_from_style = 2131427475;
+			
+			// aapt resource value: 0x7F0B0094
+			public const int text_view_with_theme_line_height = 2131427476;
+			
+			// aapt resource value: 0x7F0B0096
+			public const int Toolbar = 2131427478;
 			
 			static Layout()
 			{

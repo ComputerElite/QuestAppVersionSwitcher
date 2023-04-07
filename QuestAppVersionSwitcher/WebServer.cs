@@ -271,9 +271,6 @@ namespace QuestAppVersionSwitcher
 
         public void Start()
         {
-            WebViewClient client = new WebViewClient();
-
-            CoreService.browser.SetWebViewClient(new QAVSWebViewClient());
             server.onWebsocketConnectRequest = uRL =>
             {
                 if (uRL.Length <= 10) return;
@@ -785,6 +782,8 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
 
+                GetBackupInfo(backupDir, true); // make sure backup metadata is up to date
+
                 backupStatus.done = true;
                 backupStatus.currentOperation = "Backup of " + package + " with the name " + backupname + " finished";
                 return true;
@@ -1109,6 +1108,8 @@ namespace QuestAppVersionSwitcher
             });
 			server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
+
+            if (CoreService.started) return;
             if (CoreService.coreVars.loginStep == 1)
             {
                 CoreService.coreVars.loginStep = 0;
@@ -1116,8 +1117,6 @@ namespace QuestAppVersionSwitcher
                 CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
-
-            if (CoreService.started) return;
             Thread t = new Thread(() =>
             {
                 try

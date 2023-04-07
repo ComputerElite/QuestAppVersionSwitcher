@@ -137,6 +137,7 @@
     <Compile Include="QuestPatcher\LocalFileHeader.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SplashScreen.cs" />
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +148,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_main.xml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\layout\splash.xml">
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\values\colors.xml" />
@@ -213,6 +217,7 @@
     <AndroidAsset Include="Assets\html\index.html" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\splash.html" />
     <AndroidAsset Include="Assets\html\style.css" />
   </ItemGroup>
   <ItemGroup>

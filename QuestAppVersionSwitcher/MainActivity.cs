@@ -20,7 +20,7 @@ using AlertDialog = Android.App.AlertDialog;
 
 namespace QuestAppVersionSwitcher
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [Activity(Theme = "@style/AppTheme", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class MainActivity : AppCompatActivity
     {
         WebView webView;
@@ -44,10 +44,6 @@ namespace QuestAppVersionSwitcher
             
             FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());
-            
-            
-            CoreService.launcher = AndroidCore.activity.RegisterForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(), new ManageStoragePermissionCallback());
             
             CoreService.Start();
         }
