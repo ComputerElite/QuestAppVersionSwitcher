@@ -935,11 +935,11 @@ namespace QuestAppVersionSwitcher
             {
                 if (request.queryString.Get("package") == null)
                 {
-                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    request.SendString(GotAccess.GetResponse("package key needed", false, false), "application/json", 400);
                     return true;
                 }
                 string package = request.queryString.Get("package");
-                request.SendString(GenericResponse.GetResponse(AndroidService.HasManageExternalStoragePermission(package).ToString(), true), "application/json");
+                request.SendString(GotAccess.GetResponse("", AndroidService.HasManageExternalStoragePermission(package), true), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/grantmanagestorageappaccess", serverRequest =>
