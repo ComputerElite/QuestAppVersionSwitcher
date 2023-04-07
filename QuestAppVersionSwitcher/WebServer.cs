@@ -29,6 +29,7 @@ using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using Android.Graphics;
 using Android.OS;
 using Android.Provider;
@@ -45,6 +46,7 @@ using Android.Widget;
 using Xamarin.Forms;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
+using Math = System.Math;
 using Path = System.IO.Path;
 using WebView = Android.Webkit.WebView;
 
@@ -169,6 +171,89 @@ namespace QuestAppVersionSwitcher
         SessionInvalid = 1,
         LoggedIn = 2
     }
+    
+    public class ProgressResponse : GenericResponse
+    {
+        public double progress { get; set; } = 0;
+
+        public string progressString
+        {
+            get
+            {
+                return (progress * 100).ToString("F1") + "%";
+            }
+        }
+        public static string GetResponse(string msg, bool success, double progress)
+        {
+            ProgressResponse r = new ProgressResponse();
+            r.msg = msg;
+            r.success = success;
+            r.progress = progress;
+            return JsonSerializer.Serialize(r);
+        }
+    }
+
+    public class GenericResponse
+    {
+        public string msg { get; set; } = "";
+        public bool success { get; set; } = true;
+
+        public static string GetResponse(string msg, bool success)
+        {
+            GenericResponse r = new GenericResponse();
+            r.msg = msg;
+            r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
+    public class IsAppInstalled : GenericResponse
+    {
+        public bool isAppInstalled { get; set; } = false;
+        public static string GetResponse(string msg, bool isAppInstalled, bool success)
+        {
+            IsAppInstalled r = new IsAppInstalled();
+            r.msg = msg;
+            r.isAppInstalled = isAppInstalled;
+            r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
+    public class GotAccess : GenericResponse
+    {
+        public bool gotAccess { get; set; } = false;
+        public static string GetResponse(string msg, bool gotAccess, bool success)
+        {
+            GotAccess r = new GotAccess();
+            r.msg = msg;
+            r.gotAccess = gotAccess;
+            r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
+
+    public class BackupStatus
+    {
+        public bool done { get; set; } = false;
+        public bool error { get; set; } = false;
+        public string errorText { get; set; } = "";
+        public string currentOperation { get; set; } = "";
+        public int doneOperations { get; set; } = 0;
+        public int totalOperations { get; set; } = 0;
+        public double progress { get; set; } = 0;
+        public string progressString
+        {
+            get
+            {
+                return (int)Math.Round(progress * 100) + "%";
+            }
+        }
+    }
+
+    public class PatchStatus : BackupStatus
+    {
+        public string backupName { get; set; } = "";
+    }
+    
     public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
@@ -176,8 +261,7 @@ namespace QuestAppVersionSwitcher
         public static List<DownloadManager> managers = new List<DownloadManager>();
         public static List<GameDownloadManager> gameDownloadManagers = new List<GameDownloadManager>();
         public SHA256 hasher = SHA256.Create();
-        public static string patchText = "";
-        public static int patchCode = 202;
+        public static PatchStatus patchStatus = new PatchStatus();
 
         public LoggedInStatus GetLoggedInStatus()
         {
@@ -190,7 +274,7 @@ namespace QuestAppVersionSwitcher
             WebViewClient client = new WebViewClient();
 
             CoreService.browser.SetWebViewClient(new QAVSWebViewClient());
-            server.onWebsocketConnectRequest = new Action<string>(uRL =>
+            server.onWebsocketConnectRequest = uRL =>
             {
                 if (uRL.Length <= 10) return;
                 string token = uRL.Substring(1);
@@ -198,96 +282,83 @@ namespace QuestAppVersionSwitcher
                 {
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
-            });
-            server.AddRoute("GET", "/google/", new Func<ServerRequest, bool>(request =>
-            {
-                WebClient c = new WebClient();
-                c.Headers.Add("User-Agent", CoreService.ua);
-                request.SendString(c.DownloadString("https://www.google.com/" + request.pathDiff));
-                return true;
-            }));
-            server.AddRoute("GET", "/mods/mods", new Func<ServerRequest, bool>(request =>
+            };
+            server.AddRoute("GET", "/api/mods/mods", request =>
             {
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/mods/operations", request =>
             {
                 request.SendString(QAVSModManager.GetOperations(), "application/json");
                 return true;
-            }));
-            server.AddRoute("DELETE", "/mods/operation", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("DELETE", "/api/mods/operation", request =>
             {
                 int operation = int.Parse(request.bodyString);
                 if (!QAVSModManager.runningOperations.ContainsKey(operation))
                 {
-                    request.SendString("A operation with the key " + operation + " does not exist", "text/plain", 400);
+                    request.SendString(GenericResponse.GetResponse("A operation with the key " + operation + " does not exist", false), "application/json", 400);
                     return true;
                 }
 
                 QAVSModManager.runningOperations.Remove(operation);
-                request.SendString("Removed operation " + operation + " from running Operations", "application/json");
+                request.SendString(GenericResponse.GetResponse("Removed operation " + operation + " from running Operations", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/patching/getpatchoptions", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/patching/patchoptions", request =>
             {
                 request.SendString(JsonSerializer.Serialize(CoreService.coreVars.patchingPermissions), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/patching/setpatchoptions", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/patching/patchoptions", request =>
             {
-                CoreService.coreVars.patchingPermissions = JsonSerializer.Deserialize<PatchingPermissions>(request.queryString.Get("body"));
-                request.SendString("Set patch options", "application/json");
+                CoreService.coreVars.patchingPermissions = JsonSerializer.Deserialize<PatchingPermissions>(request.bodyString);
+                request.SendString(GenericResponse.GetResponse("Set patch options", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/mods/operations", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/mods/operations", request =>
             {
                 request.SendString(JsonSerializer.Serialize(QAVSModManager.runningOperations), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/mods/install", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/install", request =>
             {
-                QAVSModManager.InstallMod(request.bodyBytes, request.queryString.Get("filename"));
-                request.SendString("Trying to install", "application/json");
+                string typeid = request.queryString.Get("typeid") ?? "";
+                QAVSModManager.InstallMod(request.bodyBytes, request.queryString.Get("filename"), typeid);
+                request.SendString(GenericResponse.GetResponse("Trying to install. Check running operations for status", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/mods/installfromurl", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/mods/installfromurl", request =>
             {
                 QAVSModManager.InstallModFromUrl(request.bodyString);
-                request.SendString("Trying to install from " + request.bodyString, "application/json");
+                request.SendString(GenericResponse.GetResponse("Trying to install from " + request.bodyString, true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/mods/cover", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/mods/cover", request =>
             {
                 request.SendData(QAVSModManager.GetModCover(request.queryString.Get("id")), "image/xyz");
                 return true;
-            }));
-            server.AddRoute("POST", "/mods/uninstall", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/mods/uninstall", request =>
             {
                 QAVSModManager.UninstallMod(request.queryString.Get("id"));
-                request.SendString("Trying to uninstall", "application/json");
+                request.SendString(GenericResponse.GetResponse("Trying to uninstall", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/mods/enable", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/mods/enable", request =>
             {
                 QAVSModManager.EnableMod(request.queryString.Get("id"));
-                request.SendString("Trying to uninstall", "application/json");
+                request.SendString(GenericResponse.GetResponse("Trying to enable", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/mods/delete", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/mods/delete", request =>
             {
                 QAVSModManager.DeleteMod(request.queryString.Get("id"));
-                request.SendString("Trying to delete", "application/json");
+                request.SendString(GenericResponse.GetResponse("Trying to delete", true), "application/json");
                 return true;
-            }));
-            //// Patching and modding
-            /// QAVS
-            /// - Backups
-            /// - tmpDowngrade
-            /// - tmpPatching
-            ///     - apk
-            ///     
-            server.AddRoute("GET", "/patching/getmodstatus", new Func<ServerRequest, bool>(request =>
+            }); 
+            server.AddRoute("GET", "/api/patching/getmodstatus", request =>
             {
                 PatchingStatus status = PatchingManager.GetPatchingStatus();
                 if(status == null)
@@ -300,70 +371,66 @@ namespace QuestAppVersionSwitcher
                 }
                 request.SendString(JsonSerializer.Serialize(status), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/opensettings", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/mods/deleteallmods", request =>
             {
-                AndroidService.LaunchApp("com.android.settings");
-                request.SendString("Alright", "application/json");
-                return true;
-            }));
-            server.AddRoute("GET", "/mods/deleteallmods", new Func<ServerRequest, bool>(request =>
-            {
-                
                 QAVSModManager.DeleteAllMods();
-                request.SendString("Deleted all mods", "application/json");
+                request.SendString(GenericResponse.GetResponse("Deleted all mods", true), "application/json");
                 return true;
-            }));
-            
-            server.AddRoute("GET", "/patching/patchapk", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/patching/patchapk", request =>
             {
-                request.SendString("Acknowledged. Check status at /patching/patchstatus", "text/plain", 202);
-                patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Copying APK. This can take a bit", ""));
-                patchCode = 202;
+                request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
+                patchStatus = new PatchStatus();
+                patchStatus.totalOperations = 9;
+                patchStatus.currentOperation = "Copying APK. This can take a bit";
                 if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
                 {
-                    patchText = CoreService.coreVars.currentApp + " is not installed. Please select a diffrent app";
-                    patchCode = 400;
+                    patchStatus.errorText = CoreService.coreVars.currentApp +
+                                            " is not installed. Please select a different app";
+                    patchStatus.error = true;
                     return true;
                 }
                 string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
                 FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
                 File.Copy(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp), appLocation);
                 ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
+                patchStatus.doneOperations = 1;
+                patchStatus.progress = .1;
                 PatchingManager.PatchAPK(apkArchive, appLocation);
                 return true;
-            }));
-            server.AddRoute("GET", "/patching/patchstatus", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/patching/patchstatus", serverRequest =>
             {
-                serverRequest.SendString(patchText, "text/plain", patchCode);
+                serverRequest.SendString(JsonSerializer.Serialize(patchStatus), "application/json", 200);
                 return true;
-            }));
+            });
 
 
-            server.AddRoute("GET", "/questappversionswitcher/kill", new Func<ServerRequest, bool>(request =>
+            server.AddRoute("POST", "/api/questappversionswitcher/kill", request =>
             {
                 CookieManager.Instance.Flush();
                 Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/loggedinstatus", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/questappversionswitcher/loggedinstatus", request =>
             {
-                request.SendString(((int)GetLoggedInStatus()).ToString());
+                request.SendString(GenericResponse.GetResponse(((int)GetLoggedInStatus()).ToString(), true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/changeport", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/questappversionswitcher/changeport", request =>
             {
-                int port = Convert.ToInt32(request.queryString.Get("body"));
+                int port = Convert.ToInt32(request.bodyString);
                 if(port < 50000)
                 {
-                    request.SendString("Port must be greater than 50000!", "text/plain", 400);
+                    request.SendString(GenericResponse.GetResponse("Port must be greater than 50000!", false), "application/json", 400);
                     return true;
                 }
                 CoreService.coreVars.serverPort = port;
                 CoreService.coreVars.Save();
-                request.SendString("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.");
+                request.SendString(GenericResponse.GetResponse("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.", true), "application/json");
                 return true;
-            }));
+            });
 			/* FS loading for dev if wanted
             server.AddRoute("GET", "/script.js", new Func<ServerRequest, bool>(request =>
 			{
@@ -381,72 +448,72 @@ namespace QuestAppVersionSwitcher
 				return true;
 			}));
             */
-			server.AddRoute("GET", "/cosmetics/types", new Func<ServerRequest, bool>(request =>
-			{
-				string game = request.queryString.Get("game");
-				if (game == null) game = CoreService.coreVars.currentApp;
-				request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetCosmeticsGame(game)), "application/json");
-				return true;
-			}));
-			server.AddRoute("GET", "/cosmetics/getinstalled", new Func<ServerRequest, bool>(request =>
-			{
-				string game = request.queryString.Get("game");
-				if (game == null) game = CoreService.coreVars.currentApp;
-				string type = request.queryString.Get("type");
-				if (type == null)
-				{
-					request.SendString("No type specified", "text/plain", 400);
-					return true;
-				}
+			server.AddRoute("GET", "/api/cosmetics/types", request =>
+            {
+                string game = request.queryString.Get("game");
+                if (game == null) game = CoreService.coreVars.currentApp;
+                request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetCosmeticsGame(game)), "application/json");
+                return true;
+            });
+			server.AddRoute("GET", "/api/cosmetics/getinstalled", request =>
+            {
+                string game = request.queryString.Get("game");
+                if (game == null) game = CoreService.coreVars.currentApp;
+                string typeid = request.queryString.Get("typeid");
+                if (typeid == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("No type id specified", false), "application/json", 400);
+                    return true;
+                }
                 
-				request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetInstalledCosmetics(game, type)), "application/json");
-				return true;
-			}));
-			server.AddRoute("GET", "/cosmetics/delete", new Func<ServerRequest, bool>(request =>
-			{
-				string game = request.queryString.Get("game");
-				if (game == null) game = CoreService.coreVars.currentApp;
-				string type = request.queryString.Get("type");
-				if (type == null)
-				{
-					request.SendString("No type specified", "text/plain", 400);
-					return true;
-				}
-				string filename = request.queryString.Get("filename");
-				if (filename == null)
-				{
-					request.SendString("No filename specified", "text/plain", 400);
-					return true;
-				}
-                CoreVars.cosmetics.RemoveCosmetic(game, type, filename);
-				request.SendString("Deleted");
-				return true;
-			}));
+                request.SendString(JsonSerializer.Serialize(CoreVars.cosmetics.GetInstalledCosmetics(game, typeid)), "application/json");
+                return true;
+            });
+			server.AddRoute("DELETE", "/api/cosmetics/delete", request =>
+            {
+                string game = request.queryString.Get("game");
+                if (game == null) game = CoreService.coreVars.currentApp;
+                string typeid = request.queryString.Get("typeid");
+                if (typeid == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("No type id specified", false), "application/json", 400);
+                    return true;
+                }
+                string filename = request.queryString.Get("filename");
+                if (filename == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("No filename specified", false), "application/json", 400);
+                    return true;
+                }
+                CoreVars.cosmetics.RemoveCosmetic(game, typeid, filename);
+                request.SendString(GenericResponse.GetResponse("Deleted", true), "application/json");
+                return true;
+            });
 
 			server.AddRouteFile("/", "html/index.html");
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
-            server.AddRoute("GET", "/android/installedapps", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/api/android/installedapps", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/android/device", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/android/device", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(new AndroidDevice()
                 {
                     sdkVersion = (int)Build.VERSION.SdkInt
                 }), "application/json");
                 return true;
-            }));
-			server.AddRoute("GET", "/android/launch", new Func<ServerRequest, bool>(serverRequest =>
-			{
-				serverRequest.SendString("Launching " + CoreService.coreVars.currentApp);
+            });
+			server.AddRoute("POST", "/api/android/launch", serverRequest =>
+            {
+                serverRequest.SendString(GenericResponse.GetResponse("Launching " + CoreService.coreVars.currentApp, true), "application/json");
                 AndroidService.LaunchApp(CoreService.coreVars.currentApp);
-				return true;
-			}));
-			server.AddRoute("GET", "/android/installedappsandbackups", new Func<ServerRequest, bool>(serverRequest =>
+                return true;
+            });
+			server.AddRoute("GET", "/api/android/installedappsandbackups", serverRequest =>
             {
                 List<App> apps = AndroidService.GetInstalledApps();
 
@@ -459,70 +526,75 @@ namespace QuestAppVersionSwitcher
                 }
                 serverRequest.SendString(JsonSerializer.Serialize(apps), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/android/getpackagelocation", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/android/getpackagelocation", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 string location = AndroidService.FindAPKLocation(package);
                 if (location == null)
                 {
-                    serverRequest.SendString("package not found", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package not found", false), "application/json", 404);
                 }
                 else
                 {
-                    serverRequest.SendString(location);
+                    serverRequest.SendString(GenericResponse.GetResponse(location, false), "application/json");
                 }
                 return true;
-            }));
-            server.AddRoute("GET", "/android/uninstallpackage", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/android/uninstallpackage", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 if (!AndroidService.IsPackageInstalled(package))
                 {
-                    serverRequest.SendString("App is already uninstalled", "text/plain", 230);
+                    serverRequest.SendString(GenericResponse.GetResponse("App is already uninstalled", true), "application/json", 230);
                     return true;
                 }
                 AndroidService.InitiateUninstallPackage(package);
-                serverRequest.SendString("Uninstall request sent");
+                serverRequest.SendString(GenericResponse.GetResponse("Uninstall request sent", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/questappversionswitcher/uploadlogs", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("POST", "/api/questappversionswitcher/uploadlogs", request =>
             {
                 Logger.Log("\n\n------Log upload requested------");
-				QAVSReport report = new QAVSReport();
+                QAVSReport report = new QAVSReport();
                 report.androidVersion = (int)Build.VERSION.SdkInt;
                 report.version = CoreService.version.ToString();
-				report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
+                report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
-                report.availableSpace = Android.OS.Environment.ExternalStorageDirectory.UsableSpace;
+                report.availableSpace = Environment.ExternalStorageDirectory.UsableSpace;
+                PatchingStatus status = PatchingManager.GetPatchingStatus();
+                Logger.Log("-------Status of selected app-------\n" + (status == null ? "Not installed" : JsonSerializer.Serialize(status, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                })));
 
-				if (report.userIsLoggedIn)
+                if (report.userIsLoggedIn)
                 {
                     try
                     {
-						if (GetSHA256OfString(request.bodyString) != CoreService.coreVars.password)
-						{
-							request.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
-							return true;
-						}
+                        if (GetSHA256OfString(request.bodyString) != CoreService.coreVars.password)
+                        {
+                            request.SendString(GenericResponse.GetResponse("Password is wrong. Please try a different password or set a new one", false), "application/json", 403);
+                            return true;
+                        }
                         GraphQLClient.log = false;
-						GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.bodyString);
-						ViewerData<OculusUserWrapper> entitlements = GraphQLClient.GetActiveEntitelments();
-						foreach (Entitlement e in entitlements.data.viewer.user.active_entitlements.nodes)
-						{
-							report.userEntitlements.Add(e.id);
-						}
-					} catch
+                        GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.bodyString);
+                        ViewerData<OculusUserWrapper> entitlements = GraphQLClient.GetActiveEntitelments();
+                        foreach (Entitlement e in entitlements.data.viewer.user.active_entitlements.nodes)
+                        {
+                            report.userEntitlements.Add(e.id);
+                        }
+                    } catch
                     {
                         
                     }
@@ -541,83 +613,65 @@ namespace QuestAppVersionSwitcher
                     }
                 }
                 report.log = Logger.log;
-                request.SendString(JsonSerializer.Serialize(report));
+                request.SendString(JsonSerializer.Serialize(report), "application/json");
                 return true;
-			}));
-            server.AddRoute("GET", "/android/ispackageinstalled", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/android/ispackageinstalled", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(IsAppInstalled.GetResponse("package key needed", false, false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                serverRequest.SendString(AndroidService.IsPackageInstalled(package).ToString());
+                serverRequest.SendString(IsAppInstalled.GetResponse("", AndroidService.IsPackageInstalled(package), true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/changeapp", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/questappversionswitcher/changeapp", serverRequest =>
             {
-                CoreService.coreVars.currentApp = serverRequest.queryString.Get("body");
-                CoreService.coreVars.Save();
-                QAVSModManager.Update();
-                serverRequest.SendString("App changed to " + serverRequest.bodyString);
+                ChangeApp(serverRequest.bodyString);
+                serverRequest.SendString(GenericResponse.GetResponse("App changed to " + serverRequest.bodyString, true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/config", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/questappversionswitcher/config", serverRequest =>
             {
-                serverRequest.SendString(JsonSerializer.Serialize(CoreService.coreVars));
+                serverRequest.SendString(JsonSerializer.Serialize(CoreService.coreVars), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/about", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/questappversionswitcher/about", serverRequest =>
             {
-                serverRequest.SendString(JsonSerializer.Serialize(new About { browserIPs = server.ips, version = CoreService.version.ToString() }));
+                serverRequest.SendString(JsonSerializer.Serialize(new About { browserIPs = server.ips, version = CoreService.version.ToString() }), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/android/installapk", new Func<ServerRequest, bool>(serverRequest =>
+            });
+			server.AddRoute("POST", "/api/android/uploadandinstallapk", serverRequest =>
             {
-                serverRequest.SendString("This Endpoint has been deactivated because of security concerns", "text/plain", 503);
-                return true;
-
-                // Deactivated cause of security resons
-                if (serverRequest.queryString.Get("path") == null)
-                {
-                    serverRequest.SendString("path key needed", "text/plain", 400);
-                    return true;
-                }
-                string apkPath = serverRequest.queryString.Get("path");
-                AndroidService.InitiateInstallApk(apkPath);
-                serverRequest.SendString("Install request sent");
-                return true;
-            }));
-			server.AddRoute("POST", "/android/uploadandinstallapk", new Func<ServerRequest, bool>(serverRequest =>
-			{
                 TempFile tmpFile = new TempFile();
                 tmpFile.Path += ".apk";
                 File.WriteAllBytes(tmpFile.Path, serverRequest.bodyBytes);
                 string packageName = GetAPKPackageName(tmpFile.Path);
-				string version = GetAPKVersion(tmpFile.Path);
-				CoreService.coreVars.currentApp = packageName;
+                string version = GetAPKVersion(tmpFile.Path);
+                CoreService.coreVars.currentApp = packageName;
                 CoreService.coreVars.Save();
-				string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
+                string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
                 Logger.Log("Moving file");
                 FileManager.CreateDirectoryIfNotExisting(backupDir);
                 FileManager.DeleteFileIfExisting(backupDir + "app.apk");
                 File.Move(tmpFile.Path, backupDir + "app.apk");
 
-				serverRequest.SendString("uploaded and selected app in backup tab");
-				return true;
-			}));
-			server.AddRoute("GET", "/backups", new Func<ServerRequest, bool>(serverRequest =>
+                serverRequest.SendString(GenericResponse.GetResponse("uploaded and selected app in backup tab", true), "application/json");
+                return true;
+            });
+			server.AddRoute("GET", "/api/backups", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 if (!IsNameFileNameSafe(package))
                 {
-                    serverRequest.SendString("You package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("You package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", false), "application/json", 400);
                     return true;
                 }
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/";
@@ -631,54 +685,54 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString("{}", "application/json");
                 }
                 return true;
-            }));
-            int code = 202;
-            string text = "";
-            server.AddRoute("GET", "/backup", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            BackupStatus backupStatus = new BackupStatus();
+            server.AddRoute("POST", "/api/backup", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 if (serverRequest.queryString.Get("backupname") == null)
                 {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("backupname key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
                 if (!IsNameFileNameSafe(backupname))
                 {
-                    serverRequest.SendString("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", false), "application/json", 400);
                     return true;
                 }
                 if (!IsNameFileNameSafe(package))
                 {
-                    serverRequest.SendString("Your package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("Your package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", false), "application/json", 400);
                     return true;
                 }
                 if (backupname == "")
                 {
-                    serverRequest.SendString("Your backup has to have a name. Please add one.", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("Your backup has to have a name. Please add one.", false), "application/json", 400);
                     return true;
                 }
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
                 if (Directory.Exists(backupDir))
                 {
-                    serverRequest.SendString("A Backup with this name already exists. Please choose a different name", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("A Backup with this name already exists. Please choose a different name", false), "application/json", 400);
                     return true;
                 }
                 Logger.Log("Creating backup in " + backupDir + " for " + package);
-                serverRequest.SendString("Creating Backup. Please wait until it has finished. This can take up to 2 minutes", "text/plain", 202);
-                text = "Creating Backup. Please wait until it has finished. This can take up to 2 minutes";
-                code = 202;
+                serverRequest.SendString(GenericResponse.GetResponse("Creating Backup. Please wait until it has finished. This can take up to 2 minutes", true), "application/json", 202);
+                backupStatus = new BackupStatus();
+                backupStatus.currentOperation = "Creating Backup. Please wait until it has finished. This can take up to 2 minutes";
+                backupStatus.totalOperations = 4;
                 Directory.CreateDirectory(backupDir);
                 if (!AndroidService.IsPackageInstalled(package))
                 {
                     Logger.Log(package + " is not installed. Aborting backup");
-                    text = package + " is not installed. Please select a different app.";
-                    code = 400;
+                    backupStatus.errorText = package + " is not installed. Please select a different app.";
+                    backupStatus.error = true;
                     return true;
                 }
                 string apkDir = AndroidService.FindAPKLocation(package);
@@ -687,10 +741,11 @@ namespace QuestAppVersionSwitcher
 
                 try
                 {
+                    backupStatus.progress = .1;
+                    backupStatus.doneOperations = 1;
                     if (serverRequest.queryString.Get("onlyappdata") == null)
                     {
-                        text = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
-                        code = 202;
+                        backupStatus.currentOperation = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
                         Logger.Log("Copying APK from " + apkDir + " to " + backupDir + "app.apk");
                         File.Copy(apkDir, backupDir + "app.apk");
                     } else
@@ -698,91 +753,57 @@ namespace QuestAppVersionSwitcher
                         Logger.Log("Only backing up app data. Skipping apk");
                         File.WriteAllText(backupDir + "onlyappdata.txt", "This backup only contains app data.");
                     }
-                    text = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
-                    code = 202;
+                    backupStatus.doneOperations = 2;
+                    backupStatus.progress = .4;
+                    backupStatus.currentOperation = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
                     try
                     {
                         if(Directory.Exists(gameDataDir)) FolderPermission.DirectoryCopy(gameDataDir, backupDir + package);
                     }
                     catch (Exception e)
                     {
-                        text = e.ToString();
-                        code = 500;
+                        backupStatus.errorText = e.ToString();
+                        backupStatus.error = true;
                         return true;
                     }
+                    backupStatus.doneOperations = 3;
+                    backupStatus.progress = .6;
 
                     if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
                     {
-                        text = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
-                        code = 202;
+                        backupStatus.currentOperation = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
                         Directory.CreateDirectory(backupDir + "obb/" + package);
                         FolderPermission.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package);
                     }
+                    backupStatus.doneOperations = 4;
+                    backupStatus.progress = 1;
                 }
                 catch (Exception e)
                 {
-                    text = "Backup failed: " + e.Message;
-                    code = 500;
+                    Logger.Log("Backup failed: " + e);
+                    backupStatus.errorText = "Backup failed: " + e;
                     return true;
                 }
 
-                text = "Backup of " + package + " with the name " + backupname + " finished";
-                code = 200;
+                backupStatus.done = true;
+                backupStatus.currentOperation = "Backup of " + package + " with the name " + backupname + " finished";
                 return true;
-            }));
-            server.AddRoute("GET", "/isonlyappdata", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/backupstatus", serverRequest =>
+            {
+                serverRequest.SendString(JsonSerializer.Serialize(backupStatus), "application/json", 200);
+                return true;
+            });
+            server.AddRoute("DELETE", "/api/backup", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 if (serverRequest.queryString.Get("backupname") == null)
                 {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
-                    return true;
-                }
-                string package = serverRequest.queryString.Get("package");
-                string backupname = serverRequest.queryString.Get("backupname");
-                if (!IsNameFileNameSafe(backupname))
-                {
-                    serverRequest.SendString("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
-                if (!IsNameFileNameSafe(package))
-                {
-                    serverRequest.SendString("Your package contains a forbidden character. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
-                if (backupname == "")
-                {
-                    serverRequest.SendString("The backup has to have a name. Please add one.", "text/plain", 400);
-                    return true;
-                }
-                string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
-                if (!Directory.Exists(backupDir))
-                {
-                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
-                    return true;
-                }
-                serverRequest.SendString(File.Exists(backupDir + "onlyappdata.txt").ToString().ToLower());
-                return true;
-            }));
-            server.AddRoute("GET", "/backupstatus", new Func<ServerRequest, bool>(serverRequest =>
-            {
-                serverRequest.SendString(text, "text/plain", code);
-                return true;
-            }));
-            server.AddRoute("DELETE", "/backup", new Func<ServerRequest, bool>(serverRequest =>
-            {
-                if (serverRequest.queryString.Get("package") == null)
-                {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
-                    return true;
-                }
-                if (serverRequest.queryString.Get("backupname") == null)
-                {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("backupname key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
@@ -790,92 +811,74 @@ namespace QuestAppVersionSwitcher
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
                 if (!Directory.Exists(backupDir))
                 {
-                    serverRequest.SendString("The Backup you want to delete doesn't exist.", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("The Backup you want to delete doesn't exist.", false), "application/json", 400);
                 }
                 Directory.Delete(backupDir, true);
-                serverRequest.SendString("Deleted " + backupname + " of " + package);
+                serverRequest.SendString(GenericResponse.GetResponse("Deleted " + backupname + " of " + package, true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/restoreapp", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/restoreapp", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 if (serverRequest.queryString.Get("backupname") == null)
                 {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("backupname key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
-                if (!IsNameFileNameSafe(backupname))
-                {
-                    serverRequest.SendString("Your Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
-                if (!IsNameFileNameSafe(package))
-                {
-                    serverRequest.SendString("Your package contains a forbidden character. You can not restore it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
                 if (!Directory.Exists(backupDir))
                 {
-                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("This backup doesn't exist", false), "application/json", 400);
                     return true;
                 }
                 if (!File.Exists(backupDir + "app.apk"))
                 {
-                    serverRequest.SendString("Critical: APK doesn't exist in Backup. This Backup is useless. Please restart the app and choose a different one.", "text/plain", 500);
+                    serverRequest.SendString(GenericResponse.GetResponse("Critical: APK doesn't exist in Backup. This Backup is useless. Please restart the app and choose a different one.", false), "application/json", 500);
                     return true;
                 }
+
+                Logger.Log("Installing apk of backup " + backupname + " of " + package);
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
-                serverRequest.SendString("Started apk install", "text/plain", 200);
+                serverRequest.SendString(GenericResponse.GetResponse("Started apk install", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/backupinfo", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/backupinfo", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 if (serverRequest.queryString.Get("backupname") == null)
                 {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("backupname key needed", false), "application/json", 400);
                     return true;
                 }
 
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
-                if (!IsNameFileNameSafe(backupname))
-                {
-                    serverRequest.SendString("You Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
-                if (!IsNameFileNameSafe(package))
-                {
-                    serverRequest.SendString("You package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
                 if (!Directory.Exists(backupDir))
                 {
-                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("This backup doesn't exist", false), "application/json", 400);
                     return true;
                 }
 
                 
-                serverRequest.SendString(JsonSerializer.Serialize(GetBackupInfo(backupDir)), "text/plain", 200);
+                serverRequest.SendString(JsonSerializer.Serialize(GetBackupInfo(backupDir)), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/grantaccess", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/grantaccess", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
@@ -890,79 +893,80 @@ namespace QuestAppVersionSwitcher
                     FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package);
                     FolderPermission.openDirectory(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package);
                 }
-                serverRequest.SendString("", "text/plain", 200);
+                serverRequest.SendString(GenericResponse.GetResponse("Opened folder permission dialogues", true), "application/json", 200);
                 return true;
-            }));
+            });
             
-            server.AddRoute("GET", "/gotaccess", new Func<ServerRequest, bool>(serverRequest =>
+            server.AddRoute("GET", "/api/gotaccess", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GotAccess.GetResponse("package key needed", false, false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
                 {
-                    serverRequest.SendString("True", "text/plain", 200);
+                    serverRequest.SendString(GotAccess.GetResponse("Android 10 doesn't need this check", true, true),
+                        "application/json");
 
                 }
                 else if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
                 {
-                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data")).ToString(), "text/plain", 200);
+                    bool gotAccess =
+                        FolderPermission.GotAccessTo(
+                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") &&
+                        FolderPermission.GotAccessTo(
+                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
+                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
                 }
                 else
                 {
-                    serverRequest.SendString((FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/" + package) && FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/" + package)).ToString(), "text/plain", 200);
+                    bool gotAccess =
+                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
+                                                     "/Android/obb/" + package) &&
+                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
+                                                     "/Android/data/" + package);
+                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
                 }
                 return true;
-            }));
-            server.AddRoute("GET", "/grantmanagestorageappaccess", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/grantmanagestorageappaccess", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 Intent intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission, Android.Net.Uri.Parse("package:" + package));
                 AndroidCore.context.StartActivity(intent);
-                serverRequest.SendString("", "text/plain", 200);
+                serverRequest.SendString(GenericResponse.GetResponse("opened settings", true), "application/json", 200);
                 return true;
-            }));
-            server.AddRoute("GET", "/restoregamedata", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/restoregamedata", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
                 {
-                    serverRequest.SendString("package key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
                 if (serverRequest.queryString.Get("backupname") == null)
                 {
-                    serverRequest.SendString("backupname key needed", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("backupname key needed", false), "application/json", 400);
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
                 string backupname = serverRequest.queryString.Get("backupname");
-                if (!IsNameFileNameSafe(backupname))
-                {
-                    serverRequest.SendString("You Backup name contains a forbidden character. Please remove them. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
-                if (!IsNameFileNameSafe(package))
-                {
-                    serverRequest.SendString("You package contains a forbidden character. You can not backup it. Forbidden characters are: " + String.Join(' ', ReservedChars) + "and space. Tip: replace spaces with _", "text/plain", 400);
-                    return true;
-                }
                 string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
                 if (!Directory.Exists(backupDir))
                 {
-                    serverRequest.SendString("This backup doesn't exist", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("This backup doesn't exist", false), "application/json", 400);
                     return true;
                 }
                 if (!AndroidService.IsPackageInstalled(package))
                 {
-                    serverRequest.SendString(package + " is not installed. Can not restore game data", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse(package + " is not installed. Cannot restore game data", false), "application/json", 400);
                     return true;
                 }
                 string gameDataDir = CoreService.coreVars.AndroidAppLocation + package;
@@ -971,89 +975,90 @@ namespace QuestAppVersionSwitcher
                 {
                     try
                     {
+                        Logger.Log("Copying obbs of backup " + backupname + " of " + package);
                         FolderPermission.DirectoryCopy(backupDir + "obb/" + package, CoreService.coreVars.AndroidObbLocation + package);
                     }
                     catch (Exception e)
                     {
                         Logger.Log(e.ToString(), LoggingType.Error);
-                        serverRequest.SendString("Obbs of " + package + " were unable to be restored: " + e, "text/plain", 500);
+                        serverRequest.SendString(GenericResponse.GetResponse("Obbs of " + package + " were unable to get restored: " + e, false), "application/json", 500);
                         return true;
                     }
                 }
-                if (!Directory.Exists(backupDir + package))
+                if (Directory.Exists(backupDir + package))
                 {
-                    serverRequest.SendString("This backup doesn't contain a game data backup. Please skip this step", "text/plain", 400);
-                    return true;
+                    try
+                    {
+                        Logger.Log("Copying appdata of backup " + backupname + " of " + package);
+                        FolderPermission.DirectoryCopy(backupDir + package, gameDataDir);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e.ToString(), LoggingType.Error);
+                        serverRequest.SendString(GenericResponse.GetResponse("App data of " + package + " was unable to get restored: " + e, false), "application/json", 500);
+                        return true;
+                    }
                 }
-                try
-                {
-                    FolderPermission.DirectoryCopy(backupDir + package, gameDataDir);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.ToString(), LoggingType.Error);
-                    serverRequest.SendString("App data of " + package + " was unable to be restored: " + e, "text/plain", 500);
-                    return true;
-                }
-                serverRequest.SendString("Game data restored", "text/plain", 200);
+                
+                serverRequest.SendString(GenericResponse.GetResponse("Game data restored", true), "application/json");
                 return true;
-            }));
-            server.AddRoute("GET", "/allbackups", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("GET", "/api/allbackups", serverRequest =>
             {
-                serverRequest.SendString(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)));
+                serverRequest.SendString(GenericResponse.GetResponse(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)), false), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/token", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/token", serverRequest =>
             {
                 TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
                 if (r.token.Contains("%"))
                 {
-                    serverRequest.SendString("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", false), "application/json", 400);
                     return true;
                 }
                 if (!r.token.StartsWith("OC"))
                 {
-                    serverRequest.SendString("Tokens must start with 'OC'. Please get a new one", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("Tokens must start with 'OC'. Please get a new one", false), "application/json", 400);
                     return true;
                 }
                 if (r.token.Contains("|"))
                 {
-                    serverRequest.SendString("You seem to have entered a token of an application. Please get YOUR token. Usually this can be done by using another request in the network tab.", "text/plain", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("You seem to have entered a token of an application. Please get YOUR token. Usually this can be done by using another request in the network tab.", false), "application/json", 400);
                     return true;
                 }
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
-                SHA256 s = SHA256.Create();
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
                 CoreService.coreVars.Save();
-                serverRequest.SendString("Set token");
+                serverRequest.SendString(GenericResponse.GetResponse("Set token", false), "application/json");
                 return true;
-            }));
-            server.AddRoute("POST", "/download", new Func<ServerRequest, bool>(serverRequest =>
+            });
+            server.AddRoute("POST", "/api/download", serverRequest =>
             {
                 DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
                 if (GetSHA256OfString(r.password) != CoreService.coreVars.password)
                 {
-                    serverRequest.SendString("Password is wrong. Please try a different password or set a new one", "text/plain", 403);
+                    serverRequest.SendString(GenericResponse.GetResponse("Password is wrong. Please try a different password or set a new one", false), "application/json", 403);
                     return true;
                 }
 
                 GameDownloadManager gdm = new GameDownloadManager(r);
                 gameDownloadManagers.Add(gdm);
                 gdm.StartDownload();
-                serverRequest.SendString("Added to downloads. Check download progress tab.");
+                ChangeApp(gdm.packageName);
+                serverRequest.SendString(GenericResponse.GetResponse("Added to downloads. Check download progress tab.", true), "application/json");
                 return true;
-            }));
-			server.AddRoute("GET", "/canceldownload", new Func<ServerRequest, bool>(serverRequest =>
-			{
-				managers.Find(x => x.backupName == serverRequest.queryString.Get("name")).StopDownload();
-				return true;
-			}));
-            server.AddRoute("GET", "/cancelgamedownload", new Func<ServerRequest, bool>(serverRequest =>
+            });
+			server.AddRoute("POST", "/api/canceldownload", serverRequest =>
+            {
+                managers.Find(x => x.backupName == serverRequest.queryString.Get("name")).StopDownload();
+                return true;
+            });
+            server.AddRoute("POST", "/api/cancelgamedownload", serverRequest =>
             {
                 gameDownloadManagers.Find(x => x.id == serverRequest.queryString.Get("id")).Cancel();
                 return true;
-            }));
-			server.AddRoute("GET", "/downloads", new Func<ServerRequest, bool>(serverRequest =>
+            });
+			server.AddRoute("GET", "/api/downloads", serverRequest =>
             {
                 DownloadStatus status = new DownloadStatus();
                 foreach (DownloadManager m in managers)
@@ -1066,32 +1071,31 @@ namespace QuestAppVersionSwitcher
                 }
                 serverRequest.SendString(JsonSerializer.Serialize(status));
                 return true;
-            }));
-            server.AddRoute("GET", "/questappversionswitcher/checkupdate", new Func<ServerRequest, bool>(request =>
+            });
+            server.AddRoute("GET", "/api/questappversionswitcher/checkupdate", request =>
             {
                 Updater u = new Updater(CoreService.version.ToString().Substring(0, CoreService.version.ToString().Length - 2), "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QuestAppVersionSwitcher"); ;
                 request.SendString(JsonSerializer.Serialize(u.CheckUpdate()), "application/json");
                 return true;
-            }));
-			server.AddRoute("GET", "/questappversionswitcher/update", new Func<ServerRequest, bool>(request =>
-			{
-				Updater u = new Updater(CoreService.version.ToString().Substring(0, CoreService.version.ToString().Length - 2), "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QuestAppVersionSwitcher"); ;
-                request.SendString("Downloading apk, one second please");
+            });
+			server.AddRoute("POST", "/api/questappversionswitcher/update", request =>
+            {
+                Updater u = new Updater(CoreService.version.ToString().Substring(0, CoreService.version.ToString().Length - 2), "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QuestAppVersionSwitcher"); ;
+                request.SendString(GenericResponse.GetResponse("Downloading apk, one second please", true), "application/json");
                 
                 TempFile tmpFile = new TempFile();
-				tmpFile.Path += ".apk";
+                tmpFile.Path += ".apk";
                 u.DownloadLatestAPK(tmpFile.Path);
-				string packageName = GetAPKPackageName(tmpFile.Path);
-				string version = GetAPKVersion(tmpFile.Path);
-				string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
-				Logger.Log("Moving file");
-				FileManager.CreateDirectoryIfNotExisting(backupDir);
-				FileManager.DeleteFileIfExisting(backupDir + "app.apk");
-				File.Move(tmpFile.Path, backupDir + "app.apk");
-
-				AndroidService.InitiateInstallApk(backupDir + "app.apk");
-				return true;
-			}));
+                string packageName = GetAPKPackageName(tmpFile.Path);
+                string version = GetAPKVersion(tmpFile.Path);
+                string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
+                Logger.Log("Moving file");
+                FileManager.CreateDirectoryIfNotExisting(backupDir);
+                FileManager.DeleteFileIfExisting(backupDir + "app.apk");
+                File.Move(tmpFile.Path, backupDir + "app.apk");
+                AndroidService.InitiateInstallApk(backupDir + "app.apk");
+                return true;
+            });
 			server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
             if (CoreService.coreVars.loginStep == 1)
@@ -1127,6 +1131,14 @@ namespace QuestAppVersionSwitcher
                 }
             });
             t.Start();
+        }
+
+        private void ChangeApp(string packageName)
+        {
+            Logger.Log("Settings selected app to " + packageName);
+            CoreService.coreVars.currentApp = packageName;
+            CoreService.coreVars.Save();
+            QAVSModManager.Update();
         }
 
         public void ShowWebsite()

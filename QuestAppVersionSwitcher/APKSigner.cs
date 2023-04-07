@@ -301,7 +301,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         /// Using existing hashes reduces signing time, since only the files within the APK that have actually changed have to get signed.</param>
         public static async Task SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Preparing apk aligning and signing", ""));
+            QAVSWebserver.patchStatus.currentOperation = "Preparing apk aligning and signing";
             //await using Stream manifestFile = apkArchive.CreateAndOpenEntry("META-INF/MANIFEST.MF");
             await using Stream manifestFile = new MemoryStream();
             //await using Stream signaturesFile = apkArchive.CreateAndOpenEntry("META-INF/BS.SF");
@@ -369,11 +369,15 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
                 await rsaFile.WriteAsync(keyFile);
             }
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Aligning apk", ""));
+            QAVSWebserver.patchStatus.doneOperations = 6;
+            QAVSWebserver.patchStatus.progress = .6;
+            QAVSWebserver.patchStatus.currentOperation = "Aligning apk";
             Logger.Log("Aligning Apk");
             ApkAligner.AlignApk(path);
+            QAVSWebserver.patchStatus.doneOperations = 7;
+            QAVSWebserver.patchStatus.progress = .75;
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Signing apk. This may take 2 minutes. Please wait.", ""));
+            QAVSWebserver.patchStatus.currentOperation = "Signing apk. This may take 2 minutes. Please wait.";
             Logger.Log("Make APK Signature Scheme v2");
             FileStream fs = new FileStream(path, FileMode.Open);
             using FileMemory memory = new FileMemory(fs);

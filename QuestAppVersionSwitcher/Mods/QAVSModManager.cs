@@ -71,11 +71,11 @@ namespace QuestAppVersionSwitcher.Mods
             modManager.LoadModsForCurrentApp();
         }
 
-        public static void InstallMod(byte[] modBytes, string fileName)
+        public static void InstallMod(byte[] modBytes, string fileName, string cosmeticsType = "")
         {
             TempFile f = new TempFile(Path.GetExtension(fileName));
             File.WriteAllBytes(f.Path, modBytes);
-            InstallMod(f.Path, fileName);
+            InstallMod(f.Path, fileName, cosmeticsType);
         }
 
         public static bool installingMod = false;
@@ -103,19 +103,7 @@ namespace QuestAppVersionSwitcher.Mods
             int operationId = operations;
             operations++;
             runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + installQueue[0].filename, operationId = operationId});
-
-            if(!SupportsFormat(Path.GetExtension(installQueue[0].filename)))
-            {
-                File.Move(installQueue[0].path, Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename);
-                installQueue[0].path = Path.GetDirectoryName(installQueue[0].path) + Path.DirectorySeparatorChar + installQueue[0].filename;
-                CoreVars.cosmetics.InstallCosmetic(CoreService.coreVars.currentApp, Path.GetExtension(installQueue[0].filename), installQueue[0].path, true);
-                runningOperations[operationId].isDone = true;
-                FileManager.DeleteFileIfExisting(installQueue[0].path);
-                installQueue.RemoveAt(0);
-                installingMod = false;
-                InstallFirstModFromQueue();
-                return;
-            }
+            
             try
             {
                 IMod mod = modManager.TryParseMod(installQueue[0].path).Result;
@@ -135,8 +123,23 @@ namespace QuestAppVersionSwitcher.Mods
             InstallFirstModFromQueue();
         }
 
-        public static void InstallMod(string path, string fileName)
+        public static void InstallMod(string path, string fileName, string cosmeticsType = "")
         {
+            if(!SupportsFormat(Path.GetExtension(fileName)) || cosmeticsType != "")
+            {
+                File.Move(path, Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName);
+                path = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName;
+                if (cosmeticsType != "")
+                {
+                    CoreVars.cosmetics.InstallCosmeticById(CoreService.coreVars.currentApp, cosmeticsType, path, true);
+                }
+                else
+                {
+                    CoreVars.cosmetics.InstallCosmeticByExtension(CoreService.coreVars.currentApp, Path.GetExtension(fileName), path, true);
+                }
+                FileManager.DeleteFileIfExisting(path);
+                return;
+            }
             int operationId = operations;
             operations++;
             runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.Other, name = "Mod install queued: " + fileName, operationId = operationId});

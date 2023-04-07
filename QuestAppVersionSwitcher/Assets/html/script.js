@@ -21,7 +21,7 @@ function IsOnQuest() {
     return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
 
-fetch("android/device").then(res => res.json().then(res => {
+fetch("/api/android/device").then(res => res.json().then(res => {
     if(res.sdkVersion <= 29) {
         // Android 10 and below don't need new storage perms
         document.getElementById("requestAppManage").style.display = "none"
@@ -31,7 +31,9 @@ fetch("android/device").then(res => res.json().then(res => {
 }))
 
 function LaunchApp() {
-    fetch("/android/launch");
+    fetch("/api/android/launch", {
+        method: "POST"
+    });
 }
 
 function BrowserGo(direction) {
@@ -43,9 +45,9 @@ function OpenSite(url) {
 }
 function CheckFolderPermission() {
     if(!config.currentApp) return;
-    fetch("gotaccess?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") {
+    fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.gotAccess) {
                 // Do nothing, we already got access to the folder
             } else {
                 if(updateAvailable) return 
@@ -90,8 +92,10 @@ if(!IsOnQuest()) {
     document.getElementById("installCosmeticButton").style.display = "none"
 }
 const cosmeticsTypeSelect = document.getElementById("cosmeticsType")
+var cosmeticTypes = {}
 function UpdateCosmeticsTypes() {
-    fetch(`/cosmetics/types`).then(res => res.json().then(res => {
+    fetch(`/api/cosmetics/types`).then(res => res.json().then(res => {
+        cosmeticTypes = res
         if(res == null || res.fileTypes == null || res.fileTypes.length <= 0) {
             cosmeticsTypeSelect.innerHTML = `<option class="listItem" value="null">No types found</option>`;
             return;
@@ -99,7 +103,7 @@ function UpdateCosmeticsTypes() {
         var fvalue = cosmeticsTypeSelect.value
         var html = ""
         var htmlAvailableAfterModding = ""
-        for(const [key, value] of Object.entries(res.fileTypes)) {
+        for(const value of res.fileTypes) {
             if(value.requiresModded && !isGamePatched) {
                 if(htmlAvailableAfterModding == "") {
                     htmlAvailableAfterModding = `After patching the game you can add: `
@@ -107,9 +111,9 @@ function UpdateCosmeticsTypes() {
                 htmlAvailableAfterModding += `${value.name}, `
             } else {
                 if(!fvalue) {
-                    fvalue = value.fileType
+                    fvalue = value.id
                 }
-                html += `<option class="listItem" value="${value.fileType}">${value.name} (${value.fileType})</option>`
+                html += `<option class="listItem" value="${value.id}">${value.name} (${value.fileType})</option>`
             }
         }
         document.getElementById("availableAfterModdingTypes").style.display = htmlAvailableAfterModding != "" ? "block" : "none"
@@ -128,7 +132,7 @@ UpdateCosmeticsTypes()
 cosmeticsTypeSelect.onchange = () => UpdateShownCosmetics()
 
 function UpdateShownCosmetics() {
-    fetch(`/cosmetics/getinstalled?type=${cosmeticsTypeSelect.value}`).then(res => res.json().then(res => {
+    fetch(`/api/cosmetics/getinstalled?typeid=${cosmeticsTypeSelect.value}`).then(res => res.json().then(res => {
         var html = ``;
         if(res == null || res.length <= 0) {
             html = `<div class="listItem">None installed</div>`
@@ -153,7 +157,9 @@ function FormatCosmetic(c) {
 }
 
 function DeleteCosmetic(name) {
-    fetch(`/cosmetics/delete?type=${cosmeticsTypeSelect.value}&filename=${name}`).then(res => {
+    fetch(`/api/cosmetics/delete?typeid=${cosmeticsTypeSelect.value}&filename=${name}`, {
+        method: "DELETE"
+    }).then(res => {
         UpdateShownCosmetics()
     })
 }
@@ -174,7 +180,7 @@ function UpdatePatchingStatus() {
         return;
     }
     patchStatus.innerHTML = `Loading<br><br>${squareLoader}`
-    fetch("/patching/getmodstatus").then(res => {
+    fetch("/api/patching/getmodstatus").then(res => {
         res.json().then(res => {
             UpdateVersion(res.version)
             isGamePatched = res.isPatched
@@ -222,7 +228,7 @@ const otherContainer = document.getElementById("other")
 var otherPermissions = []
 
 function UpdateModsAndLibs() {
-    fetch(`/mods/mods`).then(res => {
+    fetch(`/api/mods/mods`).then(res => {
         res.json().then(res => {
             res.operations = res.operations.filter(x => !x.isDone)
             operationsOngoing = res.operations.length > 0
@@ -269,7 +275,38 @@ function UploadMod() {
     input.onchange = () => {
         if(input.files.length > 0) {
             for(const file of input.files) {
-                fetch(`/mods/install?filename=${file.name}`, {
+                fetch(`/api/install?filename=${file.name}`, {
+                    method: "POST",
+                    body: file
+                }).then(res => {
+                    UpdateShownCosmetics()
+                })
+            }
+        }
+    }
+}
+
+function InstallCosmetic() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.click();
+    input.onchange = () => {
+        if(input.files.length > 0) {
+            for(const file of input.files) {
+                // Only specify selected type if there is only one type with that extension. If the selected type is not the one with that extension, don't specify it
+                var extra = `&typeid=${cosmeticsTypeSelect.value}`
+                var extension = "." + file.name.split(".").pop()
+                var extensionCount = 0
+                var typeIsSelected = false
+                for(const value of cosmeticTypes.fileTypes) {
+                    if(value.fileType.toLowerCase() == extension.toLowerCase()) {
+                        extensionCount++
+                        if(value.id == cosmeticsTypeSelect.value)typeIsSelected = true
+                    }
+                }
+                if(extensionCount == 1 || !typeIsSelected) extra = ""
+                fetch(`/api/install?filename=${file.name}${extra}`, {
                     method: "POST",
                     body: file
                 }).then(res => {
@@ -281,13 +318,13 @@ function UploadMod() {
 }
 
 function DeleteMod(id) {
-    fetch(`/mods/delete?id=${id}`, {method: "POST"}).then(res => {
+    fetch(`/api/mods/delete?id=${id}`, {method: "POST"}).then(res => {
         UpdateModsAndLibs()
     })
 }
 
 function UpdateModState(id, enable) {
-    fetch(`/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"}).then(res => {
+    fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"}).then(res => {
         UpdateModsAndLibs()
     })
 }
@@ -358,42 +395,48 @@ function PatchGame() {
         handTrackingVersion: parseInt(handTrackingVersion.value),
         externalStorage: externalStorageCheckbox.checked
     }
-    fetch(`/patching/setpatchoptions?body=${JSON.stringify(patchOptions)}`).then(res => {
-        fetch("/patching/patchapk").then(res => {
-            res.text().then(text => {
-                if (res.status == 202) {
-                    TextBoxText("patchingTextBox", text)
+    fetch(`/api/patching/patchoptions`, {
+        method: "POST",
+        body: JSON.stringify(patchOptions)
+    }).then(res => {
+        fetch("/api/patching/patchapk", {
+            method: "POST"
+        }).then(res => {
+            res.json().then(j => {
+                if (j.success) {
+                    TextBoxText("patchingTextBox", j.msg)
                     patchStatus.innerHTML = `<h2>Patching game<br><br>${squareLoader}</h2>`
                     var i = setInterval(() => {
-                        fetch("/patching/patchstatus").then(res => {
-                            res.json().then(text => {
-                                if (res.status == 202) {
-                                    TextBoxText("patchingTextBox", text.msg)
-                                } else if (res.status == 200) {
-                                    TextBoxGood("patchingTextBox", text.msg)
+                        fetch("/api/patching/patchstatus").then(res => {
+                            res.json().then(j => {
+                                if (j.done) {
+                                    TextBoxGood("patchingTextBox", j.currentOperation)
                                     clearInterval(i)
                                     patchInProgress = false
-                                    if(text.value) {
+                                    if(j.backupName) {
                                         if(!IsOnQuest()) {
-                                            alert("Restore the backup with patched in its name from within your Quest to finalize the patching process")
+                                            alert("Restore the backup " + j.backupName + " from within your Quest to finalize the patching process")
                                             return
                                         }
                                         // patching returned a backup name to restore so restore the backup
-                                        selectedBackup = text.value
+                                        selectedBackup = j.backupName
                                         OpenRestorePopup();
                                     }
                                     UpdateUI()
-                                } else {
-                                    TextBoxError("patchingTextBox", text.msg)
+                                    
+                                } else if (j.error) {
+                                    TextBoxError("patchingTextBox", j.errorText)
                                     clearInterval(i)
                                     patchInProgress = false
                                     UpdateUI()
+                                } else {
+                                    TextBoxText("patchingTextBox", j.progressString + " - " + j.currentOperation)
                                 }
                             })
                         })
                     }, 500);
                 } else {
-                    TextBoxError("patchingTextBox", text)
+                    TextBoxError("patchingTextBox", j.msg)
                 }
             })
         })
@@ -414,9 +457,9 @@ setInterval(() => {
 }, 5000)
 
 function TokenUIUpdate() {
-    fetch("/questappversionswitcher/loggedinstatus").then(res => {
-        res.text().then(res => {
-            if(res == "2") {
+    fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
+        res.json().then(res => {
+            if(res.msg == "2") {
                 // Logged in
                 document.getElementById("loggedInMsg").style.visibility = "visible"
                 document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
@@ -432,7 +475,7 @@ function TokenUIUpdate() {
 var firstConfigFetch = true;
 function UpdateUI(closeLists = false) {
     UpdateShownCosmetics()
-    fetch("questappversionswitcher/config").then(res => res.json().then(res => {
+    fetch("/api/questappversionswitcher/config").then(res => res.json().then(res => {
         config = res
         if(firstConfigFetch) {
             firstConfigFetch = false;
@@ -445,7 +488,7 @@ function UpdateUI(closeLists = false) {
             lastApp = config.currentApp
         })
         if(config.currentApp) {
-            fetch("backups?package=" + config.currentApp).then(res => res.json().then(res => {
+            fetch("/api/backups?package=" + config.currentApp).then(res => res.json().then(res => {
                 document.getElementById("backupList").innerHTML = ""
                 document.getElementById("size").innerHTML = res.backupsSizeString
                 if (res.backups) {
@@ -465,14 +508,14 @@ function UpdateUI(closeLists = false) {
             document.getElementById("backupList").innerHTML = `<div class="listItem" value="">Select an app via the change app button above</div>`
         }
     }))
-    fetch("allbackups").then(res => {
-        res.text().then(text => {
+    fetch("/api/allbackups").then(res => {
+        res.json().then(j => {
             Array.prototype.forEach.call(document.getElementsByClassName("totalSize"), i => {
-                i.innerHTML = text
+                i.innerHTML = j.msg
             })
         })
     })
-    fetch("questappversionswitcher/about").then(res => res.json().then(res => {
+    fetch("/api/questappversionswitcher/about").then(res => res.json().then(res => {
         document.getElementById("version").innerHTML = res.version
         document.getElementById("ips").innerHTML = ""
         res.browserIPs.forEach(i => {
@@ -513,7 +556,7 @@ setInterval(() => {
 }, 10000)
 
 setInterval(() => {
-    fetch("/downloads").then(res => {
+    fetch("/api/downloads").then(res => {
         var m = ""
         var gdms = ""
         res.json().then(json => {
@@ -531,16 +574,16 @@ setInterval(() => {
             for(const d of json.gameDownloads) {
                 gdms += `<div class="downloadContainer">
                     <div class="downloadProgressContainer">
-                        <div class="downloadProgressBar" style="width: ${d.progress}%;"></div>
+                        <div class="downloadProgressBar" style="width: ${d.progress * 100}%;"></div>
                     </div>
-                    <input type="button" class="DownloadText" value="Cancel" onclick="StopGameDownload('${d.id}')">
+                     ${!d.done ? `<input type="button" class="DownloadText" value="Cancel" onclick="StopGameDownload('${d.id}')">` : ``}
                     <div class="DownloadText" style="color: ${d.textColor};">
-                        ${d.canceled ? "Canceled " : ""}${d.status} ${d.progressString} ${d.filesDownloaded} / ${d.filesToDownload}
+                        ${d.canceled ? "Canceled " : ""}${d.status} ${d.progressString} ${d.filesDownloaded} / ${d.filesToDownload} files downloaded
                     </div>
                 </div>`
             }
             if (m == "") m = "<h2>No downloads running</h2>"
-            if (gdms == "") m = "<h2>No game downloads running</h2>"
+            if (gdms == "") gdms = "<h2>No game downloads running</h2>"
             document.getElementById("progressBarContainers").innerHTML = m
             document.getElementById("gameProgressBarContainers").innerHTML = gdms
         })
@@ -548,16 +591,16 @@ setInterval(() => {
 }, 500)
 
 function StopGameDownload(id) {
-    fetch("/cancelgamedownload?id=" + id)
+    fetch("/api/cancelgamedownload?id=" + id, {method: "POST"})
 }
 
 function ShowAppList() {
     document.getElementById("appList").innerHTML = undefinedLoader
     document.getElementById("appList").className = "list"
     document.getElementById("appListContainer").className = "listContainer"
-    fetch("/hiddenApps.json").then(res => res.json().then(hiddenApps => {
+    fetch("/api/hiddenApps.json").then(res => res.json().then(hiddenApps => {
         hiddenApps = hiddenApps.map(x => x.PackageName)
-        fetch("android/installedappsandbackups").then(res => res.json().then(res => {
+        fetch("/api/android/installedappsandbackups").then(res => res.json().then(res => {
             document.getElementById("appList").innerHTML = ""
             res.sort((a, b) => a.PackageName.localeCompare(b.PackageName))
             const interval = 10
@@ -587,17 +630,20 @@ function ShowAppList() {
 function ChangeApp(package) {
     console.log("Changing app to " + package)
     config.currentApp = package
-    fetch("questappversionswitcher/changeapp?body=" + package).then(() => UpdateUI(true))
+    fetch("/api/questappversionswitcher/changeapp", {
+        method: "POST",
+        body: package
+    }).then(() => UpdateUI(true))
     UpdateUI(true)
     UpdateCosmeticsTypes()
     CheckFolderPermission()
 }
 
 document.getElementById("exit").onclick = () => {
-    fetch("questappversionswitcher/kill")
+    fetch("/api/questappversionswitcher/kill", {method: "POST"})
 }
 document.getElementById("closeApp").onclick = () => {
-    fetch("questappversionswitcher/kill")
+    fetch("/api/questappversionswitcher/kill", {method: "POST"})
 }
 document.getElementById("confirmPort").onclick = () => {
     var port = parseInt(document.getElementById("port").value)
@@ -605,12 +651,15 @@ document.getElementById("confirmPort").onclick = () => {
         TextBoxError("serverTextBox", "Only ports between 5000 and 6000 are allowed")
         return
     }
-    fetch("questappversionswitcher/changeport?body=" + document.getElementById("port").value).then(res => {
-        res.text().then(text => {
+    fetch("/api/questappversionswitcher/changeport", {
+        method: "POST",
+        body: document.getElementById("port").value
+    }).then(res => {
+        res.json().then(j => {
             if(res.status == 200) {
-                TextBoxGood("serverTextBox", text)
+                TextBoxGood("serverTextBox", j.msg)
             } else {
-                TextBoxError("serverTextBox", text)
+                TextBoxError("serverTextBox", j.msg)
             }
         })
     })
@@ -647,31 +696,33 @@ document.getElementById("createBackup").onclick = () => {
     var onlyAppData = document.getElementById("appdata").checked
     backupInProgress = true
     TextBoxText("backupTextBox", "Please wait while the Backup is being created. This can take a few minutes")
-    fetch("/backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value + (onlyAppData ? "&onlyappdata=true" : "")).then(res => {
-        res.text().then(text => {
+    fetch("/api/backup?package=" + config.currentApp + "&backupname=" + document.getElementById("backupname").value + (onlyAppData ? "&onlyappdata=true" : ""), {
+        method: "POST"
+    }).then(res => {
+        res.json().then(j => {
             if (res.status == 202) {
-                TextBoxText("backupTextBox", text)
+                TextBoxText("backupTextBox", j.msg)
                 var i = setInterval(() => {
-                    fetch("/backupstatus").then(res => {
-                        res.text().then(text => {
-                            if (res.status == 202) {
-                                TextBoxText("backupTextBox", text)
-                            } else if (res.status == 200) {
-                                TextBoxGood("backupTextBox", text)
+                    fetch("/api/backupstatus").then(res => {
+                        res.json().then(j => {
+                            if (j.done) {
+                                TextBoxGood("backupTextBox", j.currentOperation)
+                                clearInterval(i)
+                                backupInProgress = false
+                                UpdateUI()
+                            } else if (j.error) {
+                                TextBoxError("backupTextBox", j.errorText)
                                 clearInterval(i)
                                 backupInProgress = false
                                 UpdateUI()
                             } else {
-                                TextBoxError("backupTextBox", text)
-                                clearInterval(i)
-                                backupInProgress = false
-                                UpdateUI()
+                                TextBoxText("backupTextBox", j.progressString + " - " + j.currentOperation)
                             }
                         })
                     })
                 }, 500);
             } else {
-                TextBoxError("backupTextBox", text)
+                TextBoxError("backupTextBox", j.msg)
                 backupInProgress = false
             }
             UpdateUI()
@@ -704,19 +755,19 @@ function OpenRestorePopup() {
 
 document.getElementById("uninstall").onclick = () => {
     if(!IsOnQuest()) return
-    fetch(`android/uninstallpackage?package=${config.currentApp}`).then(res => {
+    fetch(`/api/android/uninstallpackage?package=${config.currentApp}`, {method: "POST"}).then(res => {
         if (res.status == 230) GotoStep(3)
         else GotoStep(2)
     })
 }
 
 document.getElementById("uninstall2").onclick = () => {
-    fetch(`isonlyappdata?package=${config.currentApp}&backupname=${selectedBackup}`).then(res => {
-        res.text().then(text => {
-            if(text == "true") {
+    fetch(`/api/backupinfo?package=${config.currentApp}&backupname=${selectedBackup}`).then(res => {
+        res.json().then(j => {
+            if(!j.containsApk) {
                 GotoStep("4.1")
             } else {
-                fetch(`android/uninstallpackage?package=${config.currentApp}`).then(res => {
+                fetch(`/api/android/uninstallpackage?package=${config.currentApp}`, {method: "POST"}).then(res => {
                     if (res.status == 230) GotoStep(3)
                     else GotoStep(2)
                 })
@@ -727,9 +778,9 @@ document.getElementById("uninstall2").onclick = () => {
 }
 
 document.getElementById("confirm1").onclick = () => {
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "False") GotoStep(3)
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) GotoStep(3)
             else {
                 TextBoxError("step1box", config.currentApp + " is still installed. Please uninstall it.")
                 GotoStep(1)
@@ -739,13 +790,15 @@ document.getElementById("confirm1").onclick = () => {
 }
 
 document.getElementById("install").onclick = () => {
-    fetch("restoreapp?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-        res.text().then(text => {
+    fetch("/api/restoreapp?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+        method: "POST"
+    }).then(res => {
+        res.json().then(j => {
             if (res.status == 200) {
-                fetch("gotaccess?package=" + config.currentApp).then(res => {
-                    res.text().then(text => {
-                        if (text == "True") {
-                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+                fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+                    res.json().then(j => {
+                        if (j.gotAccess) {
+                            fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                                 res.json().then(j => {
                                     if(j.isPatchedApk) {
                                         GotoStep("4.2")
@@ -764,19 +817,19 @@ document.getElementById("install").onclick = () => {
                     })
                 })
             }
-            else TextBoxError("step4.1box", text)
+            else TextBoxError("step4.1box", j.msg)
         })
     })
 }
 
 document.getElementById("grantManageAccess").onclick = () => {
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") {
-                fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
-                    res.text().then(text => {
-                        if (res.status == 200) {
-                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) {
+                fetch("/api/grantmanagestorageappaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
+                    res.json().then(j => {
+                        if (j.success) {
+                            fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                                 res.json().then(j => {
                                     if (j.containsAppData) {
                                         GotoStep(4)
@@ -785,7 +838,7 @@ document.getElementById("grantManageAccess").onclick = () => {
                                     }
                                 })
                             })
-                        } else TextBoxError("step3box", text)
+                        } else TextBoxError("step3box", j.msg)
                     })
                 })
             }
@@ -798,13 +851,13 @@ document.getElementById("grantManageAccess").onclick = () => {
 }
 
 document.getElementById("grantAccess").onclick = () => {
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") {
-                fetch("grantaccess?package=" + config.currentApp).then(res => {
-                    res.text().then(text => {
-                        if (res.status == 200) {
-                            fetch("backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) {
+                fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
+                    res.json().then(j => {
+                        if (j.success) {
+                            fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                                 res.json().then(j => {
                                     if(j.isPatchedApk) {
                                         GotoStep("4.2")
@@ -817,7 +870,7 @@ document.getElementById("grantAccess").onclick = () => {
                                     }
                                 })
                             })
-                        } else TextBoxError("step3box", text)
+                        } else TextBoxError("step3box", j.msg)
                     })
                 })
             }
@@ -830,60 +883,44 @@ document.getElementById("grantAccess").onclick = () => {
 }
 
 document.getElementById("deleteAllMods").onclick = () => {
-    fetch("/mods/deleteallmods").then(res => {
-        res.text().then(t => {
-            if(res.status == 200) {
-                TextBoxGood("updateTextBox", t)
+    fetch("/api/mods/deleteallmods", {
+        method: "POST"
+    }).then(res => {
+        res.json().then(j => {
+            if(j.success) {
+                TextBoxGood("updateTextBox", j.msg)
             } else {
-                TextBoxError("updateTextBox", t)
+                TextBoxError("updateTextBox", j.msg)
             }
         })
     });
 }
-/*
-document.getElementById("openSettings").onclick = () => {
-    fetch("opensettings").then(res => {
-        res.text().then(t => {
-            if(res.status == 200) {
-                TextBoxGood("updateTextBox", t)
-            } else {
-                TextBoxError("updateTextBox", t)
-            }
-        })
-    });
-}
-*/
 
 document.getElementById("grantAccess2").onclick = () => {
-    fetch("grantaccess?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            CloseRestorePopup();
-        })
+    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
+        CloseRestorePopup();
     })
 }
 
 document.getElementById("requestManageStorageAppPermission").onclick = () => {
-    fetch("grantmanagestorageappaccess?package=" + config.currentApp).then(res => {
+    fetch("/api/grantmanagestorageappaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
     })
 }
 
 document.getElementById("requestAppPermission").onclick = () => {
-    fetch("grantaccess?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-        })
-    })
+    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"})
 }
 
 document.getElementById("restoreappdata").onclick = () => {
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") {
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) {
                 TextBoxText("step4box", "Restoring game data. Please wait")
-                fetch("restoregamedata?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-                    res.text().then(text => {
-                        if (res.status == 200) GotoStep(6)
+                fetch("/api/restoregamedata?package=" + config.currentApp + "&backupname=" + selectedBackup, {method: "POST"}).then(res => {
+                    res.json().then(j => {
+                        if (j.success) GotoStep(6)
                         else {
-                            TextBoxError("step4box", text)
+                            TextBoxError("step4box", j.msg)
                         }
                     })
                 }).catch(err => {
@@ -899,9 +936,9 @@ document.getElementById("restoreappdata").onclick = () => {
 }
 
 document.getElementById("skip").onclick = () => {
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") GotoStep(6)
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) GotoStep(6)
             else {
                 TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
                 GotoStep(3)
@@ -912,9 +949,9 @@ document.getElementById("skip").onclick = () => {
 
 document.getElementById("skip2").onclick = () => {
     TextBoxText("step3box", "checking... please wait")
-    fetch("android/ispackageinstalled?package=" + config.currentApp).then(res => {
-        res.text().then(text => {
-            if (text == "True") GotoStep(6)
+    fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.isAppInstalled) GotoStep(6)
             else {
                 TextBoxError("step3box", config.currentApp + " is not installed. Please install it.")
                 GotoStep(3)
@@ -979,7 +1016,7 @@ document.getElementById("checkUpdate").onclick = () => CheckUpdate()
 var updateAvailable = false
 function CheckUpdate() {
     TextBoxText("updateTextBox", "Checking for updates...")
-    fetch("/questappversionswitcher/checkupdate").then(res => res.json().then(json => {
+    fetch("/api/questappversionswitcher/checkupdate").then(res => res.json().then(json => {
         if(json.isUpdateAvailable) {
             updatePromptOpen = true
             CloseRestorePopup()
@@ -999,8 +1036,8 @@ document.getElementById("cancelupdate").onclick = () => {
 }
 
 document.getElementById("updateqavs").onclick = () => {
-    fetch("/questappversionswitcher/update").then(res => res.text().then(text => {
-        TextBoxText("step11box", text)
+    fetch("/api/questappversionswitcher/update", {method: "POST"}).then(res => res.json().then(j => {
+        TextBoxText("step11box", j.msg)
     }))
 }
 
@@ -1019,17 +1056,18 @@ document.getElementById("abortPassword").onclick = () => {
     CloseGetPasswordPopup()
 }
 document.getElementById("confirmPassword").onclick = () => {
+    TextBoxText("step7box", "Waiting for response")
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
-    fetch("/download", {
+    fetch("/api/download", {
         method: "POST",
         body: JSON.stringify(options)
     }).then(res => {
-        res.text().then(text => {
-            if (res.status == 403) {
-                TextBoxError("step7box", text)
-            } else if (res.status == 200) {
-                TextBoxGood("step7box", text)
+        res.json().then(j => {
+            if (!j.success) {
+                TextBoxError("step7box", j.msg)
+            } else {
+                TextBoxGood("step7box", j.msg)
                 document.getElementById("abortPassword").innerHTML = "Close Popup"
                 document.getElementById("confirmPassword").style.display = "none"
             }
@@ -1038,12 +1076,12 @@ document.getElementById("confirmPassword").onclick = () => {
 }
 
 function StopDownload(name) {
-    fetch(`/canceldownload?name=${name}`)
+    fetch(`/api/canceldownload?name=${name}`, {method: "POST"})
 }
 
 document.getElementById("logs").onclick = () => {
     TextBoxText("logsText", "Collecting information.. please allow us up to 30 seconds to collect everything")
-    fetch("/questappversionswitcher/uploadlogs", {
+    fetch("/api/questappversionswitcher/uploadlogs", {
         method: "POST",
         body: encodeURIComponent(document.getElementById("logspwd").value)
     }).then(res => {
@@ -1072,23 +1110,22 @@ document.getElementById("confirmLogin").onclick = () => {
 document.getElementById("tokenPassword").onclick = () => {
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
-    fetch("/token", {
+    fetch("/api/token", {
         method: "POST",
         body: JSON.stringify({
             token: params.get("token"),
             password: encodeURIComponent(document.getElementById("passwordToken").value)
         })
     }).then(res => {
-        res.text().then(text => {
-            if (res.status == 200) {
-                TextBoxGood("step8box", text)
+        res.json().then(j => {
+            if (j.success) {
+                TextBoxGood("step8box", j.msg)
                 setTimeout(() => {
                     TokenUIUpdate()
                     CloseGetPasswordPopup()
                 }, 5000)
             } else {
-                
-                TextBoxError("step8box", text + "<br>The pop up will close automatically in 10 seconds")
+                TextBoxError("step8box", j.msg + "<br>The pop up will close automatically in 10 seconds")
                 setTimeout(() => {
                     CloseGetPasswordPopup()
                 }, 10000)
@@ -1100,15 +1137,15 @@ document.getElementById("tokenPassword").onclick = () => {
 document.getElementById("delete").onclick = () => {
     CloseDeletePopup()
     TextBoxText("restoreTextBox", "Deleting Backup. Please wait.")
-    fetch("/backup?package=" + config.currentApp + "&backupname=" + selectedBackup, {
+    fetch("/api/backup?package=" + config.currentApp + "&backupname=" + selectedBackup, {
         method: "DELETE"
     }).then(res => {
-        res.text().then(text => {
-            if (res.status == 200) {
-                TextBoxGood("restoreTextBox", text)
+        res.json().then(j => {
+            if (j.success) {
+                TextBoxGood("restoreTextBox", j.msg)
                 UpdateUI()
             } else {
-                TextBoxError("restoreTextBox", text)
+                TextBoxError("restoreTextBox", j.msg)
                 UpdateUI()
             }
         })

@@ -58,6 +58,8 @@ namespace QuestAppVersionSwitcher
             DownloadFileIfMissing(currentVersion, libModloader32Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader32.so");
             DownloadFileIfMissing(currentVersion, libModloader64Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader64.so");
             File.WriteAllText(questLoaderVersionLocation, questLoaderVersion);
+            QAVSWebserver.patchStatus.doneOperations = 2;
+            QAVSWebserver.patchStatus.progress = .1;
         }
 
         public static void DownloadFileIfMissing(string currentQuestLoaderVersion, string filePath, string downloadLink)
@@ -65,7 +67,7 @@ namespace QuestAppVersionSwitcher
             if (!File.Exists(filePath) || currentQuestLoaderVersion != questLoaderVersion)
             {
                 string fileName = Path.GetFileName(filePath);
-                QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Downloading dependency " + fileName, ""));
+                QAVSWebserver.patchStatus.currentOperation = "Downloading dependency " + fileName;
                 Logger.Log(fileName + " doesn't exist. Downloading");
                 WebClient c = new WebClient();
                 c.DownloadFile(downloadLink, filePath);
@@ -99,32 +101,40 @@ namespace QuestAppVersionSwitcher
 
         public static void PatchAPK(ZipArchive apkArchive, string appLocation)
         {
-            QAVSWebserver.patchCode = 202;
             if (IsAPKModded(apkArchive))
             {
-                QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("App is already patched", ""));
-                QAVSWebserver.patchCode = 200;
+                QAVSWebserver.patchStatus.done = true;
+                QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;
+                QAVSWebserver.patchStatus.currentOperation = "App is already patched";
+                QAVSWebserver.patchStatus.progress = 1;
                 return;
             }
             DownloadDependencies();
             PatchManifest(apkArchive);
-            Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes = AddLibs(apkArchive);
+            QAVSWebserver.patchStatus.doneOperations = 3;
+            QAVSWebserver.patchStatus.progress = .2;
+            Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes = AddLibsAndPatchGame(apkArchive);
             apkArchive.Dispose();
+            QAVSWebserver.patchStatus.doneOperations = 5;
+            QAVSWebserver.patchStatus.progress = .55;
             
             ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes).Wait();
-
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Almost done. Hang tight", ""));
+            QAVSWebserver.patchStatus.doneOperations = 8;
+            QAVSWebserver.patchStatus.progress = .95;
+            QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
             PatchingStatus status = GetPatchingStatus();
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
             File.Move(appLocation, backupDir + "app.apk");
-            File.WriteAllText(backupDir + "isPatched.txt", "This backup was patched by QAVS. It contains the manage external storage permission.");
             Logger.Log("Moved apk");
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Done", backupName));
-            QAVSWebserver.patchCode = 200;
-            return;
+            QAVSWebserver.patchStatus.doneOperations = 9;
+            QAVSWebserver.patchStatus.progress = 1;
+            QAVSWebserver.patchStatus.done = true;
+            QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;
+            QAVSWebserver.patchStatus.currentOperation = "Done";
+            QAVSWebserver.patchStatus.backupName = backupName;
         }
 
         // Uses https://github.com/Lauriethefish/QuestUnstrippedUnity to download an appropriate unstripped libunity.so for beat saber if there is one
@@ -157,7 +167,8 @@ namespace QuestAppVersionSwitcher
         public static void PatchUnityIl2CppApp(ZipArchive apkArchive, ref ModdedJson moddedJson)
         {
             bool isApk64Bit = apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null;
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Adding unstripped libunity to APK if available", ""));
+
+            QAVSWebserver.patchStatus.currentOperation = "Adding unstripped libunity to APK if available";
             string libpath = isApk64Bit ? "lib/arm64-v8a/" : "lib/armeabi-v7a/";
             string versionName = GetPatchingStatus(apkArchive).version;
             
@@ -171,11 +182,13 @@ namespace QuestAppVersionSwitcher
                 moddedJson.modifiedFiles.Add(libpath + "libunity.so");
             }
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Adding modloader", ""));
+            QAVSWebserver.patchStatus.progress = .35;
+            QAVSWebserver.patchStatus.currentOperation = "Adding modloader";
             apkArchive.CreateEntryFromFile(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so");
             moddedJson.modifiedFiles.Add(libpath + "libmodloader.so");
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Adding libmain", ""));
+            QAVSWebserver.patchStatus.progress = .45;
+            QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
             ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
             if (main != null) main.Delete();
             moddedJson.modifiedFiles.Add(libpath + "libmain.so");
@@ -185,22 +198,25 @@ namespace QuestAppVersionSwitcher
             moddedJson.modloaderVersion = questLoaderVersion;
         }
 
-        public static Dictionary<string, ApkSigner.PrePatchHash>? AddLibs(ZipArchive apkArchive)
+        public static Dictionary<string, ApkSigner.PrePatchHash>? AddLibsAndPatchGame(ZipArchive apkArchive)
         {
             Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes;
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Preparing pre patch hashes", ""));
+            QAVSWebserver.patchStatus.currentOperation = "Preparing pre patch hashes";
             prePatchHashes = ApkSigner.CollectPrePatchHashes(apkArchive).Result;
+            QAVSWebserver.patchStatus.progress = .25;
 
             ModdedJson moddedJson = new ModdedJson();
 
             /// Diffrent patching apps
             if(apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null || apkArchive.GetEntry("lib/armeabi-v7a/libil2cpp.so") != null)
             {
-                // Unity il2cpp game
+                // Patch Unity il2cpp game
                 PatchUnityIl2CppApp(apkArchive, ref moddedJson);
             }
 
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Creating modding json", ""));
+            QAVSWebserver.patchStatus.currentOperation = "Creating modding json";
+            QAVSWebserver.patchStatus.progress = .5;
+            QAVSWebserver.patchStatus.doneOperations = 4;
             moddedJson.modifiedFiles.Add(ManifestPath);
             apkArchive.CreateEntry(QAVSTagName);
             apkArchive.CreateEntry(LegacyTagName);
@@ -276,12 +292,12 @@ namespace QuestAppVersionSwitcher
 
         public static bool PatchManifest(ZipArchive apkArchive)
         {
-            QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Patching manifest", ""));
+            QAVSWebserver.patchStatus.currentOperation = "Patching manifest";
             ZipArchiveEntry? manifestEntry = apkArchive.GetEntry(ManifestPath);
             if (manifestEntry == null)
             {
-                QAVSWebserver.patchText = JsonSerializer.Serialize(new MessageAndValue<String>("Manifest doesn't exist. Cannot mod game", ""));
-                QAVSWebserver.patchCode = 400;
+                QAVSWebserver.patchStatus.error = true;
+                QAVSWebserver.patchStatus.errorText = "Manifest doesn't exist. Cannot mod game";
                 return false;
             }
 

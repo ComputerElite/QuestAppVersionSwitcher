@@ -23,7 +23,7 @@ namespace QuestAppVersionSwitcher
 			return null;
 		}
 		
-		public bool InstallCosmetic(string game, string extension, string path, bool deleteOriginalFile)
+		public bool InstallCosmeticByExtension(string game, string extension, string path, bool deleteOriginalFile)
 		{
 			CosmeticsGame CGame = GetCosmeticsGame(game);
 			if(CGame == null)
@@ -31,33 +31,45 @@ namespace QuestAppVersionSwitcher
 				if (deleteOriginalFile) File.Delete(path);
 				return false;
 			}
-			CGame.InstallCosmetic(extension, path, deleteOriginalFile);
+			CGame.InstallCosmeticByExtension(extension, path, deleteOriginalFile);
 			return true;
 		}
 		
-		public void RemoveCosmetic(string game, string extension, string name)
+		public bool InstallCosmeticById(string game, string id, string path, bool deleteOriginalFile)
+		{
+			CosmeticsGame CGame = GetCosmeticsGame(game);
+			if(CGame == null)
+			{
+				if (deleteOriginalFile) File.Delete(path);
+				return false;
+			}
+			CGame.InstallCosmeticById(id, path, deleteOriginalFile);
+			return true;
+		}
+		
+		public void RemoveCosmetic(string game, string id, string name)
 		{
 			CosmeticsGame CGame = GetCosmeticsGame(game);
 			if (CGame == null) return;
-			CGame.RemoveCosmetic(extension, name);
+			CGame.RemoveCosmetic(id, name);
 		}
 
-		public List<string> GetInstalledCosmetics(string game, string extension)
+		public List<string> GetInstalledCosmetics(string game, string id)
 		{
 			CosmeticsGame CGame = GetCosmeticsGame(game);
 			if (CGame == null) return new List<string>();
-			return CGame.GetInstalledCosmetics(extension);
+			return CGame.GetInstalledCosmetics(id);
 		}
 
 		public static Cosmetics LoadCosmetics()
 		{
-			Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics.json");
+			Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new.json");
 			WebClient c = new WebClient();
 			string cosmetics = "{}";
 			string jsonLoc = CoreService.coreVars.QAVSDir + "cosmetics.json";
 			try
 			{
-				cosmetics = c.DownloadString("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics.json");
+				cosmetics = c.DownloadString("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new.json");
 				File.WriteAllText(jsonLoc, cosmetics);
 				Logger.Log("Caching Cosmetics");
 			} catch
@@ -83,13 +95,13 @@ namespace QuestAppVersionSwitcher
 			if(!games.ContainsKey(packageId)) games.Add(packageId, new CosmeticsGame());
 			foreach (string extension in type.SupportedExtensions)
 			{
-				games[packageId].fileTypes[extension] = new CosmeticType()
+				games[packageId].fileTypes.Add(new CosmeticType()
 				{
 					directory = type.Path,
 					fileType = extension,
 					name = type.NamePlural,
 					requiresModded = true
-				};
+				});
 			}
 		}
 		
@@ -98,24 +110,39 @@ namespace QuestAppVersionSwitcher
 			if (!games.ContainsKey(packageId)) return;
 			foreach (string extension in type.SupportedExtensions)
 			{
-				games[packageId].fileTypes.Remove(extension);
+				games[packageId].fileTypes.Remove(games[packageId].fileTypes.FirstOrDefault(x => x.fileType == extension));
 			}
 		}
 	}
 
 	public class CosmeticsGame
 	{
-		public Dictionary<string, CosmeticType> fileTypes { get; set; } = new Dictionary<string, CosmeticType>();
+		public List<CosmeticType> fileTypes { get; set; } = new List<CosmeticType>();
 		
-		public CosmeticType GetFileType(string extension)
+		public CosmeticType GetFileTypeByExtension(string extension)
 		{
-			if (fileTypes.ContainsKey(extension)) return fileTypes[extension];
+			return fileTypes.FirstOrDefault(x => x.fileType == extension);
 			return null;
+		}public CosmeticType GetFileTypeById(string id)
+		{
+			return fileTypes.FirstOrDefault(x => x.id == id);
 		}
 
-		public bool InstallCosmetic(string extension, string path, bool deleteOriginalFile = true)
+		public bool InstallCosmeticByExtension(string extension, string path, bool deleteOriginalFile = true)
 		{
-			CosmeticType type = GetFileType(extension);
+			CosmeticType type = GetFileTypeByExtension(extension);
+			if (type == null)
+			{
+				if (deleteOriginalFile) File.Delete(path);
+				return false;
+			}
+			type.InstallCosmetic(path, deleteOriginalFile);
+			return true;
+		}
+		
+		public bool InstallCosmeticById(string id, string path, bool deleteOriginalFile = true)
+		{
+			CosmeticType type = GetFileTypeById(id);
 			if (type == null)
 			{
 				if (deleteOriginalFile) File.Delete(path);
@@ -125,16 +152,16 @@ namespace QuestAppVersionSwitcher
 			return true;
 		}
 
-		public List<string> GetInstalledCosmetics(string extension)
+		public List<string> GetInstalledCosmetics(string id)
 		{
-			CosmeticType type = GetFileType(extension);
+			CosmeticType type = GetFileTypeById(id);
 			if (type == null) return new List<string>();
 			return type.GetInstalledCosmetics();
 		}
 
-		public void RemoveCosmetic(string extension, string name)
+		public void RemoveCosmetic(string id, string name)
 		{
-			CosmeticType type = GetFileType(extension);
+			CosmeticType type = GetFileTypeById(id);
 			if (type == null) return;
 			type.RemoveCosmetic(name);
 		}
@@ -145,6 +172,15 @@ namespace QuestAppVersionSwitcher
 		public string name { get; set; } = "Unknown";
 		public string fileType { get; set; } = "Unknown";
 		public string directory { get; set; } = "";
+
+		public string id
+		{
+			get
+			{
+				return name + "-" + fileType;
+			}
+		}
+
 		public bool requiresModded { get; set; } = true;
 
 		public void InstallCosmetic(string currentPath, bool deleteOriginalFile = true)

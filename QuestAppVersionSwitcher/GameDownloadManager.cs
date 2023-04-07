@@ -30,6 +30,7 @@ namespace QuestAppVersionSwitcher
         public DownloadRequest request { get; set; } = null;
         public Thread updateThread = null;
         public bool canceled { get; set; } = false;
+        public bool done { get; set; } = false;
 
         public GameDownloadManager(DownloadRequest r)
         {
@@ -70,8 +71,10 @@ namespace QuestAppVersionSwitcher
 
         public void Done()
         {
-            status = "Done, restore " + backupName + " to install the downgraded game";
+            status = "Download completed: Restore " + backupName + " to install the downgraded game";
             textColor = "#00FF00";
+            done = true;
+            UpdateManagersAndProgress();
         }
 
         public void UpdateManagersAndProgress()
@@ -86,7 +89,7 @@ namespace QuestAppVersionSwitcher
                     i--;
                 }
             }
-
+            
             progress = filesDownloaded / (double)filesToDownload;
             progressString = (progress * 100).ToString("F") + "%";
             
