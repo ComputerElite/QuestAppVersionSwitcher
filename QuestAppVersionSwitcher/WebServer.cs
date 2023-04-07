@@ -1109,7 +1109,6 @@ namespace QuestAppVersionSwitcher
 			server.AddRouteFile("/facts.png", "facts.png");
             server.StartServer(CoreService.coreVars.serverPort);
 
-            if (CoreService.started) return;
             if (CoreService.coreVars.loginStep == 1)
             {
                 CoreService.coreVars.loginStep = 0;
@@ -1117,6 +1116,7 @@ namespace QuestAppVersionSwitcher
                 CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
             else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+            if (CoreService.started) return;
             Thread t = new Thread(() =>
             {
                 try
