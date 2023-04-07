@@ -26,6 +26,12 @@
                 "requiresModded": true
             },
             {
+                "name": "Whackers2",
+                "fileType": ".whacker",
+                "directory": "/sdcard/QuestAppVersionSwitcher/test/",
+                "requiresModded": true
+            },
+            {
                 "name": "Boxes",
                 "fileType": ".box",
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/boxes/",
