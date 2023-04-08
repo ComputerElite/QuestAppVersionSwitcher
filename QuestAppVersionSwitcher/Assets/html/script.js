@@ -671,15 +671,19 @@ document.getElementById("appListContainer").onclick = (event) => {
 setInterval(() => {
     Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), i => {
         i.onclick = function () {
-            Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
-                e.className = "menuItem" + (e.getAttribute("section") == this.getAttribute("section") ? " selected" : "")
-            })
-            Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
-                e.className = "contentItem" + (e.id == this.getAttribute("section") ? "" : " hidden")
-            })
+            OpenTab(this.getAttribute("section"))
         }
     })
 }, 500)
+
+function OpenTab(section) {
+    Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
+        e.className = "menuItem" + (e.getAttribute("section") == section ? " selected" : "")
+    })
+    Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
+        e.className = "contentItem" + (e.id == section ? "" : " hidden")
+    })
+}
 
 
 var backupInProgress = false
@@ -803,7 +807,7 @@ document.getElementById("install").onclick = () => {
                                     if(j.isPatchedApk) {
                                         GotoStep("4.2")
                                     } else {
-                                        if (j.containsAppData) {
+                                        if (j.containsAppData || j.containsObbs) {
                                             GotoStep(4)
                                         } else {
                                             GotoStep(5)
@@ -831,7 +835,7 @@ document.getElementById("grantManageAccess").onclick = () => {
                         if (j.success) {
                             fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                                 res.json().then(j => {
-                                    if (j.containsAppData) {
+                                    if (j.containsAppData || j.containsObbs) {
                                         GotoStep(4)
                                     } else {
                                         GotoStep(5)
@@ -862,7 +866,7 @@ document.getElementById("grantAccess").onclick = () => {
                                     if(j.isPatchedApk) {
                                         GotoStep("4.2")
                                     } else {
-                                        if (j.containsAppData) {
+                                        if (j.containsAppData || j.containsObbs) {
                                             GotoStep(4)
                                         } else {
                                             GotoStep(5)

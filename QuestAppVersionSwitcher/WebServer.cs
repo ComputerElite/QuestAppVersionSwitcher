@@ -1207,12 +1207,13 @@ namespace QuestAppVersionSwitcher
             if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
             {
                 info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
-                if (info.BackupInfoVersion < BackupInfoVersion.V1) return GetBackupInfo(path, true);
+                if (info.BackupInfoVersion < BackupInfoVersion.V2) return GetBackupInfo(path, true);
                 return info;
             }
 
             info.backupName = Path.GetFileName(pathWithoutSlash);
             info.containsAppData = Directory.Exists(pathWithoutSlash + "/" + Directory.GetParent(pathWithoutSlash).Name);
+            info.containsObbs = Directory.Exists(pathWithoutSlash + "/obb/" + Directory.GetParent(pathWithoutSlash).Name);
             info.backupLocation = path;
             info.backupSize = FileManager.GetDirSize(pathWithoutSlash);
             info.backupSizeString = SizeConverter.ByteSizeToString(info.backupSize);
@@ -1269,10 +1270,11 @@ namespace QuestAppVersionSwitcher
 
     public class BackupInfo
     {
-        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V1;
+        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V2;
         public string backupName { get; set; } = "";
         public string backupLocation { get; set; } = "";
         public bool containsAppData { get; set; } = false;
+        public bool containsObbs { get; set; } = false;
         public bool isPatchedApk { get; set; } = false;
         public bool containsApk { get; set; } = false;
         public string gameVersion { get; set; } = "unknown";

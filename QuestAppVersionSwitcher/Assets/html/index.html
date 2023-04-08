@@ -82,6 +82,7 @@
                 <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
                 <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
                 <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
+                <div class="button topButtonMargin" onclick="OpenTab('getMods')">Get mods</div>
                 <div id="operations">
                     <h2 id="ongoingCount">Ongoing operations:</h2>
                     <div class="loaderContainer" style="margin-bottom: 10px;">
@@ -123,8 +124,8 @@
             <div class="contentItem hidden" id="getMods">
                 <h2>You can download mods and cosmetics from the following sites. Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game</h2>
                 <div style="display: flex; flex-direction: column;" class="buttonsContainer">
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}`)">Open Beat Saber Mods page</div>
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}`)">Open website hub</div>
+                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}&isqavs=true`)">Open Beat Saber Mods page</div>
+                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}&isqavs=true`)">Open website hub</div>
                     <div class="button labelMargin" onclick="OpenSite(`https://www.google.com/search?q=computerelite`)">Open Google</div>
                 </div>
             </div>

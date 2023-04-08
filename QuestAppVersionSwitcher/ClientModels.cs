@@ -47,7 +47,8 @@ namespace QuestAppVersionSwitcher.ClientModels
 
     public enum BackupInfoVersion
     {
-        V1
+        V1,
+        V2
     }
 
     public class BackupList
