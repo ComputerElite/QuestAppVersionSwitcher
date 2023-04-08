@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using ComputerUtils.Android.Encryption;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
+using OculusGraphQLApiLib;
+using OculusGraphQLApiLib.Results;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
@@ -27,7 +30,7 @@ namespace QuestAppVersionSwitcher
         public List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
         public List<ObbEntry> obbsToDo { get; set; } = new List<ObbEntry>();
         
-        public DownloadRequest request { get; set; } = null;
+        public DownloadRequest request = null;
         public Thread updateThread = null;
         public bool canceled { get; set; } = false;
         public bool done { get; set; } = false;
@@ -49,12 +52,38 @@ namespace QuestAppVersionSwitcher
             m.DownloadFinishedEvent += DownloadCompleted;
             m.isCancelable = false;
             
+            //Get OBBs via Oculus api
+            try
+            {
+                GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
+                AndroidBinary b = GraphQLClient.GetBinaryDetails(request.binaryId).data.node;
+                if (b.obb_binary != null)
+                {
+                    obbsToDo.Add(new ObbEntry
+                    {
+                        id = b.obb_binary.id,
+                        name = b.obb_binary.file_name
+                    });
+                }
+                foreach (AssetFile assetFile in b.asset_files.nodes)
+                {
+                    obbsToDo.Add(new ObbEntry
+                    {
+                        id = assetFile.id,
+                        name = assetFile.file_name
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                obbsToDo = request.obbList;
+            }
+            
             this.backupName = gameName + " " + version + " Downgraded";
             status = gameName + " " + version;
             downloadManagers.Add(m);
             QAVSWebserver.managers.Add(m);
-            obbsToDo = request.obbList;
-            filesToDownload = 1 + request.obbList.Count;
+            filesToDownload = 1 + obbsToDo.Count;
             updateThread = new Thread(() =>
             {
                 while (filesDownloaded < filesToDownload)
@@ -79,17 +108,6 @@ namespace QuestAppVersionSwitcher
 
         public void UpdateManagersAndProgress()
         {
-            for(int i = 0; i < downloadManagers.Count; i++)
-            {
-                DownloadManager m = downloadManagers[i];
-                if(m.canceled)
-                {
-                    downloadManagers.RemoveAt(i);
-                    QAVSWebserver.managers.Remove(m);
-                    i--;
-                }
-            }
-            
             progress = filesDownloaded / (double)filesToDownload;
             progressString = (progress * 100).ToString("F") + "%";
             
@@ -97,9 +115,9 @@ namespace QuestAppVersionSwitcher
             {
                 if (obbsToDo.Count <= 0) return;
                 DownloadManager m = new DownloadManager();
-                m.StartDownload(obbsToDo[0].id, request.password, request.version, request.app, request.parentId, true, request.packageName, obbsToDo[0].name);
                 m.DownloadFinishedEvent += DownloadCompleted;
                 m.isCancelable = false;
+                m.StartDownload(obbsToDo[0].id, request.password, request.version, request.app, request.parentId, true, request.packageName, obbsToDo[0].name);
                 downloadManagers.Add(m);
                 QAVSWebserver.managers.Add(m);
                 obbsToDo.RemoveAt(0);
@@ -116,6 +134,7 @@ namespace QuestAppVersionSwitcher
                 d.StopDownload();
                 QAVSWebserver.managers.Remove(d);
             }
+            downloadManagers.Clear();
         }
 
         public void DownloadCompleted(DownloadManager m)
@@ -123,20 +142,21 @@ namespace QuestAppVersionSwitcher
             filesDownloaded++;
             QAVSWebserver.managers.Remove(m);
             downloadManagers.Remove(m);
+            string backupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
             if(m.isObb)
             {
-                string bbackupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/obb/";
-                FileManager.CreateDirectoryIfNotExisting(bbackupDir);
-                FileManager.DeleteFileIfExisting(bbackupDir + m.obbFileName);
-                File.Move(m.tmpPath, bbackupDir + m.obbFileName);
+                string obbDir = backupDir + "obb/" + m.packageName + "/";
+                FileManager.CreateDirectoryIfNotExisting(obbDir);
+                FileManager.DeleteFileIfExisting(obbDir + m.obbFileName);
+                File.Move(m.tmpPath, obbDir + m.obbFileName);
                 Logger.Log("Moved obb");
                 return;
             }
             // Is apk
-            string packageName = QAVSWebserver.GetAPKPackageName(m.tmpPath);
-            string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + m.backupName + "/";
-            FileManager.RecreateDirectoryIfExisting(backupDir);
+            FileManager.CreateDirectoryIfNotExisting(backupDir);
+            FileManager.DeleteFileIfExisting(backupDir + "app.apk");
             File.Move(m.tmpPath, backupDir + "app.apk");
+            Logger.Log("Moved apk");
         }
     }
 }

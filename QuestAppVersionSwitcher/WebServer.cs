@@ -1151,11 +1151,6 @@ namespace QuestAppVersionSwitcher
             QAVSModManager.Update();
         }
 
-        public void ShowWebsite()
-        {
-            throw new NotImplementedException();
-        }
-
         public string GetSHA256OfString(string input)
         {
             return BitConverter.ToString(hasher.ComputeHash(Encoding.UTF8.GetBytes(input))).Replace("-", "");

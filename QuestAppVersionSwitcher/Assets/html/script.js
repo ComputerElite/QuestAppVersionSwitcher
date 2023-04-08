@@ -578,7 +578,7 @@ setInterval(() => {
                     </div>
                      ${!d.done ? `<input type="button" class="DownloadText" value="Cancel" onclick="StopGameDownload('${d.id}')">` : ``}
                     <div class="DownloadText" style="color: ${d.textColor};">
-                        ${d.canceled ? "Canceled " : ""}${d.status} ${d.progressString} ${d.filesDownloaded} / ${d.filesToDownload} files downloaded
+                        ${d.canceled ? "Canceled " : ""}${d.status}<br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
                     </div>
                 </div>`
             }
@@ -780,7 +780,7 @@ document.getElementById("uninstall2").onclick = () => {
 document.getElementById("confirm1").onclick = () => {
     fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.json().then(j => {
-            if (j.isAppInstalled) GotoStep(3)
+            if (!j.isAppInstalled) GotoStep(3)
             else {
                 TextBoxError("step1box", config.currentApp + " is still installed. Please uninstall it.")
                 GotoStep(1)
@@ -883,6 +883,7 @@ document.getElementById("grantAccess").onclick = () => {
 }
 
 document.getElementById("deleteAllMods").onclick = () => {
+    TextBoxText("updateTextBox", "Deleting all mods...")
     fetch("/api/mods/deleteallmods", {
         method: "POST"
     }).then(res => {
@@ -1056,7 +1057,7 @@ document.getElementById("abortPassword").onclick = () => {
     CloseGetPasswordPopup()
 }
 document.getElementById("confirmPassword").onclick = () => {
-    TextBoxText("step7box", "Waiting for response")
+    TextBoxText("step7box", "Waiting for response and requesting obbs to download from Oculus...")
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
     fetch("/api/download", {
