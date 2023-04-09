@@ -278,7 +278,7 @@ namespace QuestAppVersionSwitcher.Mods
             Logger.Log($"Attempting to load {legacyFolders.Count} legacy mods");
             foreach (var legacyFolder in legacyFolders)
             {
-                Logger.Log($"Loading legacy mod at {legacyFolder}");
+                Logger.Log($"Loading legacy mod in {Path.GetFileName(legacyFolder)}");
                 var modJsonPath = Path.Combine(legacyFolder, "mod.json");
 
                 await using var modJsonStream = File.OpenRead(modJsonPath);

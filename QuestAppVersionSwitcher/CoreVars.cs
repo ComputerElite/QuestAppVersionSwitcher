@@ -11,6 +11,7 @@ namespace QuestAppVersionSwitcher.Core
         public string token { get; set; } = "";
         public int loginStep { get; set; } = 0;
         public string password { get; set; } = "";
+        public bool passwordSet { get; set; } = false;
         public PatchingPermissions patchingPermissions = new PatchingPermissions();
 		public static Cosmetics cosmetics = new Cosmetics();
 		public readonly string QAVSDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/";
@@ -28,6 +29,7 @@ namespace QuestAppVersionSwitcher.Core
         public readonly string AndroidObbLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/";
         public static string fileDir = "";
         public static string oculusLoginUrl = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F";
+
         public void Save()
         {
             File.WriteAllText(QAVSConfigLocation, JsonSerializer.Serialize(this));

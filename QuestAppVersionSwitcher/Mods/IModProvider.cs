@@ -7,7 +7,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// <summary>
         /// File extension of mod files that can be loaded by this provider
         /// </summary>
-        string FileExtension { get; }
+        public string FileExtension { get; }
 
         /// <summary>
         /// Loads a mod from the given path and copies the files to the quest if necessary

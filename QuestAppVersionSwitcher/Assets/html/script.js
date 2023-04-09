@@ -1060,13 +1060,17 @@ var options = {}
 window.onmessage = (e) => {
     options = JSON.parse(e.data)
     OpenGetPasswordPopup()
+    if(!config.hasPassword) {
+        document.getElementById("passwordConfirm").value = ""
+        PasswordInput()
+    }
 }
 document.getElementById("abortPassword").onclick = () => {
     document.getElementById("abortPassword").innerHTML = "Abort Download"
     document.getElementById("confirmPassword").style.display = "block"
     CloseGetPasswordPopup()
 }
-document.getElementById("confirmPassword").onclick = () => {
+function PasswordInput() {
     TextBoxText("step7box", "Waiting for response and requesting obbs to download from Oculus. This may take 30 seconds...")
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
@@ -1085,6 +1089,7 @@ document.getElementById("confirmPassword").onclick = () => {
         })
     })
 }
+document.getElementById("confirmPassword").onclick = () => PasswordInput()
 
 function StopDownload(name) {
     fetch(`/api/canceldownload?name=${name}`, {method: "POST"})
@@ -1130,19 +1135,24 @@ document.getElementById("tokenPassword").onclick = () => {
     }).then(res => {
         res.json().then(j => {
             if (j.success) {
-                TextBoxGood("step8box", j.msg)
+                TextBoxGood("step8box", j.msg + "<br>This pop up will close automatically in 5 seconds")
                 setTimeout(() => {
                     TokenUIUpdate()
-                    CloseGetPasswordPopup()
+                    location = location.href.split('?')[0]
                 }, 5000)
             } else {
-                TextBoxError("step8box", j.msg + "<br>The pop up will close automatically in 10 seconds")
+                TextBoxError("step8box", j.msg + "<br>This pop up will close automatically in 10 seconds")
                 setTimeout(() => {
-                    CloseGetPasswordPopup()
+                    location = location.href.split('?')[0]
                 }, 10000)
             }
         })
     })
+}
+
+document.getElementById("reloadMods").onclick = () => {
+    ChangeApp(config.currentApp)
+    TextBoxGood("updateTextBox", "Reloaded mods")
 }
 
 document.getElementById("delete").onclick = () => {

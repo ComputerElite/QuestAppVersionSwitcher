@@ -241,12 +241,17 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static string GetMods()
         {
-            return JsonSerializer.Serialize(new ModsAndLibs
+            return JsonSerializer.Serialize(GetModsAndLibs());
+        }
+        
+        public static ModsAndLibs GetModsAndLibs()
+        {
+            return new ModsAndLibs
             {
                 mods = modManager.Mods,
                 libs = modManager.Libraries,
                 operations = runningOperations.Values.ToList()
-            });
+            };
         }
         
 

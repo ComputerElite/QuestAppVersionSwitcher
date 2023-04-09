@@ -569,23 +569,27 @@ namespace QuestAppVersionSwitcher
                 report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
                 report.availableSpace = Environment.ExternalStorageDirectory.UsableSpace;
+                QAVSModManager.Update();
+                report.modsAndLibs = QAVSModManager.GetModsAndLibs();
                 PatchingStatus status = PatchingManager.GetPatchingStatus();
                 Logger.Log("-------Status of selected app-------\n" + (status == null ? "Not installed" : JsonSerializer.Serialize(status, new JsonSerializerOptions
                 {
                     WriteIndented = true
                 })));
+                string password = request.bodyString;
+                if (password == "") password = AndroidService.GetDeviceID();
 
                 if (report.userIsLoggedIn)
                 {
                     try
                     {
-                        if (GetSHA256OfString(request.bodyString) != CoreService.coreVars.password)
+                        if (GetSHA256OfString(password) != CoreService.coreVars.password)
                         {
                             request.SendString(GenericResponse.GetResponse("Password is wrong. Please try a different password or set a new one", false), "application/json", 403);
                             return true;
                         }
                         GraphQLClient.log = false;
-                        GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.bodyString);
+                        GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, password);
                         ViewerData<OculusUserWrapper> entitlements = GraphQLClient.GetActiveEntitelments();
                         foreach (Entitlement e in entitlements.data.viewer.user.active_entitlements.nodes)
                         {
@@ -597,18 +601,7 @@ namespace QuestAppVersionSwitcher
                     }
                 }
                 Logger.Log("---Backups---");
-                foreach (string game in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
-                {
-                    Logger.Log(Path.GetFileName(game));
-                    foreach (string backup in Directory.GetDirectories(game))
-                    {
-                        Logger.Log("├──" + Path.GetFileName(backup));
-                        foreach (string file in Directory.GetFiles(backup))
-                        {
-                            Logger.Log("|  ├──" + Path.GetFileName(file) + " (" + SizeConverter.ByteSizeToString(new FileInfo(file).Length) + ")");
-                        }
-                    }
-                }
+                FileManager.LogTree(CoreService.coreVars.QAVSBackupDir, 0);
                 report.log = Logger.log;
                 request.SendString(JsonSerializer.Serialize(report), "application/json");
                 return true;
@@ -1036,18 +1029,29 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString(GenericResponse.GetResponse("You seem to have entered a token of an application. Please get YOUR token. Usually this can be done by using another request in the network tab.", false), "application/json", 400);
                     return true;
                 }
+                
+                CoreService.coreVars.passwordSet = true;
+                if (r.password == "")
+                {
+                    r.password = AndroidService.GetDeviceID();
+                    CoreService.coreVars.passwordSet = false;
+                }
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
                 CoreService.coreVars.Save();
-                serverRequest.SendString(GenericResponse.GetResponse("Set token", false), "application/json");
+                serverRequest.SendString(GenericResponse.GetResponse("Set token", true), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/download", serverRequest =>
             {
                 DownloadRequest r = JsonSerializer.Deserialize<DownloadRequest>(serverRequest.bodyString);
+                if (r.password == "") r.password = AndroidService.GetDeviceID();
                 if (GetSHA256OfString(r.password) != CoreService.coreVars.password)
                 {
-                    serverRequest.SendString(GenericResponse.GetResponse("Password is wrong. Please try a different password or set a new one", false), "application/json", 403);
+                    serverRequest.SendString(
+                        GenericResponse.GetResponse(
+                            "Password is wrong. Please try a different password or set a new one", false),
+                        "application/json", 403);
                     return true;
                 }
 
@@ -1308,5 +1312,6 @@ namespace QuestAppVersionSwitcher
 				return SizeConverter.ByteSizeToString(availableSpace);
 			}
 		}
+        public ModsAndLibs modsAndLibs { get; set; } = null;
 	}
 }

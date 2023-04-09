@@ -211,6 +211,10 @@
                     <div class="buttonLabel">Opens settings to allow manage storage for the selected app</div>
                 </div>
                 <div class="buttonContainer">
+                    <div class="button" id="reloadMods">Reload mods</div>
+                    <div class="buttonLabel">Reloads installed mods</div>
+                </div>
+                <div class="buttonContainer">
                     <div class="button" id="checkUpdate">Check for QuestAppVersionSwitcher updates</div>
                     <div class="buttonLabel">Checks if updates for QuestAppVersionSwitcher exist</div>
                 </div>
@@ -267,7 +271,7 @@
                     <div class="buttonContainer">
                         <input type="password" placeholder="Enter QuestAppVersionSwitcher password" id="logspwd" class="buttonLabel" value="" style="width: 300px;">
                         <div class="button" id="logs">Upload logs</div>
-                        <div class="buttonLabel">ONLY do when instructed to do so. Uploads which apps you own to OculusDB for viewing by support members</div>
+                        <div class="buttonLabel">ONLY do when instructed to do so. Uploads which apps you own to OculusDB for viewing by support members. <a href="https://github.com/ComputerElite/QuestAppVersionSwitcher/wiki/What-does-upload-logs-do">More info</a></div>
                     </div>
                     <div id="logsText" class="textBox"></div>
                 </div>
@@ -311,6 +315,8 @@
                     Password needed
                 </div>
                 Create a password to encrypt your login information (token). If you forget this password, you can change it any time by simply logging in again in the tools & options tab.
+                <br>
+                <i>If you do not want to set a password simply leave it empty</i>
                 <input type="password" id="passwordToken" placeholder="password">
                 <div id="step8box" class="textBox"></div>
                 <div class="buttonSelectionContainer">

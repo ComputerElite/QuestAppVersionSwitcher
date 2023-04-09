@@ -125,6 +125,7 @@ namespace QuestAppVersionSwitcher.Mods
             Logger.Log("Created directories");
 
             // If a config file exists, we'll need to load our mods from it
+            /*
             if (File.Exists(ConfigPath))
             {
                 Logger.Log("Loading mods from quest mod config");
@@ -146,16 +147,15 @@ namespace QuestAppVersionSwitcher.Mods
             }
             else
             {
-                Logger.Log("No mod status config found, attempting to load legacy mods");
-
-                _modConfig = new ModConfig();
-                foreach (var provider in _modProviders.Values)
-                {
-                    await provider.LoadLegacyMods();
-                }
-
-                await SaveMods();
+            */
+            Logger.Log("Loading mods from disk");
+            _modConfig = new ModConfig();
+            foreach (var provider in _modProviders.Values)
+            {
+                await provider.LoadLegacyMods();
             }
+
+            await SaveMods();
 
             foreach (IModProvider provider in _modProviders.Values)
             {

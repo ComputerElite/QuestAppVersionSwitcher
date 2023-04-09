@@ -11,6 +11,7 @@ using Android.Views.TextClassifiers;
 using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using AndroidX.DocumentFile.Provider;
+using AndroidX.RecyclerView.Widget;
 using ComputerUtils.Android;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
@@ -158,6 +159,12 @@ namespace QuestAppVersionSwitcher
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");
+            }
+
+            if (Build.VERSION.SdkInt > BuildVersionCodes.SV2)
+            {
+                // for A13 get specific app folder
+                start += "/" + CoreService.coreVars.currentApp;
             }
             string diff = dir.Replace(start, "");
             if (diff.StartsWith("/")) diff = diff.Substring(1);

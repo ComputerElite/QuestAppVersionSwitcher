@@ -99,7 +99,7 @@ namespace QuestAppVersionSwitcher
             return JsonSerializer.Deserialize<ModdedJson>(json);
         }
 
-        public static void PatchAPK(ZipArchive apkArchive, string appLocation)
+        public static async void PatchAPK(ZipArchive apkArchive, string appLocation)
         {
             if (IsAPKModded(apkArchive))
             {
@@ -118,7 +118,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = 5;
             QAVSWebserver.patchStatus.progress = .55;
             
-            ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes).Wait();
+            await ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes);
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
