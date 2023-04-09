@@ -599,10 +599,10 @@ anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-babel-plugin-jsx-dom-expressions@^0.36.0:
-  version "0.36.4"
-  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.36.4.tgz#7624d7172b1d08c5eb5405b09e17422e3cc0e454"
-  integrity sha512-gP8GduyfRfCDyFJ2Jgz7N3mxnJpu+nLIeTo6vF0hMZL8QPc1AdQaipoNm9wxLBqwYq16ICkoag4sLYRknh+tLw==
+babel-plugin-jsx-dom-expressions@^0.36.7:
+  version "0.36.8"
+  resolved "https://registry.yarnpkg.com/babel-plugin-jsx-dom-expressions/-/babel-plugin-jsx-dom-expressions-0.36.8.tgz#efe7fc6515ff5aca5dd73d0bf6c44f45dbf84656"
+  integrity sha512-hWG9WOa0gAxD1CKtzBxXMZoDMfn0Fxv8pYrl4y8znOpaS0vLuyNsclLH/w4hv+VBpv1yt9Rn4Gm/ImLBcqUfKA==
   dependencies:
     "@babel/helper-module-imports" "7.18.6"
     "@babel/plugin-syntax-jsx" "^7.18.6"
@@ -610,12 +610,12 @@ babel-plugin-jsx-dom-expressions@^0.36.0:
     html-entities "2.3.3"
     validate-html-nesting "^1.2.1"
 
-babel-preset-solid@^1.6.3:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-1.7.0.tgz#87e1122ab0ad38733711c9b34c7cf3d682d5b96b"
-  integrity sha512-EjD3lAgicteKrQzFhMtfgEEdPKHsDtGLyJEGmky3kLH952wZys5sj1sTuO+JB6QSfUq1hbJCBvlB5aCIvdf4NQ==
+babel-preset-solid@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/babel-preset-solid/-/babel-preset-solid-1.7.2.tgz#45b5db3c8a36ed5e3b79a0a403dd814656bfe750"
+  integrity sha512-2SVcLTk6RXgXv3ebbm4iKiAPTPhQ/+3zd1KUOnMq/qBMr9ZshzdtIS4dMr9orWPHwDTdvJ2ZAadyGf3ZfTwWjg==
   dependencies:
-    babel-plugin-jsx-dom-expressions "^0.36.0"
+    babel-plugin-jsx-dom-expressions "^0.36.7"
 
 binary-extensions@^2.0.0:
   version "2.2.0"
@@ -1036,20 +1036,20 @@ validate-html-nesting@^1.2.1:
   resolved "https://registry.yarnpkg.com/validate-html-nesting/-/validate-html-nesting-1.2.1.tgz#bc8fb1527be408ec4a0c254b251462aba2423f68"
   integrity sha512-T1ab131NkP3BfXB7KUSgV7Rhu81R2id+L6NaJ7NypAAG5iV6gXnPpQE5RK1fvb+3JYsPTL+ihWna5sr5RN9gaQ==
 
-vite-plugin-solid@^2.6.1:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/vite-plugin-solid/-/vite-plugin-solid-2.6.1.tgz#9e2dd5e1a4b7a19956bb05d0201a53907f98282b"
-  integrity sha512-/khM/ha3B5/pTWQWVJd/0n6ODPIrOcajwhbrD8Gnv37XmJJssu+KA8ssN73raMIicf2eiQKiTAV39w7dSl4Irg==
+vite-plugin-solid@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-solid/-/vite-plugin-solid-2.7.0.tgz#44de91335f30dfddd7f5f59a7019020860fcba2e"
+  integrity sha512-avp/Jl5zOp/Itfo67xtDB2O61U7idviaIp4mLsjhCa13PjKNasz+IID0jYTyqUp9SFx6/PmBr6v4KgDppqompg==
   dependencies:
     "@babel/core" "^7.20.5"
     "@babel/preset-typescript" "^7.18.6"
     "@types/babel__core" "^7.1.20"
-    babel-preset-solid "^1.6.3"
+    babel-preset-solid "^1.7.2"
     merge-anything "^5.1.4"
     solid-refresh "^0.5.0"
     vitefu "^0.2.3"
 
-vite@^4.1.1:
+vite@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/vite/-/vite-4.2.1.tgz#6c2eb337b0dfd80a9ded5922163b94949d7fc254"
   integrity sha512-7MKhqdy0ISo4wnvwtqZkjke6XN4taqQ2TBaTccLIpOKv7Vp2h4Y+NpmWCnGDeSvvn45KxvWgGyb0MkHvY1vgbg==

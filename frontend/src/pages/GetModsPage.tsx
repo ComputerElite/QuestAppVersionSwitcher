@@ -2,6 +2,7 @@ import { For, createMemo } from "solid-js"
 
 import "./GetModsPage.scss";
 import { Title } from "@solidjs/meta";
+import PageLayout from "../Layouts/PageLayout";
 
 
 export default function GetModsPage() {
@@ -22,22 +23,25 @@ export default function GetModsPage() {
 
 
     return (
-        <div class="contentItem getModsPage">
-            <Title>Get Mods</Title>
-            <h2 class="contentHeader">
-                Sites to get mods and cosmetics from
-                
-            </h2>
-            <p>
-                Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game
-            </p>
-            <div class="buttonsContainer">
-                <For each={sites()}>
-                    {(site) => (
-                        <a class="button labelMargin" href={site.url}>{site.name}</a>
-                    )}
-                </For>
+        <PageLayout>
+            <div class="contentItem getModsPage">
+                <Title>Get Mods</Title>
+                <h2 class="contentHeader">
+                    Sites to get mods and cosmetics from
+
+                </h2>
+                <p>
+                    Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game
+                </p>
+                <div class="buttonsContainer">
+                    <For each={sites()}>
+                        {(site) => (
+                            <a class="button labelMargin" href={site.url}>{site.name}</a>
+                        )}
+                    </For>
+                </div>
             </div>
-        </div>
+        </PageLayout>
+
     )
 }

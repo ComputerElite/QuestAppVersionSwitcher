@@ -1,12 +1,16 @@
 import { Title } from "@solidjs/meta";
+import PageLayout from "../Layouts/PageLayout";
 
 export default function DownloadProgressPage() {
   return (
-    <div class="contentItem">
-      <Title>Downloads</Title>
-      <div id="progressBarContainers" style="width: 95%;">
+    <PageLayout>
+      <div class="contentItem">
+        <Title>Downloads</Title>
+        <div id="progressBarContainers" style="width: 95%;">
 
+        </div>
       </div>
-    </div>
+    </PageLayout>
+
   )
 }

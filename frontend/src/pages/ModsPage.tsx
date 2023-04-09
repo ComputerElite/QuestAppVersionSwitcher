@@ -6,6 +6,7 @@ import { modsList, mutateMods, refetchMods } from "../state/mods";
 import { CompareStringsAlphabetically, Sleep } from "../util";
 import toast from "solid-toast";
 import { Title } from "@solidjs/meta";
+import PageLayout from "../Layouts/PageLayout";
 
 async function UploadModClick() {
   var input = document.createElement('input');
@@ -130,49 +131,52 @@ export default function ModsPage() {
   }));
 
   return (
-    <div
-      class=" contentItem modsPage"
-    >
+    <PageLayout>
+      <div
+        class=" contentItem modsPage"
+      >
 
-      <div classList={{
-        "dragOverlay": true,
-        "active": isDragging()
-      }
-      }>
-        <div class="dragOverlayText">Drop to install</div>
-      </div>
+        <div classList={{
+          "dragOverlay": true,
+          "active": isDragging()
+        }
+        }>
+          <div class="dragOverlayText">Drop to install</div>
+        </div>
 
-      <h2>Installed Mods</h2>
-      <div style={{
-        display: "flex",
-        gap: "1rem",
-      }}>
-        <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
-        <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
-        <div class="button topButtonMargin" onClick={refetchMods}>Refresh</div>
+        <h2>Installed Mods</h2>
+        <div style={{
+          display: "flex",
+          gap: "1rem",
+        }}>
+          <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
+          <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
+          <div class="button topButtonMargin" onClick={refetchMods}>Refresh</div>
+        </div>
+        <div classList={{
+          "infiniteList": true,
+          "empty": filteredData().mods?.length == 0
+        }} id="modsList">
+          <For each={filteredData().mods} fallback={<div>Emptiness..</div>}  >
+            {(mod) => (
+              <ModCard mod={mod} />
+            )}
+          </For>
+        </div>
+        <h2>Installed Libraries</h2>
+        <div classList={{
+          "infiniteList": true,
+          "empty": filteredData()?.mods?.length == 0
+        }} id="libsList">
+          <Index each={filteredData()?.libs} fallback={<div class="emptyText">No mods</div>}>
+            {(mod) => (
+              <ModCard mod={mod()} />
+            )}
+          </Index>
+        </div>
       </div>
-      <div classList={{
-        "infiniteList": true,
-        "empty": filteredData().mods?.length == 0
-      }} id="modsList">
-        <For each={filteredData().mods} fallback={<div>Emptiness..</div>}  >
-          {(mod) => (
-            <ModCard mod={mod} />
-          )}
-        </For>
-      </div>
-      <h2>Installed Libraries</h2>
-      <div classList={{
-        "infiniteList": true,
-        "empty": filteredData()?.mods?.length == 0
-      }} id="libsList">
-        <Index each={filteredData()?.libs} fallback={<div class="emptyText">No mods</div>}>
-          {(mod) => (
-            <ModCard mod={mod()} />
-          )}
-        </Index>
-      </div>
-    </div>
+    </PageLayout>
+
   )
 }
 
