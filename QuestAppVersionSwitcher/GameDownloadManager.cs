@@ -67,6 +67,7 @@ namespace QuestAppVersionSwitcher
                 }
                 foreach (AssetFile assetFile in b.asset_files.nodes)
                 {
+                    if(!assetFile.is_required) continue;
                     obbsToDo.Add(new ObbEntry
                     {
                         id = assetFile.id,
@@ -82,7 +83,6 @@ namespace QuestAppVersionSwitcher
             this.backupName = gameName + " " + version + " Downgraded";
             status = gameName + " " + version;
             downloadManagers.Add(m);
-            QAVSWebserver.managers.Add(m);
             filesToDownload = 1 + obbsToDo.Count;
             updateThread = new Thread(() =>
             {
@@ -119,7 +119,6 @@ namespace QuestAppVersionSwitcher
                 m.isCancelable = false;
                 m.StartDownload(obbsToDo[0].id, request.password, request.version, request.app, request.parentId, true, request.packageName, obbsToDo[0].name);
                 downloadManagers.Add(m);
-                QAVSWebserver.managers.Add(m);
                 obbsToDo.RemoveAt(0);
             }
         }
@@ -132,7 +131,6 @@ namespace QuestAppVersionSwitcher
             foreach (DownloadManager d in downloadManagers)
             {
                 d.StopDownload();
-                QAVSWebserver.managers.Remove(d);
             }
             downloadManagers.Clear();
         }
@@ -140,7 +138,6 @@ namespace QuestAppVersionSwitcher
         public void DownloadCompleted(DownloadManager m)
         {
             filesDownloaded++;
-            QAVSWebserver.managers.Remove(m);
             downloadManagers.Remove(m);
             string backupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
             if(m.isObb)

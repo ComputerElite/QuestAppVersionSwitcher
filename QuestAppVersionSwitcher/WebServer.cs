@@ -1061,11 +1061,13 @@ namespace QuestAppVersionSwitcher
 			server.AddRoute("POST", "/api/canceldownload", serverRequest =>
             {
                 managers.Find(x => x.backupName == serverRequest.queryString.Get("name")).StopDownload();
+                serverRequest.SendString(GenericResponse.GetResponse("Canceled download", true));
                 return true;
             });
             server.AddRoute("POST", "/api/cancelgamedownload", serverRequest =>
             {
                 gameDownloadManagers.Find(x => x.id == serverRequest.queryString.Get("id")).Cancel();
+                serverRequest.SendString(GenericResponse.GetResponse("Canceled download", true));
                 return true;
             });
 			server.AddRoute("GET", "/api/downloads", serverRequest =>

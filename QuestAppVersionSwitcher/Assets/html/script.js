@@ -554,14 +554,8 @@ document.getElementById("login").onclick = () => {
 setInterval(() => {
     UpdateUI()
 }, 10000)
-
-setInterval(() => {
-    fetch("/api/downloads").then(res => {
-        var m = ""
-        var gdms = ""
-        res.json().then(json => {
-            for(const d of json.individualDownloads) {
-                m += `<div class="downloadContainer">
+function FormatDownload(d) {
+    return `<div class="downloadContainer">
                     <div class="downloadProgressContainer">
                         <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
                     </div>
@@ -570,16 +564,28 @@ setInterval(() => {
                         ${d.text} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
                     </div>
                 </div>`
+}
+
+setInterval(() => {
+    fetch("/api/downloads").then(res => {
+        var m = ""
+        var gdms = ""
+        res.json().then(json => {
+            for(const d of json.individualDownloads) {
+                m += FormatDownload(d)
             }
             for(const d of json.gameDownloads) {
-                gdms += `<div class="downloadContainer">
-                    <div class="downloadProgressContainer">
-                        <div class="downloadProgressBar" style="width: ${d.progress * 100}%;"></div>
-                    </div>
-                     ${!d.done ? `<input type="button" class="DownloadText" value="Cancel" onclick="StopGameDownload('${d.id}')">` : ``}
+                var downloads = ""
+                for(const download of d.downloadManagers) {
+                    downloads += FormatDownload(download)
+                }
+                gdms += `<div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
+                     ${!d.done ? `<input type="button" class="DownloadText" style="width: 0px; background-color: #333333" value="Cancel" onclick="StopGameDownload('${d.id}')">` : ``}
                     <div class="DownloadText" style="color: ${d.textColor};">
-                        ${d.canceled ? "Canceled " : ""}${d.status}<br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
+                        <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
                     </div>
+                </div>
+                ${downloads}
                 </div>`
             }
             if (m == "") m = "<h2>No downloads running</h2>"
@@ -1061,7 +1067,7 @@ document.getElementById("abortPassword").onclick = () => {
     CloseGetPasswordPopup()
 }
 document.getElementById("confirmPassword").onclick = () => {
-    TextBoxText("step7box", "Waiting for response and requesting obbs to download from Oculus...")
+    TextBoxText("step7box", "Waiting for response and requesting obbs to download from Oculus. This may take 30 seconds...")
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
     options.app = options.parentName
     fetch("/api/download", {
