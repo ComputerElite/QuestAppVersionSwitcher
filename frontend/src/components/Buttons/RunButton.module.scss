@@ -20,6 +20,7 @@
     margin: 0;
     width: 32px;
   }
+
 }
 
 .success {
@@ -77,4 +78,15 @@
   align-items: center;
 
   color: white;
+}
+
+
+.button:disabled {
+  // background: #2d3b4f;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:disabled:hover {
+  background: #2d3b4f;
 }

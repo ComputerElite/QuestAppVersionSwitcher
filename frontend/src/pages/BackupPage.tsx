@@ -57,12 +57,13 @@ export default function BackupPage() {
                     gap: 1,
                     flexWrap: "wrap",
                     // backgroundColor: "white",
-                    padding: 1,
+                    // padding: 1,
                 }}><RunButton text='Backup' icon={<UploadRounded />} onClick={() => { }} />
+                    <RunButton text='Backup' icon={<UploadRounded />} disabled onClick={() => { }} />
                     <RunButton text='Error' icon={<PlayArrowRounded />} variant='error' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='info' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton text='Backup' variant='success' icon={<FirePatch/>} onClick={() => { }} />                <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+                    <RunButton text='Backup' variant='success' icon={<FirePatch />} onClick={() => { }} />                <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
                     <RunButton icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
 
                 </Box>

@@ -7,6 +7,7 @@ type RunButtonProps = JSX.HTMLAttributes<HTMLButtonElement> & {
     icon?: JSX.Element;
     text?: string;
     variant?: 'success' | 'error' | 'warning' | 'info';
+    disabled?: boolean;
 }
 
 const RunButton: Component<RunButtonProps> = (props) => {
