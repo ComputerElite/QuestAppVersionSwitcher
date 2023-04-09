@@ -9,12 +9,13 @@ import FastRewindSharp from "@suid/icons-material/FastRewindSharp"
 
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { Button } from "./Buttons/Button";
+import { FirePatch } from "../assets/Icons";
 
 let links = [
     { name: "Backup", href: "/backup", icon: SettingsBackupRestore },
     { name: "Downgrade", href: "/downgrade", icon: FastRewindSharp },
     { name: "Downloads", href: "/downloads", icon: DownloadRounded },
-    { name: "Patch the game", href: "/patching", icon: SettingsBackupRestore },
+    { name: "Patch the game", href: "/patching", icon: FirePatch },
     { name: "Installed Mods", href: "/mods", icon: SettingsBackupRestore },
     { name: "Cosmetics & more", href: "/cosmetics", icon: SettingsBackupRestore },
     // { name: "Get Mods & cosmetics", href: "/getMods", icon: SettingsBackupRestore },

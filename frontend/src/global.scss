@@ -42,3 +42,12 @@ code {
 a{ 
   text-decoration: none;
 }
+
+.text-accent {
+  color: var(--text-accent);
+  background: linear-gradient(90deg, var(--text-accent-stops));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}

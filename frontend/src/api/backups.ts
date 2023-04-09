@@ -6,8 +6,12 @@ export interface IBackup {
     containsGamedata: boolean;
     backupSize: number;
     backupSizeString: string;
+    gameVersion?: string;
+    BackupInfoVersion: number;
+    containsApk: boolean;
+    containsAppData: boolean;
+    isPatchedApk: boolean;
 }
-
 
 export interface getBackupsResponse {
     backups: Array<IBackup>;

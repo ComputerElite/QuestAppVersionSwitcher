@@ -7,7 +7,10 @@ import { CompareStringsAlphabetically, Sleep } from "../util";
 import toast from "solid-toast";
 import { Title } from "@solidjs/meta";
 import PageLayout from "../Layouts/PageLayout";
-
+import Box from "@suid/material/Box";
+import RunButton from "../components/Buttons/RunButton";
+import { PlusIcon, UploadRounded } from "../assets/Icons";
+import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 async function UploadModClick() {
   var input = document.createElement('input');
   input.type = 'file';
@@ -135,6 +138,45 @@ export default function ModsPage() {
       <div
         class=" contentItem modsPage"
       >
+        <Box sx={{
+          display: "flex",
+          width: "100%",
+          gap: 1,
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          marginBottom: 2,
+        }}>
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+          }}>
+            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={refetchMods} />
+            <RunButton text='Upload a mod' icon={<UploadRounded />} onClick={UploadModClick} />
+            <span style={{
+              "font-family": "Roboto",
+              "font-style": "normal",
+              "font-weight": "400",
+              "font-size": "12px",
+              "line-height": "14px",
+              "display": "flex",
+              "align-items": "center",
+              "text-align": "center",
+              "color": "#D1D5DB",
+              "margin-left": "10px",
+            }} class="text-accent" >
+              Get more mods
+            </span>
+          </Box>
+
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+          }}>
+            <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
+          </Box>
+        </Box>
 
         <div classList={{
           "dragOverlay": true,
@@ -142,16 +184,6 @@ export default function ModsPage() {
         }
         }>
           <div class="dragOverlayText">Drop to install</div>
-        </div>
-
-        <h2>Installed Mods</h2>
-        <div style={{
-          display: "flex",
-          gap: "1rem",
-        }}>
-          <div class="button topButtonMargin" onClick={() => { refetchMods() }}>Launch Game</div>
-          <div class="button topButtonMargin" onClick={UploadModClick}>Install a Mod from Disk</div>
-          <div class="button topButtonMargin" onClick={refetchMods}>Refresh</div>
         </div>
         <div classList={{
           "infiniteList": true,
@@ -176,7 +208,6 @@ export default function ModsPage() {
         </div>
       </div>
     </PageLayout>
-
   )
 }
 
@@ -218,12 +249,10 @@ function ModCard({ mod }: { mod: IMod }) {
             {mod.Author}
           </div>
         </Show>
-
         <label class="switch">
           <input type="checkbox" checked={mod.IsInstalled} onChange={() => ToggleModState(mod.Id, !mod.IsInstalled)} />
           <span class="slider round"></span>
         </label>
-
       </div>
     </div>
   )

@@ -6,16 +6,13 @@ import { For, createEffect, createSignal, on } from 'solid-js';
 import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/material';
 import { IBackup } from '../api/backups';
 import { FaSolidWindowRestore } from 'solid-icons/fa';
-import { FiPlus, FiTrash } from 'solid-icons/fi'
+import { FiTrash } from 'solid-icons/fi'
 const [selectedBackup, setSelectedBackup] = createSignal<IBackup | null>(null);
-import { OcPencil3 } from 'solid-icons/oc'
 import { showConfirmModal } from '../modals/ConfirmModal';
-import CheckBox from '@suid/icons-material/CheckBox';
-import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 // import UploadRounded from '@suid/icons-material/UploadRounded';
 import PageLayout from '../Layouts/PageLayout';
 import RunButton from '../components/Buttons/RunButton';
-import { FirePatch, UploadRounded } from '../assets/Icons';
+import { PlusIcon, RestoreIcon } from '../assets/Icons';
 
 
 export default function BackupPage() {
@@ -52,159 +49,148 @@ export default function BackupPage() {
 
                 <Box sx={{
                     display: "flex",
-                    alignItems: "flex-start",
                     width: "100%",
                     gap: 1,
                     flexWrap: "wrap",
-                    // backgroundColor: "white",
-                    // padding: 1,
-                }}><RunButton text='Backup' icon={<UploadRounded />} onClick={() => { }} />
+                    justifyContent: "space-between",
+                    marginBottom: 2,
+                }}>
+                    <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { }} />
+                    <Box sx={{
+                        display: "flex",
+                        gap: 2,
+                        alignItems: "center",
+                    }}>
+                        <span style={{
+                            "font-family": "Roboto",
+                            "font-style": "normal",
+                            "font-weight": "400",
+                            "font-size": "12px",
+                            "line-height": "14px",
+                            "display": "flex",
+                            "align-items": "center",
+                            "text-align": "center",
+                            "background-clip": "text",
+                            // "text-fill-color": "transparent"
+                        }} class="text-accent" >
+                            Used: {backupList()?.backupsSizeString ?? "?"} / 64.00 GB
+
+                        </span>
+                        <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
+                    </Box>
+
+
+                </Box>
+
+
+                {/* <RunButton text='Backup' icon={<PlusIcon />} onClick={() => { }} />
                     <RunButton text='Backup' icon={<UploadRounded />} disabled onClick={() => { }} />
                     <RunButton text='Error' icon={<PlayArrowRounded />} variant='error' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='info' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton text='Backup' variant='success' icon={<FirePatch />} onClick={() => { }} />                <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+                    <RunButton text='Backup' variant='success' icon={<FirePatch />} onClick={() => { }} />
+                    <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+                    <RunButton icon={<PlayArrowRounded />} variant='success' onClick={() => { }} /> */}
 
-                </Box>
-
-                <Box sx={{
-                    display: "flex",
-                    alignItems: "flex-end",
-                    width: "100%",
-                    // justifyContent: "space-between",
-                    flexWrap: "wrap",
-                }}>
-                    <Box sx={{
-                        display: "flex",
-                    }}>
-                        <Typography variant="h5" component="h2" sx={{ color: "white" }}>
-                            Backups of
-                        </Typography>
-                        <Typography variant="h5" component="h2" sx={{ color: "#F9F", ml: 1 }} onClick={showChangeGameModal}>
-                            {config()?.currentApp ?? "change app"}
-                        </Typography>
-                    </Box>
-                    <Box sx={{
-                        display: "flex",
-                        color: "#F9F",
-
-
-                    }}>
-                        <IconButton sx={{
-
-                            color: "#F9F",
-                        }} onClick={showChangeGameModal}>
-                            <OcPencil3 />
-                        </IconButton>
-                        {/* <Button endIcon={<FaSolidWindowRestore />} color='primary' onClick={showChangeGameModal}>Switch app</Button>
-                    <Button endIcon={<FaSolidWindowRestore />} color='primary' onClick={showChangeGameModal}>Switch app</Button>
-                    <Button endIcon={<FaSolidWindowRestore />} color='primary' onClick={showChangeGameModal}>Switch app</Button> */}
-                    </Box>
-                </Box>
-
-                <div class="topMargin">Backups of <div class="inline packageName">{config()?.currentApp ?? "some app"}</div> (<div id="size" class="inline">{backupList()?.backupsSizeString}</div>)</div>
                 <List sx={{
                     width: '100%',
-                    height: '100%',
                     overflowX: 'auto',
-                    minHeight: '100px',
-                    maxHeight: '300px',
                 }}>
                     <For each={backupList()?.backups}>
                         {(backup) => (
-                            <ListItem sx={{
-                                cursor: "pointer",
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "flex-start",
-                                backgroundColor: selectedBackup()?.backupName == backup.backupName ? "#333" : "#222",
-                                justifyContent: "space-between",
-                            }}
-                                onClick={() => setSelectedBackup(backup)}
-                            >
-                                <Box>
-                                    <Typography component={"div"} sx={{ color: "white" }} >
-                                        {backup.backupName}
-                                    </Typography>
-                                    <Typography component={"div"} fontSize={"0.9em"} sx={{ color: "pink" }} >
-                                        {backup.backupSizeString}
-                                    </Typography>
-
-                                </Box>
-
-                                <Box>
-                                    <IconButton color='error' onClick={() => onDeleteClick(backup)}>
-                                        <FiTrash />
-                                    </IconButton>
-                                </Box>
-                            </ListItem>
+                            <BackupItem backup={backup} onDeleteClick={onDeleteClick} />
                         )}
                     </For>
                 </List>
-                <div class="contentHeader headerMargin">
-                    Restore backups
-                    <div class="contentHeaderDescription">Restores the backup selected above</div>
-                    <br />
-                    <b class="hidden" id="onPcInfo">You can only restore backups in headset</b>
-
-                    <CheckBox />
-                    Only restore app data
-
-                    <div class="buttonContainer">
-                        <div class="button" id="restoreBackup">Restore backup</div>
-                        <div class="buttonLabel">Restores the selected backup</div>
-                    </div>
-                    <div class="buttonContainer">
-                        <div class="button" id="deleteBackup">Delete backup</div>
-                        <div class="buttonLabel">Deletes the selected backup</div>
-                    </div>
-                    <div id="restoreTextBox" class="textBox"></div>
-                </div>
-
-                {/* <div class="contentHeader headerMargin">
-                Create backups
-                <div class="contentHeaderDescription">Change the app at the top</div>
-            </div>
-            <div>
-                <input type="text" placeholder="Backup Name" id="backupname" />
-                <div class="buttonContainer">
-                    <div class="button" id="createBackup">Create backup</div>
-                    <div class="buttonLabel">Creates a backup of <div class="inline packageName">some game</div></div>
-                </div>
-                <label><input type="checkbox" id="appdata" value="only backup app data" style="width: auto;" />Only backup app data</label>
-                <div id="backupTextBox" class="textBox"></div>
-            </div> */}
             </div>
         </PageLayout>
 
     )
 }
 
-
-function BackupItem() {
-    return (
-        <div class="listItem">
-            <div class="listItemName"></div>
-            <div class="listItemSize"></div>
-            <div class="listItemDate"></div>
-        </div>
-    )
+interface BackupItemProps {
+    backup: IBackup;
+    onDeleteClick?: (backup: IBackup) => void;
 }
 
-// fetch("/api/backups?package=" + config.currentApp).then(res => res.json().then(res => {
-//     document.getElementById("backupList").innerHTML = ""
-//     document.getElementById("size").innerHTML = res.backupsSizeString
-//     if (res.backups) {
-//         res.backups.forEach(backup => {
-//             document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString})</div>`
-//         })
-//     }
-//     if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
-//     Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
-//         i.onclick = function () {
-//             selectedBackup = i.getAttribute("value")
-//             UpdateUI()
-//         }
-//     })
-// }))
+/**
+ * Removes the underscore long version from the game version
+ * @param backupName 
+ * @returns 
+ */
+function removeUnderscoreVersion(backupName?: string) {
+    if (backupName == null) {
+        return backupName;
+    }
+    let split = backupName.split("_");
+    if (split.length >= 1) {
+        split.pop();
+    }
+    else {
+        return backupName;
+    }
+    return split[0];
+}
+
+function BackupItem(props: BackupItemProps) {
+    return (
+        <ListItem sx={{
+            cursor: "pointer",
+            display: "flex",
+            borderRadius: "6px",
+            flexDirection: "row",
+            alignItems: "flex-start",
+            padding: "15px 20px",
+            backgroundColor: selectedBackup()?.backupName == props.backup.backupName ? "#333" : "#222",
+            justifyContent: "space-between",
+            background: "#111827",
+            "&:hover": {
+                background: "#1F2937"
+            },
+        }}
+            onClick={() => setSelectedBackup(props.backup)}
+        >
+            <Box>
+                <div style={{
+                    "font-family": 'Roboto',
+                    "font-style": 'normal',
+                    "font-weight": 400,
+                    "font-size": '16px',
+                    "line-height": '19px',
+                    /* identical to box height */
+                    color: '#F9FAFB',
+                }} >
+                    <span >
+                        {props.backup.backupName}
+                    </span>
+                    <span style={{
+                         "font-size": '12px',
+                         "margin-left": "5px",
+                    }}  class="text-accent">
+                        {removeUnderscoreVersion(props?.backup?.gameVersion)}
+                    </span>
+                </div>
+
+                <Typography component={"div"} fontSize={"10px"} style={{
+                    "margin-top": "6px",
+                }} class="text-accent" >
+                    {props.backup.backupSizeString}
+                </Typography>
+
+            </Box>
+
+            <Box sx={{
+                display: "flex",
+                gap: 2,
+                alignItems: "right",
+            }}>
+                <IconButton color='info' onClick={() => props.onDeleteClick != null && props?.onDeleteClick(props.backup)}>
+                    <RestoreIcon />
+                </IconButton>
+                <IconButton color='error' onClick={() => props.onDeleteClick != null && props?.onDeleteClick(props.backup)}>
+                    <FiTrash />
+                </IconButton>
+            </Box>
+        </ListItem>
+    )
+}
