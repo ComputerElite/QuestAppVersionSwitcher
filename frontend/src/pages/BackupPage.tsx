@@ -12,8 +12,12 @@ import { OcPencil3 } from 'solid-icons/oc'
 import { showConfirmModal } from '../modals/ConfirmModal';
 import CheckBox from '@suid/icons-material/CheckBox';
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
+// import UploadRounded from '@suid/icons-material/UploadRounded';
 import PageLayout from '../Layouts/PageLayout';
 import RunButton from '../components/Buttons/RunButton';
+import { FirePatch, UploadRounded } from '../assets/Icons';
+
+
 export default function BackupPage() {
 
 
@@ -54,12 +58,12 @@ export default function BackupPage() {
                     flexWrap: "wrap",
                     // backgroundColor: "white",
                     padding: 1,
-                }}><RunButton text='Backup' icon={<PlayArrowRounded />} onClick={() => { }} />
+                }}><RunButton text='Backup' icon={<UploadRounded />} onClick={() => { }} />
                     <RunButton text='Error' icon={<PlayArrowRounded />} variant='error' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='info' onClick={() => { }} />
                     <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton text='Backup' variant='success' onClick={() => { }} />                <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton  icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+                    <RunButton text='Backup' variant='success' icon={<FirePatch/>} onClick={() => { }} />                <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+                    <RunButton icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
 
                 </Box>
 
