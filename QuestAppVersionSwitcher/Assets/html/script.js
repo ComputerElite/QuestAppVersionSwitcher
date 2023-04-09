@@ -1101,15 +1101,11 @@ document.getElementById("logs").onclick = () => {
         method: "POST",
         body: encodeURIComponent(document.getElementById("logspwd").value)
     }).then(res => {
-        res.text().then(text => {
-            if (res.status == 403) {
-                TextBoxError("logsText", text)
-            } else if (res.status == 200) {
-                fetch("https://oculusdb.rui2015.me/api/v1/qavsreport", {method: "POST", body: text}).then(res => {
-                    res.text().then(text => {
-                        TextBoxGood("logsText", "Logs uploaded successfully. Tell your support member this ID: " + text)
-                    })
-                })
+        res.json().then(j => {
+            if (!j.success) {
+                TextBoxError("logsText", j.msg)
+            } else {
+                TextBoxGood("logsText", "Logs uploaded successfully. Tell your support member this ID: " + j.msg)
             }
         })
     })

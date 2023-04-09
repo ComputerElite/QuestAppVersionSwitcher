@@ -603,7 +603,12 @@ namespace QuestAppVersionSwitcher
                 Logger.Log("---Backups---");
                 FileManager.LogTree(CoreService.coreVars.QAVSBackupDir, 0);
                 report.log = Logger.log;
-                request.SendString(JsonSerializer.Serialize(report), "application/json");
+                WebRequest r = WebRequest.Create("https://oculusdb.rui2015.me/api/v1/qavsreport");
+                r.Method = "POST";
+                byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(report));
+                r.GetRequestStream().Write(bytes, 0, bytes.Length);
+                string id = new StreamReader(r.GetResponse().GetResponseStream()).ReadToEnd();
+                request.SendString(GenericResponse.GetResponse(id, true), "application/json");
                 return true;
             });
             server.AddRoute("GET", "/api/android/ispackageinstalled", serverRequest =>
