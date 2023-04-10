@@ -2,18 +2,18 @@ import { Title } from "@solidjs/meta";
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import Checkbox from "@suid/material/Checkbox"
 import PageLayout from "../Layouts/PageLayout";
+import RunButton from "../components/Buttons/RunButton";
+import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded";
+import { FirePatch } from "../assets/Icons";
 
 export default function PatchingPage() {
   return (
     <PageLayout>
       <div class="contentItem">
         <Title>Patching</Title>
-        <div class="button" onClick={showChangeGameModal}>Change app</div>
-        <h3>Currently selected game: <div class="inline packageName">some game</div></h3>
-        <div id="patchStatus">Loading...</div>
-        <div class="textbox" id="patchingTextBox"></div>
-
-        <div id="patchingOptions">
+        
+        <RunButton text='Patch the current game' icon={<FirePatch />} variant='success' onClick={() => { }} />
+        {/* <div id="patchingOptions">
           <h2>Patching options</h2>
           <label class="option">
             <label class="switch normal">
@@ -58,7 +58,7 @@ export default function PatchingPage() {
           <br />
           <div id="other">
           </div>
-        </div>
+        </div> */}
       </div>
     </PageLayout>
 

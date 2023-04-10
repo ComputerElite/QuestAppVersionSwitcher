@@ -11,6 +11,8 @@ import Box from "@suid/material/Box";
 import RunButton from "../components/Buttons/RunButton";
 import { PlusIcon, UploadRounded } from "../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
+import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
+import CloseRounded from "@suid/icons-material/CloseRounded";
 async function UploadModClick() {
   var input = document.createElement('input');
   input.type = 'file';
@@ -185,27 +187,29 @@ export default function ModsPage() {
         }>
           <div class="dragOverlayText">Drop to install</div>
         </div>
-        <div classList={{
-          "infiniteList": true,
-          "empty": filteredData().mods?.length == 0
-        }} id="modsList">
+        <List sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}>
           <For each={filteredData().mods} fallback={<div>Emptiness..</div>}  >
             {(mod) => (
               <ModCard mod={mod} />
             )}
           </For>
-        </div>
+        </List>
         <h2>Installed Libraries</h2>
-        <div classList={{
-          "infiniteList": true,
-          "empty": filteredData()?.mods?.length == 0
-        }} id="libsList">
+        <List sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}>
           <Index each={filteredData()?.libs} fallback={<div class="emptyText">No mods</div>}>
             {(mod) => (
               <ModCard mod={mod()} />
             )}
           </Index>
-        </div>
+        </List>
       </div>
     </PageLayout>
   )
@@ -227,33 +231,73 @@ async function DeleteModClick(mod: IMod) {
 
 function ModCard({ mod }: { mod: IMod }) {
   return (
-    <div class="mod">
-      <Title>Mods</Title>
-      <div class="leftRightSplit">
-        <img class="modCover" src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
-        <div class="upDownSplit spaceBetween">
-          <div class="upDownSplit">
-            <div class="leftRightSplit nomargin">
-              <div>{mod.Name}</div>
-              <div class="smallText version">{mod.VersionString}</div>
-            </div>
-            <div class="smallText">{mod.Description}</div>
-          </div>
+    <ListItem class="mod" sx={{
+      display: "flex",
+      width: "100%",
+      backgroundColor: "#111827",
+      borderRadius: "6px"
+    }}>
+      <img class="modCover" style={{
+        "margin-right": "14px",
+        "border-radius": "6px",
+        "object-fit": "cover",
 
-          <div class="button" onClick={() => { DeleteModClick(mod) }} >Delete</div>
-        </div>
-      </div>
-      <div class="upDownSplit spaceBetween relative">
-        <Show when={mod.Author}>
-          <div class="smallText margin20">
-            {mod.Author}
-          </div>
-        </Show>
-        <label class="switch">
-          <input type="checkbox" checked={mod.IsInstalled} onChange={() => ToggleModState(mod.Id, !mod.IsInstalled)} />
-          <span class="slider round"></span>
-        </label>
-      </div>
-    </div>
+        "width": "160px",
+        "height": "92px",
+        "aspect-ratio": "16 / 9",
+      }} src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
+      <Box
+        sx={{
+          flexGrow: 1,
+        }}
+      >
+        <Box sx={{
+          display: "flex",
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}>
+          <Typography variant="h6" sx={{
+            fontFamily: 'Roboto',
+            fontStyle: 'normal',
+            fontWeight: 400,
+            fontSize: '16px',
+            lineHeight: '19px',
+            color: '#FFFFFF',
+            marginRight: 1,
+
+
+          }}  >{mod.Name}</Typography>
+          <Typography variant="caption" sx={{
+
+            fontFamily: 'Roboto',
+            fontStyle: 'normal',
+            fontWeight: 400,
+            fontSize: '10px',
+            lineHeight: '12px',
+          }} class="text-accent"  >v{mod.VersionString} {mod.Author ? `by ${mod.Author}` : ""}</Typography>
+        </Box>
+
+
+        <Typography sx={{
+          fontFamily: 'Roboto',
+          fontStyle: 'normal',
+          fontWeight: 400,
+          fontSize: '10px',
+          lineHeight: '12px',
+          color: '#D1D5DB',
+          marginTop: 1,
+        }}>{mod.Description}</Typography>
+      </Box>
+      <Box sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}>
+        <IconButton onClick={() => DeleteModClick(mod)}>
+          <CloseRounded />
+        </IconButton>
+        <Switch checked={mod.IsInstalled} onChange={() => ToggleModState(mod.Id, !mod.IsInstalled)} />
+      </Box>
+    </ListItem>
   )
 }

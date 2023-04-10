@@ -3,108 +3,121 @@ import "./ToolsPage.scss"
 import { exitApp } from "../api/app"
 import { showChangeGameModal } from "../modals/ChangeGameModal"
 import PageLayout from "../Layouts/PageLayout"
+import { Box, TextField, Typography } from "@suid/material"
+import RunButton from "../components/Buttons/RunButton"
+import { DeleteIcon, UploadRounded } from "../assets/Icons"
+import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded"
+
+const OptionHeader = (props: { children: any }) => {
+  return (
+    <Typography sx={{
+      fontFamily: 'Roboto',
+      fontStyle: 'normal',
+      fontWeight: 700,
+      fontSize: "18px",
+      lineHeight: "21px",
+      marginBottom: 1,
+    }} variant="h4">{props.children}</Typography>
+  )
+}
 
 export default function ToolsPage() {
   return (
     <PageLayout>
       <div class=" contentItem toolsPage">
         <Title>Tools</Title>
-        <div class="contentHeader">
-          Tools
-          <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" id="uninstall">Uninstall app</div>
-          <div class="buttonLabel">Uninstalls the app you selected (needs to be confirmed on android device)</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" onClick={showChangeGameModal}>Change app</div>
-          <div class="buttonLabel">Change the app you want to manage</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" id="requestAppPermission">Request app directory permission</div>
-          <div class="buttonLabel">Requests permissions to access the currently selected apps data directory</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" id="requestAppObbPermission">Request app obb permission</div>
-          <div class="buttonLabel">Requests permissions to access the currently selected apps obb directory</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" id="requestManageStorageAppPermission">Allow manage storage permission for selected app</div>
-          <div class="buttonLabel">Opens settings to allow manage storage for the selected app</div>
-        </div>
-        <div class="buttonContainer">
-          <div class="button" id="checkUpdate">Check for QuestAppVersionSwitcher updates</div>
-          <div class="buttonLabel">Checks if updates for QuestAppVersionSwitcher exist</div>
-        </div>
-        <div id="updateTextBox" class="textBox"></div>
+        <Box sx={{
+          display: "flex",
+          width: "100%",
+          gap: 1,
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          marginBottom: 1,
+        }}>
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+          }}>
+            <RunButton text='Run Game' variant="success" icon={<PlayArrowRounded />} />
+            <RunButton text='Uninstall game' icon={<DeleteIcon />} />
+          </Box>
 
-        <div class="space">
-          <div class="contentHeader">
-            Login Section
-            <div class="contentHeaderDescription">Login for downgrading games</div>
-          </div>
-          <b id="loggedInMsg" >You are logged in. You can login again if you want to reset your password.</b>
-          <div class="buttonContainer">
-            <div class="button" id="login">Login</div>
-            <div class="buttonLabel">Log in with your Oculus/Facebook account to downgrade games (<b>ONLY WORKS ON QUEST, NOT ON PC</b>)</div>
-          </div>
-          <div class="headerMargin">
-            {/* <a onclick="document.getElementById('tokenLoginContainer').style.display = 'block'" class="underline">Other login methods</a></div> */}
-            <div id="tokenLoginContainer" style="display: none;">
-              <div class="buttonContainer">
-                <input type="password" id="tokeninput" placeholder="Token" />
-                <div class="button" id="logintoken">Login with token</div>
-                <div class="buttonLabel">Log in with your Oculus token to downgrade games (Open this page on PC or phone to paste your token; Type the link shown at the bottom of this page in your browser)</div>
-              </div>
-              <a href="https://computerelite.github.io/tools/Oculus/ObtainToken.html">Guide to get your token</a>
-              <div id="tokenTextBox" class="textBox"></div>
-            </div>
-          </div>
 
-          <div class="space">
-            <div class="contentHeader">
-              Server control
-              <div class="contentHeaderDescription">Configure the QuestAppVersionSwitcher WebServer</div>
-            </div>
-            <div class="buttonContainer">
-              <div class="button" onClick={() => { exitApp() }}>Exit</div>
-              <div class="buttonLabel">Exits QuestAppVersionSwitcher</div>
-            </div>
-            <div class="buttonContainer">
-              <input type="number" placeholder="50002" id="port" class="buttonLabel" value="50002" style="width: 100px;" />
-              <div class="button" id="confirmPort">Change port</div>
-              <div class="buttonLabel">Changes the WebServer port</div>
-            </div>
-            <div id="serverTextBox" class="textBox"></div>
-          </div>
+        </Box>
+        <div class="text-accent" style={{
+          "font-family": "Roboto",
+          "font-style": "normal",
+          "font-weight": "400",
+          "font-size": "12px",
+          "line-height": "14px",
+          "display": "flex",
+          "margin-bottom": "14px",
 
-          <div class="space">
-            <div class="contentHeader">
-              Help
-              <div class="contentHeaderDescription">Utilities to help debugging QuestAppVersionSwitcher</div>
-            </div>
-            <div class="buttonContainer">
-              <input type="password" placeholder="Enter QuestAppVersionSwitcher password" id="logspwd" class="buttonLabel" value="" style="width: 300px;" />
-              <div class="button" id="logs">Upload logs</div>
-              <div class="buttonLabel">ONLY do when instructed to do so. Uploads which apps you own to OculusDB for viewing by support members</div>
-            </div>
-            <div id="logsText" class="textBox"></div>
-          </div>
+        }}>Wi-Fi IPs (not public): http://10.0.0.5:50002, http://10.0.0.5:50002, http://10.0.0.5:50002</div>
 
-          <div class="space">
-            All backups take up <b class="inline totalSize"></b> of space on your device in total.
-            <br />
-            You can delete backups in the <code>Backup</code> section
-          </div>
-          <div class="about">
-            Quest App Version Switcher version <div id="version" class="inline"></div>
-            Accessible via browser at:
-            <div id="ips">
+        <Box sx={{marginY: 3}}>
+          <OptionHeader >Permissions</OptionHeader>
+          
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+          }}>
+            <RunButton text='Give permissions to game folder' icon={<PlayArrowRounded />} />
+            <RunButton text='Allow manage storage permission' icon={<DeleteIcon />} />
+          </Box>
+        </Box>
 
-            </div>
-          </div>
-        </div>
+        <Box  sx={{marginY: 3}}>
+          <OptionHeader >Login to Oculus for downloading</OptionHeader>
+          
+          <Typography component={"p"} sx={{
+            fontFamily: 'Roboto',
+            fontStyle: 'normal',
+            fontWeight: 400,
+            fontSize: "12px",
+            lineHeight: "14px",
+            display: "flex",
+            alignItems: "center",
+            color: "#D1D5DB",
+          }}>Log in with your Oculus/Facebook account to downgrade games, browser login works on quest only</Typography>
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+            marginTop: 1,
+          }}>
+            <RunButton text='Login using email and password' icon={<PlayArrowRounded />} />
+            <RunButton text='Login using a token' icon={<DeleteIcon />} />
+          </Box>
+        </Box>
+
+        <Box  sx={{marginY: 3}}>
+          <OptionHeader>Server control</OptionHeader>
+          
+          <Box sx={{
+            display: "flex",
+            gap: 0,
+            alignItems: "center",
+            marginTop: 1,
+          }}>
+            <TextField sx={{
+              borderRadius: "222px",
+              ".MuiInputBase-root":  {
+                borderRadius: "6px 0px 0px 6px",
+              }
+            }} size="small"  placeholder="Port" variant="outlined" color="primary" />
+            <RunButton style={
+              {
+                height: "40px",
+                width: "100px",
+                "border-radius": "0px 6px 6px 0px",
+              }
+            } text='Change port' variant="success" />
+          </Box>
+        </Box>
+       
       </div>
     </PageLayout>
 

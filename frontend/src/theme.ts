@@ -3,6 +3,9 @@ import { createTheme, ThemeProvider } from "@suid/material/styles";
 
 
 export const theme = createTheme({
+    palette: {
+        mode: 'dark',
+    },
     components: {
         // Name of the component ⚛️
         MuiButtonBase: {
