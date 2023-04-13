@@ -124,8 +124,8 @@
             <div class="contentItem hidden" id="getMods">
                 <h2>You can download mods and cosmetics from the following sites. Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game</h2>
                 <div style="display: flex; flex-direction: column;" class="buttonsContainer">
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}&isqavs=true`)">Open Beat Saber Mods page</div>
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}&isqavs=true`)">Open website hub</div>
+                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}`)">Open Beat Saber Mods page</div>
+                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}`)">Open website hub</div>
                     <div class="button labelMargin" onclick="OpenSite(`https://www.google.com/search?q=computerelite`)">Open Google</div>
                 </div>
             </div>
@@ -296,9 +296,10 @@
                 <div class="contentHeader headerMargin">
                     Password needed
                 </div>
-                Please enter the password you set when you logged in. If you didn't set one or forgot your password abort the download and head to the <code>Tools & Options</code> section to log in again.
+                Please enter the password you set when you logged in.
                 <br>
-                Check the <code>download progress</code> section to see if the download was successful.
+                <br>
+                <i>If you didn't set one or forgot your password abort the download and head to the <code>Tools & Options</code> section to log in again.</i>
                 <input type="password" id="passwordConfirm" placeholder="password">
                 <div id="step7box" class="textBox"></div>
                 <div class="buttonSelectionContainer">
@@ -370,6 +371,24 @@
                     </div>
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="cancelupdate">Update later</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="step13" class="restoreStep hidden">
+                <div class="contentHeader headerMargin">
+                    Login
+                </div>
+                To downgrade your game you need to log into QuestAppVersionSwitcher with your Meta account. This is needed so you can download the old version of the game.
+                <br>
+                To downgrade press the login button below and login with your Meta account.
+                <div id="step13box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer">
+                        <div class="button" id="login2">Login</div>
+                    </div>
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="cancellogin2">Abort downgrade</div>
                     </div>
                 </div>
             </div>

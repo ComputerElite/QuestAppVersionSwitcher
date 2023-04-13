@@ -17,6 +17,7 @@ namespace QuestAppVersionSwitcher
     {
         public delegate void DownloadFinished(DownloadManager manager);
         public event DownloadFinished DownloadFinishedEvent;
+        public event DownloadFinished DownloadErrorEvent;
         public event DownloadFinished DownloadCanceled;
         public string tmpPath = "";
         public bool isObb = false;
@@ -98,6 +99,7 @@ namespace QuestAppVersionSwitcher
                     SetEmpty();
                     this.backupName = "Unknown Error: Have you entered your token in the Tools & Options section? Doing this is needed. Otherwise you don't own the game you are trying to download.";
                     this.textColor = "#EE0000";
+                    if(DownloadErrorEvent != null) DownloadErrorEvent(this);
                 }
                 else
                 {

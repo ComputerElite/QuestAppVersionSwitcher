@@ -217,6 +217,7 @@
     <AndroidAsset Include="Assets\html\index.html" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\qavs_inject.js" />
     <AndroidAsset Include="Assets\html\splash.html" />
     <AndroidAsset Include="Assets\html\style.css" />
   </ItemGroup>

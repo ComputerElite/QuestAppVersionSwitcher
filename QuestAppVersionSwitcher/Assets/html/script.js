@@ -21,6 +21,14 @@ function IsOnQuest() {
     return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
 
+function GetPort() {
+    return location.port
+}
+
+document.getElementById("cancellogin2").onclick = () => {
+    CloseGetPasswordPopup()
+}
+
 fetch("/api/android/device").then(res => res.json().then(res => {
     if(res.sdkVersion <= 29) {
         // Android 10 and below don't need new storage perms
@@ -174,7 +182,7 @@ function UpdateVersion(version) {
 
 var isGamePatched = false
 const patchingOptions = document.getElementById("patchingOptions")
-
+var patchingStatus = {}
 function UpdatePatchingStatus() {
     if(patchInProgress) {
         return;
@@ -183,6 +191,7 @@ function UpdatePatchingStatus() {
     fetch("/api/patching/getmodstatus").then(res => {
         res.json().then(res => {
             UpdateVersion(res.version)
+            patchingStatus = res
             isGamePatched = res.isPatched
             if (res.isPatched) {
                 document.getElementById("modsButton").style.display = "block"
@@ -448,6 +457,38 @@ UpdateUI()
 TokenUIUpdate()
 const oculusLink = "https://auth.meta.com/"
 const params = new URLSearchParams(window.location.search)
+
+function CheckStartParams() {
+    var download = params.get("download")
+    var game = params.get("game")
+    var version = params.get("version")
+    var package = params.get("package")
+    var modnow = params.get("modnow")
+    if(download) {
+        fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
+            res.json().then(res => {
+                if(res.msg == "2") {
+                    // Logged in
+                    // Open downgrade tab
+                    OpenTab("downgrade")
+                    // Open OculusDB on correct page
+                    document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/id/${game}?downloadversion=${version}`
+                } else {
+                    // Not logged in
+                    OpenGetPasswordPopup()
+                    GotoStep(13)
+                }
+            })
+        })
+    }
+
+    if(modnow) {
+        ChangeApp(package)
+        OpenTab("patching")
+        PatchGame()
+    }
+}
+
 var config = {}
 var selectedBackup = ""
 
@@ -480,6 +521,7 @@ function UpdateUI(closeLists = false) {
         if(firstConfigFetch) {
             firstConfigFetch = false;
             CheckFolderPermission();
+            CheckStartParams()
         }
         Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
             if(config.currentApp) e.innerHTML = config.currentApp
@@ -561,7 +603,7 @@ function FormatDownload(d) {
                     </div>
                     ${d.isCancelable ? `<input type="button" class="DownloadText" value="Cancel" onclick="StopDownload('${d.backupName}')">` : ``}
                     <div class="DownloadText" style="color: ${d.textColor};">
-                        ${d.text} ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
+                        <b>${d.text}</b> ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
                     </div>
                 </div>`
 }
@@ -580,7 +622,7 @@ setInterval(() => {
                     downloads += FormatDownload(download)
                 }
                 gdms += `<div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
-                     ${!d.done ? `<input type="button" class="DownloadText" style="width: 0px; background-color: #333333" value="Cancel" onclick="StopGameDownload('${d.id}')">` : ``}
+                     ${!d.done ? (d.canceled || d.error ? `` : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; font-size: 1.2em;" value="Cancel" onclick="StopGameDownload('${d.id}')">`) : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; color: #00FF00; font-size: 1.2em;" value="Install Version" onclick="RestoreBackup('${d.backupName}', '${d.packageName}')">`}
                     <div class="DownloadText" style="color: ${d.textColor};">
                         <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
                     </div>
@@ -682,6 +724,7 @@ setInterval(() => {
     })
 }, 500)
 
+if(localStorage.lastOpened) OpenTab(localStorage.lastOpened)
 function OpenTab(section) {
     Array.prototype.forEach.call(document.getElementsByClassName("menuItem"), e => {
         e.className = "menuItem" + (e.getAttribute("section") == section ? " selected" : "")
@@ -689,6 +732,7 @@ function OpenTab(section) {
     Array.prototype.forEach.call(document.getElementsByClassName("contentItem"), e => {
         e.className = "contentItem" + (e.id == section ? "" : " hidden")
     })
+    localStorage.lastOpened = section
 }
 
 
@@ -775,7 +819,7 @@ document.getElementById("uninstall2").onclick = () => {
     fetch(`/api/backupinfo?package=${config.currentApp}&backupname=${selectedBackup}`).then(res => {
         res.json().then(j => {
             if(!j.containsApk) {
-                GotoStep("4.1")
+                AfterAPKInstall()
             } else {
                 fetch(`/api/android/uninstallpackage?package=${config.currentApp}`, {method: "POST"}).then(res => {
                     if (res.status == 230) GotoStep(3)
@@ -805,29 +849,33 @@ document.getElementById("install").onclick = () => {
     }).then(res => {
         res.json().then(j => {
             if (res.status == 200) {
-                fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+                AfterAPKInstall()
+            }
+            else TextBoxError("step4.1box", j.msg)
+        })
+    })
+}
+
+function AfterAPKInstall() {
+    fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.gotAccess) {
+                fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                     res.json().then(j => {
-                        if (j.gotAccess) {
-                            fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-                                res.json().then(j => {
-                                    if(j.isPatchedApk) {
-                                        GotoStep("4.2")
-                                    } else {
-                                        if (j.containsAppData || j.containsObbs) {
-                                            GotoStep(4)
-                                        } else {
-                                            GotoStep(5)
-                                        }
-                                    }
-                                })
-                            })
+                        if(j.isPatchedApk) {
+                            GotoStep("4.2")
                         } else {
-                            GotoStep("4.1")
+                            if (j.containsAppData || j.containsObbs) {
+                                GotoStep(4)
+                            } else {
+                                GotoStep(5)
+                            }
                         }
                     })
                 })
+            } else {
+                GotoStep("4.1")
             }
-            else TextBoxError("step4.1box", j.msg)
         })
     })
 }
@@ -1070,6 +1118,20 @@ document.getElementById("abortPassword").onclick = () => {
     document.getElementById("confirmPassword").style.display = "block"
     CloseGetPasswordPopup()
 }
+
+function RestoreBackup(backupName, game) {
+    if(game && config.currentApp != game) {
+        ChangeApp(game)
+        setTimeout(() => RestoreBackupFromSelectedGame(backupName), 200)
+        return;
+    }
+    RestoreBackupFromSelectedGame(backupName)
+}
+
+function RestoreBackupFromSelectedGame(backupName) {
+    selectedBackup = backupName;
+    OpenRestorePopup();
+}
 function PasswordInput() {
     TextBoxText("step7box", "Waiting for response and requesting obbs to download from Oculus. This may take 30 seconds...")
     options.password = encodeURIComponent(document.getElementById("passwordConfirm").value)
@@ -1085,6 +1147,7 @@ function PasswordInput() {
                 TextBoxGood("step7box", j.msg)
                 document.getElementById("abortPassword").innerHTML = "Close Popup"
                 document.getElementById("confirmPassword").style.display = "none"
+                OpenTab("download")
             }
         })
     })
@@ -1117,6 +1180,13 @@ document.getElementById("abortLogin").onclick = () => {
 document.getElementById("confirmLogin").onclick = () => {
     TextBoxGood("step9box", "One sec...")
     location = oculusLink
+}
+document.getElementById("login2").onclick = () => {
+    TextBoxGood("step13box", "One sec...")
+    location = oculusLink
+}
+document.getElementById("abortLogin").onclick = () => {
+    CloseGetPasswordPopup()
 }
 
 document.getElementById("tokenPassword").onclick = () => {

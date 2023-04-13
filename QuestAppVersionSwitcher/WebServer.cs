@@ -54,8 +54,12 @@ namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
-        public string navButtonsScript = "var qavsInjectionDiv = document.createElement(\"div\");qavsInjectionDiv.style = \"color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;\"; qavsInjectionDiv.innerHTML += `<div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(-1)\">Back</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(1)\">Forward</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"location = 'http://localhost:" + CoreService.coreVars.serverPort + "'\">QuestAppVersionSwitcher</div><div style=\\\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\\\" onclick=\\\"location = 'https://oculus.com/experiences/quest'\\\">Oculus (Login)</div>`; document.body.appendChild(qavsInjectionDiv)";
-        public string toastCode = "var QAVSScript = document.createElement(\"script\");QAVSScript.innerHTML = `var QAVSToastsE = document.createElement(\"div\");document.body.appendChild(QAVSToastsE);let QAVStoasts = 0;let currentQAVSToasts = 0;function ShowToast(msg, color, bgc) {    QAVStoasts++;    currentQAVSToasts++;    let QAVStoastId = QAVStoasts;    QAVSToastsE.innerHTML += \\`<div id=\"QAVStoast\\${QAVStoastId}\" style=\"background-color: \\${bgc}; color: \\${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: \\${(currentQAVSToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px\">\\${msg}</div>\\`;    setTimeout(() => {        document.getElementById(\\`QAVStoast\\${QAVStoastId}\\`).remove();        currentQAVSToasts--;    }, 5000)}`; document.body.appendChild(QAVSScript);";
+        //public string navButtonsScript = "var qavsInjectionDiv = document.createElement(\"div\");qavsInjectionDiv.style = \"color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;\"; qavsInjectionDiv.innerHTML += `<div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(-1)\">Back</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(1)\">Forward</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"location = 'http://localhost:" + CoreService.coreVars.serverPort + "'\">QuestAppVersionSwitcher</div><div style=\\\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\\\" onclick=\\\"location = 'https://oculus.com/experiences/quest'\\\">Oculus (Login)</div>`; document.body.appendChild(qavsInjectionDiv)";
+        //public string toastCode = "var QAVSScript = document.createElement(\"script\");QAVSScript.innerHTML = `var QAVSToastsE = document.createElement(\"div\");document.body.appendChild(QAVSToastsE);let QAVStoasts = 0;let currentQAVSToasts = 0;function ShowToast(msg, color, bgc) {    QAVStoasts++;    currentQAVSToasts++;    let QAVStoastId = QAVStoasts;    QAVSToastsE.innerHTML += \\`<div id=\"QAVStoast\\${QAVStoastId}\" style=\"background-color: \\${bgc}; color: \\${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: \\${(currentQAVSToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px\">\\${msg}</div>\\`;    setTimeout(() => {        document.getElementById(\\`QAVStoast\\${QAVStoastId}\\`).remove();        currentQAVSToasts--;    }, 5000)}`; document.body.appendChild(QAVSScript);";
+
+        public string injectJsJs = "var tag = document.createElement('script');tag.src = 'http://localhost:" +
+                                   CoreService.coreVars.serverPort + "/inject.js';document.head.appendChild(tag)";
+        
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
@@ -74,8 +78,7 @@ namespace QuestAppVersionSwitcher
             }
             else if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
             {
-                view.EvaluateJavascript(navButtonsScript, null);
-                view.EvaluateJavascript(toastCode, null);
+                view.EvaluateJavascript(injectJsJs, null);
             }
         }
 
@@ -488,6 +491,7 @@ namespace QuestAppVersionSwitcher
             });
 
 			server.AddRouteFile("/", "html/index.html");
+            server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
@@ -1064,7 +1068,7 @@ namespace QuestAppVersionSwitcher
                 gameDownloadManagers.Add(gdm);
                 gdm.StartDownload();
                 ChangeApp(gdm.packageName);
-                serverRequest.SendString(GenericResponse.GetResponse("Added to downloads. Check download progress tab.", true), "application/json");
+                serverRequest.SendString(GenericResponse.GetResponse("Added to downloads.", true), "application/json");
                 return true;
             });
 			server.AddRoute("POST", "/api/canceldownload", serverRequest =>
@@ -1218,7 +1222,7 @@ namespace QuestAppVersionSwitcher
             if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
             {
                 info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
-                if (info.BackupInfoVersion < BackupInfoVersion.V2) return GetBackupInfo(path, true);
+                if (info.BackupInfoVersion < BackupInfoVersion.V3) return GetBackupInfo(path, true);
                 return info;
             }
 
@@ -1281,7 +1285,7 @@ namespace QuestAppVersionSwitcher
 
     public class BackupInfo
     {
-        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V2;
+        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V3;
         public string backupName { get; set; } = "";
         public string backupLocation { get; set; } = "";
         public bool containsAppData { get; set; } = false;

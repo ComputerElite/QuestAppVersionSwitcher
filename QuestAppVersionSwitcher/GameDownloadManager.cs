@@ -33,6 +33,7 @@ namespace QuestAppVersionSwitcher
         public DownloadRequest request = null;
         public Thread updateThread = null;
         public bool canceled { get; set; } = false;
+        public bool error { get; set; } = false;
         public bool done { get; set; } = false;
 
         public GameDownloadManager(DownloadRequest r)
@@ -46,10 +47,12 @@ namespace QuestAppVersionSwitcher
             version = request.version;
             gameName = request.app;
             packageName = request.packageName;
+            status = "Preparing download for " + gameName + " " + version;
             
             DownloadManager m = new DownloadManager();
             m.StartDownload(request.binaryId, request.password, request.version, request.app, request.parentId, false, request.packageName);;
             m.DownloadFinishedEvent += DownloadCompleted;
+            m.DownloadErrorEvent += DownloadError;
             m.isCancelable = false;
             
             //Get OBBs via Oculus api
@@ -100,7 +103,7 @@ namespace QuestAppVersionSwitcher
 
         public void Done()
         {
-            status = "Download completed: Restore " + backupName + " to install the downgraded game";
+            status = "Download completed: " + gameName + " " + version;
             textColor = "#00FF00";
             done = true;
             UpdateManagersAndProgress();
@@ -116,11 +119,20 @@ namespace QuestAppVersionSwitcher
                 if (obbsToDo.Count <= 0) return;
                 DownloadManager m = new DownloadManager();
                 m.DownloadFinishedEvent += DownloadCompleted;
+                m.DownloadErrorEvent += DownloadError;
                 m.isCancelable = false;
                 m.StartDownload(obbsToDo[0].id, request.password, request.version, request.app, request.parentId, true, request.packageName, obbsToDo[0].name);
                 downloadManagers.Add(m);
                 obbsToDo.RemoveAt(0);
             }
+        }
+
+        private void DownloadError(DownloadManager manager)
+        {
+            Cancel();
+            error = true;
+            canceled = false;
+            status = "An unknown error occurred during the download of " + gameName + " " + version + ". Please try again.";
         }
 
         public void Cancel()

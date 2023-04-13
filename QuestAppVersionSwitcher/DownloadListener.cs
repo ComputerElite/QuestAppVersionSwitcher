@@ -16,7 +16,6 @@ namespace QuestAppVersionSwitcher
         public void OnDownloadStart(string url, string userAgent, string contentDisposition, string mimetype, long contentLength)
 		{
 			Logger.Log("Downloading mod from " + url);
-			CoreService.browser.EvaluateJavascript("ShowToast('Downloading', '#FFFFFF', '#222222')", null);
             QAVSModManager.InstallModFromUrl(url);
         }
     }

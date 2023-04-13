@@ -21,14 +21,15 @@ namespace QuestAppVersionSwitcher.Mods
 
     public enum QAVSOperationType
     {
-        ModInstall,
-        ModUninstall,
-        ModDisable,
-        ModDelete,
-        DependencyDownload,
-        Other,
-		Error,
-        ModDownload
+        ModInstall = 0,
+        ModUninstall = 1,
+        ModDisable = 2,
+        ModDelete = 3,
+        DependencyDownload = 4,
+        Other = 5,
+		Error = 6,
+        ModDownload = 7,
+        QueuedModInstall = 8
     }
 
     public class QAVSOperation
@@ -142,7 +143,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
             int operationId = operations;
             operations++;
-            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.Other, name = "Mod install queued: " + fileName, operationId = operationId});
+            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.QueuedModInstall, name = "Mod install queued: " + fileName, operationId = operationId});
             installQueue.Add(new QueuedMod(path, fileName, operationId));
             InstallFirstModFromQueue();
         }
@@ -257,7 +258,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static string GetOperations()
         {
-            return JsonSerializer.Serialize(runningOperations);
+            return JsonSerializer.Serialize(runningOperations.Values);
         }
 
         public static byte[] GetModCover(string id)
