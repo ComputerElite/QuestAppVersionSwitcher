@@ -489,6 +489,10 @@ function CheckStartParams() {
     }
 }
 
+document.getElementById("uninstallBS").onclick = () => {
+    fetch("/api/android/uninstallpackage?package=com.beatgames.beatsaber&force=true", {method: "POST"})
+}
+
 var config = {}
 var selectedBackup = ""
 
@@ -561,7 +565,7 @@ function UpdateUI(closeLists = false) {
         document.getElementById("version").innerHTML = res.version
         document.getElementById("ips").innerHTML = ""
         res.browserIPs.forEach(i => {
-            document.getElementById("ips").innerHTML += i + "<br>"
+            document.getElementById("ips").innerHTML += "<div style='margin-top: 15px;'><code>" + i + "</code></div>"
         })
     }))
     Array.prototype.forEach.call(document.getElementsByClassName("selectedBackupName"), i => {

@@ -35,16 +35,16 @@ function UpdatePopUps() {
             var errors = operations.filter(x => x.type == Error);
             
             var html = `
-                ${queuedMods.length > 0 ? `${queuedMods.length} mods queued<br>` : ``}
-                ${installingMods.length > 0 ? `${installingMods.length} mods installing<br>` : ``}
-                ${downloadingMods.length > 0 ? `${downloadingMods.length} mods downloading<br>` : ``}
-                ${downloadingDependencies.length > 0 ? `${downloadingDependencies.length} dependencies downloading<br>` : ``}
-                ${errors.length > 0 ? `${errors.length} errors, more info in installed mods tab<br>` : ``}
+                ${queuedMods.length > 0 ? `<b>${queuedMods.length}</b> mods queued<br>` : ``}
+                ${installingMods.length > 0 ? `<b>${installingMods.length}</b> mods installing<br>` : ``}
+                ${downloadingMods.length > 0 ? `<b>${downloadingMods.length}</b> mods downloading<br>` : ``}
+                ${downloadingDependencies.length > 0 ? `<b>${downloadingDependencies.length}</b> dependencies downloading<br>` : ``}
+                ${errors.length > 0 ? `<div style="color: #EE0000;"><b>${errors.length}</b> errors, more info in installed mods tab</div><br>` : ``}
             `;
-            if(!html) {
-                html = "All done!"
-            } else {
+            if(html.trim()) {
                 somethingWasRunning = true
+            } else {
+                html = "All done!"
             }
             qavsPopupContainer.innerHTML = html;
             qavsPopupContainer.style.display = somethingWasRunning ? "block" : "none";

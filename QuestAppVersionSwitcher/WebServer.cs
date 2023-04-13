@@ -555,7 +555,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                if (!AndroidService.IsPackageInstalled(package))
+                if (!AndroidService.IsPackageInstalled(package) && serverRequest.queryString.Get("force") == null)
                 {
                     serverRequest.SendString(GenericResponse.GetResponse("App is already uninstalled", true), "application/json", 230);
                     return true;
