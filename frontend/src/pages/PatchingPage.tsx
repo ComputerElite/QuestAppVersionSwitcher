@@ -5,7 +5,7 @@ import PageLayout from "../Layouts/PageLayout";
 import RunButton from "../components/Buttons/RunButton";
 import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded";
 import { DeleteIcon, FirePatch } from "../assets/Icons";
-import { HandtrackingTypes, appInfo, config, moddingStatus, patchingPermissions, refetchModdingStatus, setPatchingPermissions } from "../store";
+import { InternalPatchingOptions, appInfo, config, moddingStatus, mutatePatchingOptions, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { For, Show, children, createEffect, createSignal, splitProps } from "solid-js";
 import { CustomModal } from "../modals/CustomModal";
 import { FiRefreshCcw } from "solid-icons/fi";
@@ -13,6 +13,8 @@ import { Box, MenuItem, Select, Switch, TextField, Typography, Chip } from "@sui
 import { OptionHeader } from "./ToolsPage";
 import { createStore, produce } from "solid-js/store";
 import { GetGameName } from "../util";
+import { HandtrackingTypes, getPatchedModdingStatus, setPatchingOptions } from "../api/patching";
+import toast from "solid-toast";
 
 
 export default function PatchingPage() {
@@ -21,19 +23,41 @@ export default function PatchingPage() {
     console.log(appInfo()?.version)
   })
 
-
-
   function onAddPermission(e: SubmitEvent) {
     e.preventDefault();
     debugger
     let formData = new FormData(e.target as HTMLFormElement);
     let permission = formData.get("permission") as string;
     if (!permission) return;
-    if (patchingPermissions.additionalPermissions.includes(permission)) return;
-    setPatchingPermissions(
-      produce(permissions => { permissions.additionalPermissions.push(permission) })
-    )
+    if (patchingOptions()?.additionalPermissions.includes(permission)) return;
+    updatePatchingOptions({ additionalPermissions: [...patchingOptions()!.additionalPermissions, permission] })
   }
+
+  async function startPatching() {
+    setIsPatchingModalOpen(false);
+    getPatchedModdingStatus
+    refetchModdingStatus();
+  }
+
+  async function updatePatchingOptions(options: Partial<InternalPatchingOptions>) {
+    let newOptions = patchingOptions();
+    if (!newOptions) return console.warn("Patching options are null");
+
+    newOptions = {...newOptions, ...options} 
+    
+    try {
+      let result = await setPatchingOptions(newOptions);
+      if (!result) {
+        toast.error("Failed to update patching options");
+        return;
+      }
+      await refetchPatchingOptions();
+    } catch (e) {
+      console.error(e)
+      toast.error("Failed to update patching options");
+    }
+  }
+
   /**
    * If the game is patched, allow user to repatch it again to change cover image and other stuff
    * If the game is not patched, allow user to patch it
@@ -53,21 +77,17 @@ export default function PatchingPage() {
           <Box sx={{ marginY: 3 }}>
             <OptionHeader>Patching options</OptionHeader>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
-              <Switch checked={patchingPermissions.addExternalStorage} onChange={
+              <Switch checked={patchingOptions()?.addExternalStorage} onChange={
                 () => {
-                  setPatchingPermissions(
-                    produce(permissions => { permissions.addExternalStorage = !permissions.addExternalStorage })
-                  )
+                  updatePatchingOptions({ addExternalStorage: !patchingOptions()?.addExternalStorage })
                 }
               } />
               <OptionText>Add external storage permission</OptionText>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
-              <Switch checked={patchingPermissions.addDebug} onChange={
+              <Switch checked={patchingOptions()?.addDebug ?? false} onChange={
                 () => {
-                  setPatchingPermissions(
-                    produce(permissions => { permissions.addDebug = !permissions.addDebug })
-                  )
+                  updatePatchingOptions({ addDebug: !patchingOptions()?.addDebug })
                 }
               } />
               <OptionText>Add debug option</OptionText>
@@ -82,16 +102,14 @@ export default function PatchingPage() {
                 sx={{
                   minWidth: 200,
                 }}
-                size="small" variant="outlined" color="primary" value={patchingPermissions.handtracking} onChange={
+                size="small" variant="outlined" color="primary" value={patchingOptions()?.handtracking?? null} onChange={
                   (e) => {
-                    setPatchingPermissions(
-                      produce(permissions => { permissions.handtracking = e.target.value })
-                    )
+                    updatePatchingOptions({ handtracking: e.target.value })
                   }
                 }>
                 <MenuItem value={HandtrackingTypes.None}>None</MenuItem>
                 <MenuItem value={HandtrackingTypes.V1}>V1</MenuItem>
-                <MenuItem value={HandtrackingTypes.V1HF}>V1 high frequency</MenuItem>
+                <MenuItem value={HandtrackingTypes.V1HighFrequency}>V1 high frequency</MenuItem>
                 <MenuItem value={HandtrackingTypes.V2}>V2</MenuItem>
               </Select>
 
@@ -126,13 +144,11 @@ export default function PatchingPage() {
               </Box>
 
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", marginTop: 1 }}>
-                <For each={patchingPermissions.additionalPermissions}>
+                <For each={patchingOptions()?.additionalPermissions}>
                   {(permission, index) => {
                     return (
                       <Chip label={permission} sx={{ marginTop: 1 }} onDelete={() => {
-                        setPatchingPermissions(
-                          produce(permissions => { permissions.additionalPermissions = permissions.additionalPermissions.filter((_, i) => i !== index()) })
-                        )
+                        updatePatchingOptions({ additionalPermissions: patchingOptions()?.additionalPermissions.filter((_, i) => i !== index()) })
                       }} />
                     )
                   }}
@@ -160,52 +176,6 @@ export default function PatchingPage() {
         <PatchingModal
           open={isPatchingModalOpen()} onClose={() => { setIsPatchingModalOpen(false) }}
         />
-        {/* <div id="patchingOptions">
-          <h2>Patching options</h2>
-          <label class="option">
-            <label class="switch normal">
-              <input id="externalstorage" type="checkbox" checked />
-              <span class="slider round"></span>
-            </label>
-            Add external storage permission
-          </label>
-          <br />
-
-          <label class="option">
-            <label class="switch normal">
-              <input id="handtracking" type="checkbox" checked />
-              <span class="slider round"></span>
-            </label>
-            Add hand tracking permission
-          </label>
-          <br />
-          <label class="option">
-            Hand tracking version
-            <select id="handtrackingversion">
-              <option value="3">V2</option>
-              <option value="2">V1 high frequency</option>
-              <option value="1">V1</option>
-            </select>
-          </label>
-          <br />
-          <br />
-          <label class="option">
-            <label class="switch normal">
-              <input id="debug" type="checkbox" checked />
-              <span class="slider round"></span>
-            </label>
-            Add Debug option
-          </label>
-          <br />
-          <br />
-          <input type="text" id="otherName" placeholder="permission name" />
-          <br />
-          <br />
-          <div class="button" onclick="AddPermission()">Add Permission</div>
-          <br />
-          <div id="other">
-          </div>
-        </div> */}
       </div>
     </PageLayout >
 

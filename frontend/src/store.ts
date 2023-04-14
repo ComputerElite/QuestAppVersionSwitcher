@@ -1,7 +1,7 @@
 import { createEffect, createResource, createSignal, on } from "solid-js"
 
 import { getAppInfo, getConfig } from "./api/app";
-import { getPatchedModdingStatus } from "./api/patching";
+import { HandtrackingTypes, getPatchedModdingStatus, getPatchingOptions } from "./api/patching";
 import { getCosmeticsTypes } from "./api/cosmetics";
 import { createStore } from "solid-js/store";
 
@@ -18,28 +18,32 @@ export const [moddingStatus, { mutate: mutateModdingStatus, refetch: refetchModd
 
 export const [cosmeticTypes, { mutate: mutateCosmeticTypes, refetch: refetchCosmeticTypes }] = createResource(getCosmeticsTypes, { storage: createSignal });
 
+export const [patchingOptions, { mutate: mutatePatchingOptions, refetch: refetchPatchingOptions }] = createResource<InternalPatchingOptions>(
+    // TODO: Check if we can remove the useless flag that enables handtracking
+    (async () => {
+        let options = await getPatchingOptions();
+
+        // Map api response to internal response
+        return {
+            handtracking: options.handTracking ? options.handTrackingVersion : HandtrackingTypes.None,
+            addExternalStorage: options.externalStorage,
+            addDebug: options.debug,
+            additionalPermissions: options.otherPermissions,
+        }
+    }),
+    { storage: createSignal });
+
 // Refetch modding status if the config changes
-createEffect(on(config, (config) => {
+createEffect(on(config, async (config) => {
     setCurrentApplication(config?.currentApp ?? null)
-    refetchModdingStatus();
+    await refetchModdingStatus();
+    await refetchPatchingOptions();
 }))
 
 
-export enum HandtrackingTypes {
-    None = 0,
-    V1 = 1,
-    V1HF = 2,
-    V2 = 3,
-}
-
-export const [patchingPermissions, setPatchingPermissions] = createStore<{
+export interface InternalPatchingOptions {
     handtracking: HandtrackingTypes;
     addExternalStorage: boolean;
     addDebug: boolean;
     additionalPermissions: string[];
-}>({
-    addDebug: true,
-    addExternalStorage: true,
-    handtracking: 3,
-    additionalPermissions: [],
-})
+}

@@ -83,6 +83,7 @@ export default function ToolsPage() {
       // Refresh application state to keep the ui working
       await refetchSettings();
     } catch (e) {
+      // @ts-ignore
       toast.error(`Failed to change port! ${e?.message ?? ""}`)
     }
   }
