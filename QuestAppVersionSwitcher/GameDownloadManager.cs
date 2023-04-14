@@ -84,6 +84,10 @@ namespace QuestAppVersionSwitcher
             }
             
             this.backupName = gameName + " " + version + " Downgraded";
+            foreach (char r in QAVSWebserver.ReservedChars)
+            {
+                this.backupName = this.backupName.Replace(r, '_');
+            }
             status = gameName + " " + version;
             downloadManagers.Add(m);
             filesToDownload = 1 + obbsToDo.Count;
@@ -151,11 +155,10 @@ namespace QuestAppVersionSwitcher
         {
             filesDownloaded++;
             downloadManagers.Remove(m);
-            this.backupName = m.backupName;
-            string backupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
+            string backupDir = CoreService.coreVars.QAVSBackupDir + this.packageName + "/" + this.backupName + "/";
             if(m.isObb)
             {
-                string obbDir = backupDir + "obb/" + m.packageName + "/";
+                string obbDir = backupDir + "obb/" + this.packageName + "/";
                 FileManager.CreateDirectoryIfNotExisting(obbDir);
                 FileManager.DeleteFileIfExisting(obbDir + m.obbFileName);
                 File.Move(m.tmpPath, obbDir + m.obbFileName);
