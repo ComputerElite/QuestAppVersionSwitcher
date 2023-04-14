@@ -10,6 +10,7 @@ import FastRewindSharp from "@suid/icons-material/FastRewindSharp"
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { Button } from "./Buttons/Button";
 import { FirePatch } from "../assets/Icons";
+import { GetGameName } from "../util";
 
 let links = [
     { name: "Backup", href: "/backup", icon: SettingsBackupRestore },
@@ -28,7 +29,9 @@ export default function Sidebar() {
             <div class={styles.header}>
                 <div class={styles.logo}>Quest App <br /> Version Switcher</div>
                 <div class={styles.currentApp}>
-                    <div title="Managed" class="inline packageName">{config()?.currentApp ?? "some app"} <FiEdit2 /> </div>
+                    <div title="Managed" class="inline packageName">
+                        {(config()?.currentApp && GetGameName(config()!.currentApp)) ?? "some app"} <FiEdit2 />
+                    </div>
                 </div>
             </div>
             <div style={{
@@ -43,7 +46,7 @@ export default function Sidebar() {
             <div class={styles["menuContainer"]}>
                 <For each={links} >
                     {(link) => (
-                        <A href={link.href} class={styles.menuItem}  activeClass={styles.selected} >
+                        <A href={link.href} class={styles.menuItem} activeClass={styles.selected} >
                             <link.icon></link.icon> <span>{link.name}</span>
                         </A>
                     )}

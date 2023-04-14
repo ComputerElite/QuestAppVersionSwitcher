@@ -8,11 +8,11 @@ type RunButtonProps = JSX.HTMLAttributes<HTMLButtonElement> & {
     text?: string;
     variant?: 'success' | 'error' | 'warning' | 'info';
     disabled?: boolean;
+    type?: 'button' | 'submit' | 'reset';
 }
 
 const RunButton: Component<RunButtonProps> = (props) => {
     let [local, other] = splitProps(props, ['children', 'icon', 'text', 'variant'])
-
 
     return (
         <button class={style.button} classList={{

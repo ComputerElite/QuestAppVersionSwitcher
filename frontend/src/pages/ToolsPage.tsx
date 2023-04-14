@@ -13,7 +13,7 @@ import { IsOnQuest, Sleep } from "../util"
 import toast from "solid-toast"
 import { createEffect, createSignal, on } from "solid-js"
 
-const OptionHeader = (props: { children: any }) => {
+export const OptionHeader = (props: { children: any }) => {
   return (
     <Typography sx={{
       fontFamily: 'Roboto',

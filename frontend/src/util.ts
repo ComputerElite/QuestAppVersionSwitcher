@@ -1,3 +1,16 @@
+/**
+ * Returns the name of a game given its package name
+ */
+let knownGameNames: {
+    [packageName: string]: string;
+} = {
+    "com.beatgames.beatsaber": "Beat Saber",
+
+}
+
+export function GetGameName(packageName: string) {
+    return knownGameNames[packageName] ?? packageName;
+}
 
 
 /**

@@ -1,8 +1,9 @@
-import { createEffect, createResource, createSignal, on} from "solid-js"
+import { createEffect, createResource, createSignal, on } from "solid-js"
 
 import { getAppInfo, getConfig } from "./api/app";
 import { getPatchedModdingStatus } from "./api/patching";
 import { getCosmeticsTypes } from "./api/cosmetics";
+import { createStore } from "solid-js/store";
 
 export const [initialized, setInitialized] = createSignal<boolean>(false)
 
@@ -22,3 +23,23 @@ createEffect(on(config, (config) => {
     setCurrentApplication(config?.currentApp ?? null)
     refetchModdingStatus();
 }))
+
+
+export enum HandtrackingTypes {
+    None = 0,
+    V1 = 1,
+    V1HF = 2,
+    V2 = 3,
+}
+
+export const [patchingPermissions, setPatchingPermissions] = createStore<{
+    handtracking: HandtrackingTypes;
+    addExternalStorage: boolean;
+    addDebug: boolean;
+    additionalPermissions: string[];
+}>({
+    addDebug: true,
+    addExternalStorage: true,
+    handtracking: 3,
+    additionalPermissions: [],
+})
