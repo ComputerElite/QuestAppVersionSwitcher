@@ -979,6 +979,13 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
                     return true;
                 }
+
+                if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+                {
+                    // Not needed on A10 and below
+                    serverRequest.SendString(GenericResponse.GetResponse("Not needed on A10. Continue as normal", true), "application/json", 200);
+                    return true;
+                }
                 string package = serverRequest.queryString.Get("package");
                 Intent intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission, Android.Net.Uri.Parse("package:" + package));
                 AndroidCore.context.StartActivity(intent);
