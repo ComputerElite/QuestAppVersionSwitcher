@@ -151,6 +151,7 @@ namespace QuestAppVersionSwitcher
         {
             filesDownloaded++;
             downloadManagers.Remove(m);
+            this.backupName = m.backupName;
             string backupDir = CoreService.coreVars.QAVSBackupDir + m.packageName + "/" + m.backupName + "/";
             if(m.isObb)
             {

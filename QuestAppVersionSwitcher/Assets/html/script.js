@@ -52,7 +52,7 @@ function OpenSite(url) {
     location = url
 }
 function CheckFolderPermission() {
-    if(!config.currentApp) return;
+    if(!config.currentApp || params.get("noaccesscheck")) return;
     fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
         res.json().then(j => {
             if (j.gotAccess) {
@@ -457,6 +457,12 @@ UpdateUI()
 TokenUIUpdate()
 const oculusLink = "https://auth.meta.com/"
 const params = new URLSearchParams(window.location.search)
+var afterRestore = ""
+var afterDownload = ""
+
+if(!localStorage.setupStarted) {
+    location = "/setup"
+}
 
 function CheckStartParams() {
     var download = params.get("download")
@@ -464,6 +470,41 @@ function CheckStartParams() {
     var version = params.get("version")
     var package = params.get("package")
     var modnow = params.get("modnow")
+    var restorenow = params.get("restorenow")
+    var backup = params.get("backup")
+    var tab = params.get("tab")
+    afterRestore = params.get("afterrestore")
+    afterDownload = params.get("afterdownload")
+
+    if(params.get("token")) {
+        OpenTokenPasswordPopup()
+        return;
+    }
+
+
+    if(localStorage.redirect) {
+        var loc  = localStorage.redirect + ""
+        localStorage.redirect = ""
+        window.open(loc, "_self")
+        return
+    }
+    
+    if(tab) {
+        OpenTab(tab)
+    }
+    
+    if(restorenow) {
+        RestoreBackup(backup, package)
+    }
+
+    if(params.get("restart")) {
+        OpenGetPasswordPopup()
+        GotoStep(10)
+    }
+
+    if(params.get("loadoculus")) {
+        location = oculusLink
+    }
     if(download) {
         fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
             res.json().then(res => {
@@ -579,19 +620,6 @@ function UpdateUI(closeLists = false) {
     UpdatePatchingStatus()
 }
 
-if(params.get("token")) {
-    OpenTokenPasswordPopup()
-}
-
-if(params.get("restart")) {
-    OpenGetPasswordPopup()
-    GotoStep(10)
-}
-
-if(params.get("loadoculus")) {
-    location = oculusLink
-}
-
 document.getElementById("login").onclick = () => {
     OpenGetPasswordPopup()
     GotoStep(9)
@@ -641,6 +669,10 @@ setInterval(() => {
         })
     })
 }, 500)
+
+document.getElementById("setup").onclick = () => {
+    location = "/setup"
+}
 
 function StopGameDownload(id) {
     fetch("/api/cancelgamedownload?id=" + id, {method: "POST"})
@@ -796,7 +828,10 @@ document.getElementById("changeApp3").onclick = () => ShowAppList()
 
 document.getElementById("abort").onclick = () => CloseRestorePopup()
 
-document.getElementById("abort2").onclick = () => CloseRestorePopup()
+document.getElementById("abort2").onclick = () => {
+    CloseRestorePopup()
+    if(afterRestore) location = decodeURIComponent(afterRestore)
+}
 
 function CloseRestorePopup() {
     document.getElementById("restoreContainer").className = "listContainer darken hidden"
@@ -1152,6 +1187,7 @@ function PasswordInput() {
                 document.getElementById("abortPassword").innerHTML = "Close Popup"
                 document.getElementById("confirmPassword").style.display = "none"
                 OpenTab("download")
+                if(afterDownload) location = decodeURIComponent(afterDownload)
             }
         })
     })

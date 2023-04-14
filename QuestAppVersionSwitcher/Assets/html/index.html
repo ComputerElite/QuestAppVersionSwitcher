@@ -3,7 +3,6 @@
     <title>Quest App Version Switcher - Main</title>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
-    <script async src="https://cse.google.com/cse.js?cx=256b790fca48449ad"></script>
 </head>
 <body>
     
@@ -82,7 +81,7 @@
                 <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
                 <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
                 <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
-                <div class="button topButtonMargin" onclick="OpenTab('getMods')">Get mods</div>
+                <div class="button topButtonMargin" style="font-size: 1.5rem" onclick="OpenTab('getMods')">Get mods</div>
                 <div id="operations">
                     <h2 id="ongoingCount">Ongoing operations:</h2>
                     <div class="loaderContainer" style="margin-bottom: 10px;">
@@ -202,6 +201,10 @@
                     <div class="contentHeaderDescription">Useful for troubleshooting and managing your install</div>
                 </div>
                 <div class="buttonContainer">
+                    <div class="button" id="setup">Open Setup</div>
+                    <div class="buttonLabel">Opens the setup assistant</div>
+                </div>
+                <div class="buttonContainer">
                     <div class="button" id="uninstall">Uninstall app</div>
                     <div class="buttonLabel">Uninstalls the app you selected (needs to be confirmed on android device)</div>
                 </div>
@@ -300,15 +303,15 @@
                 <div class="contentHeader headerMargin">
                     Password needed
                 </div>
-                Please enter the password you set when you logged in.
+                Please enter the password you set when you logged in. If you didn't set one you can leave this field empty and press <code>Start download</code>
                 <br>
                 <br>
-                <i>If you didn't set one or forgot your password abort the download and head to the <code>Tools & Options</code> section to log in again.</i>
+                <i>If you forgot your password abort the download and head to the <code>Tools & Options</code> section to log in again.</i>
                 <input type="password" id="passwordConfirm" placeholder="password">
                 <div id="step7box" class="textBox"></div>
                 <div class="buttonSelectionContainer">
                     <div class="buttonContainer">
-                        <div class="button" id="abortPassword">Abort Download</div>
+                        <div class="button" id="abortPassword">Abort download</div>
                     </div>
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="confirmPassword">Start download</div>

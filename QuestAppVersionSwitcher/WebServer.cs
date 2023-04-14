@@ -380,20 +380,44 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/patching/patchapk", request =>
             {
-                request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
                 patchStatus = new PatchStatus();
                 patchStatus.totalOperations = 9;
                 patchStatus.currentOperation = "Copying APK. This can take a bit";
-                if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                string package = request.queryString.Get("package");
+                string backup = request.queryString.Get("backup");
+                string apkPath = "";
+                if (package != null && backup != null)
                 {
-                    patchStatus.errorText = CoreService.coreVars.currentApp +
-                                            " is not installed. Please select a different app";
-                    patchStatus.error = true;
-                    return true;
+                    string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backup + "/";
+                    if (!Directory.Exists(backupDir))
+                    {
+                        request.SendString(GenericResponse.GetResponse("Backup does not exist", false), "application/json", 400);
+                        return true;
+                    }
+                    if (!File.Exists(backupDir + "app.apk"))
+                    {
+                        request.SendString(GenericResponse.GetResponse("Backup doesn't contain apk", false), "application/json", 400);
+                        return true;
+                    }
+                    apkPath = backupDir + "app.apk";
                 }
+                else
+                {
+                    if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                    {
+                        request.SendString(GenericResponse.GetResponse(CoreService.coreVars.currentApp + "is not installed. Please install it", true), "application/json", 202);
+
+                        return true;
+                    }
+
+                    apkPath = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
+                }         
+                request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
+
+                
                 string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
                 FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
-                File.Copy(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp), appLocation);
+                File.Copy(apkPath, appLocation);
                 ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
                 patchStatus.doneOperations = 1;
                 patchStatus.progress = .1;
@@ -491,10 +515,13 @@ namespace QuestAppVersionSwitcher
             });
 
 			server.AddRouteFile("/", "html/index.html");
+			server.AddRouteFile("/setup", "html/setup.html");
+            server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
             server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
+            server.AddRouteFile("/newstyle.css", "html/newstyle.css");
             server.AddRoute("GET", "/api/android/installedapps", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
@@ -1095,6 +1122,14 @@ namespace QuestAppVersionSwitcher
                     status.gameDownloads.Add(gdm);
                 }
                 serverRequest.SendString(JsonSerializer.Serialize(status));
+                return true;
+            });
+            
+            server.AddRoute("POST", "/api/cleardownloads", serverRequest =>
+            {
+                gameDownloadManagers.Clear();
+                managers.Clear();
+                serverRequest.SendString(JsonSerializer.Serialize(GenericResponse.GetResponse("Cleared downloads", true)));
                 return true;
             });
             server.AddRoute("GET", "/api/questappversionswitcher/checkupdate", request =>

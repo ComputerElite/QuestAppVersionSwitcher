@@ -8,7 +8,7 @@ qavsNavbar.style = "color: #EEEEEE; position: fixed; top: 10px; right: 10px; bac
 qavsNavbar.innerHTML += `
 <div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(-1)">Back</div>
 <div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(1)">Forward</div>
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="location = 'http://localhost:${qavsPort}'">QuestAppVersionSwitcher</div>
+<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="location = 'http://127.0.0.1:${qavsPort}'">QuestAppVersionSwitcher</div>
 <div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;" onclick="location = 'https://oculus.com/experiences/quest'">Oculus (Login)</div>`;
 qavsInjectionDiv.appendChild(qavsNavbar)
 

@@ -1,0 +1,376 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QAVS - Beat Saber modding</title>
+    <link rel="stylesheet" type="text/css" href="../newstyle.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<div class="content" id="checking">
+    <h1>Checking your current Beat Saber install</h1>
+    <h3>Please wait a second</h3>
+    <div class="loaderContainer center">
+        <div class="loaderBarRight"></div>
+        <div class="loaderBarLeft"></div>
+        <div class="loaderBarTop"></div>
+        <div class="loaderBarBottom"></div>
+        <div class="loaderSpinningCircle"></div>
+        <div class="loaderMiddleCircle"></div>
+        <div class="loaderCircleHole"></div>
+        <div class="loaderSquare"></div>
+    </div>
+</div>
+<div class="content hidden" id="modgame">
+    <h1>Mod your game</h1>
+    <p>
+        Your installed Beat Saber version is <code id="modgamebsversion"></code>
+        <br>
+        You can mod this version by pressing <code>Mod my game below</code>
+    </p>
+    <button id="modgamebutton" onclick="PatchGame()">Mod my game</button>
+    <div id="gameModProgressContainer" style="display: none;">
+        <h3>Modding your game</h3>
+        <div id="modgameloader" class="loaderContainer center">
+            <div class="loaderBarRight"></div>
+            <div class="loaderBarLeft"></div>
+            <div class="loaderBarTop"></div>
+            <div class="loaderBarBottom"></div>
+            <div class="loaderSpinningCircle"></div>
+            <div class="loaderMiddleCircle"></div>
+            <div class="loaderCircleHole"></div>
+            <div class="loaderSquare"></div>
+        </div>
+        <div style="margin-top: 10px; font-size: 1.2rem">
+            Status: <code id="patchingStatus"></code>
+        </div>
+    </div>
+</div>
+<div class="content hidden" id="afterpatch">
+    <h1>Install Game</h1>
+    <p>Your game is almost modded. Press <code>Install game</code> below and follow the instructions to finish modding your game</p>
+    <button onclick="RestoreBackup()">Install game</button>
+</div>
+<div class="content hidden" id="afterrestore">
+    <h1>Game modded!</h1>
+    <p>Your game is now modded! Press <code>Get mods</code> below to install all core mods and open the installed mods page</p>
+    <button onclick="InstallCoreModsAndGetMods()">Get mods</button>
+</div>
+<div class="content hidden" id="alreadymodded">
+    <h1>Your game is modded!</h1>
+    <p>Your game is modded! Press <code>Get mods</code> below to get to the installed mods page</p>
+    <button onclick="GetMods()">Get mods</button>
+</div>
+<div class="content hidden" id="downgrade">
+    <h1>Downgrade</h1>
+    <div id="downgradeLogin">
+        <p>
+            Your current Beat Saber version is <code class="bsVersion"></code>. This version does not support mods yet.
+            <br>
+            You can downgrade your game to <code class="supportedBsVersion"></code> to use mods.
+            <br>
+            <br>
+            To downgrade your game, you need to login with your Meta account. You can do this by pressing <code>Login</code> below.
+        </p>
+        <button onclick="Login()">Login</button>
+    </div>
+    <div id="downgradeDowngrade">
+        <p>
+            Your current Beat Saber version is <code class="bsVersion"></code>. This version does not support mods yet.
+            <br>
+            You can downgrade your game to <code class="supportedBsVersion"></code> to use mods.
+            <br>
+            <br>
+            To downgrade your game, press the Downgrade button below.
+        </p>
+        <button onclick="Downgrade()">Downgrade</button>
+    </div>
+</div>
+<div class="content hidden" id="download">
+    <h1>Game downloading</h1>
+    <h3>Do not exit QuestAppVersionSwitcher!</h3>
+    <div id="progress"></div>
+</div>
+<div class="content hidden" id="downloaddone">
+    <h1>Download is done!</h1>
+    <p>
+        Beat Saber <code id="downloadbsversion"></code> has been downloaded successfully. Press <code>Mod my game</code> to continue modding your game.
+    </p>
+    <button onclick="ModDowngradedGame()">Mod my game</button>
+</div>
+<script>
+    const patchInProgressContainer = document.getElementById("gameModProgressContainer")
+    const patchingStatus = document.getElementById("patchingStatus")
+    const modgameloader = document.getElementById("modgameloader")
+    
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    var checkdowngrade = params.get('checkdowngrade');
+    var startDownload = params.get('startdownload');
+    const start = ""
+    const squareLoader = `
+    <div class="loaderContainer center">
+        <div class="loaderBarRight"></div>
+        <div class="loaderBarLeft"></div>
+        <div class="loaderBarTop"></div>
+        <div class="loaderBarBottom"></div>
+        <div class="loaderSpinningCircle"></div>
+        <div class="loaderMiddleCircle"></div>
+        <div class="loaderCircleHole"></div>
+        <div class="loaderSquare"></div>
+    </div>`
+    
+    if(tab) {
+        OpenTab(tab);
+    } else {
+        FirstOpen()
+    }
+    
+    if(startDownload) StartDownloadMonitoring()
+    if(checkdowngrade) CheckDowngrade()
+
+    var patchExtras = ""
+    function ModDowngradedGame() {
+        patchExtras = `?package=${lastDownloadProgress.packageName}&backup=${lastDownloadProgress.backupName}`
+        OpenTab("modgame")
+        document.getElementById("modgamebsversion").innerText = lastDownloadProgress.version
+        PatchGame()
+    }
+
+    var downloadInterval;
+    function FormatDownload(d) {
+        return `<div class="downloadContainer">
+                    <div class="downloadProgressContainer">
+                        <div class="downloadProgressBar" style="width: ${d.percentage * 100}%;"></div>
+                    </div>
+                    <div style="color: ${d.textColor}; margin-left: 10px;">
+                        <b>${d.text}</b> ${d.percentageString} ${d.doneString} / ${d.totalString} ${d.speedString} ETA ${d.eTAString}
+                    </div>
+                </div>`
+    }
+    function DownloadDone() {
+        clearInterval(downloadInterval)
+        OpenTab("downloaddone")
+        document.getElementById("downloadbsversion").innerText = lastDownloadProgress.version
+        fetch(start + "/api/cleardownloads", {method: "POST"})
+    }
+    var lastDownloadProgress = {}
+    function StartDownloadMonitoring() {
+        downloadInterval = setInterval(() => {
+            fetch(start + "/api/downloads").then(res => {
+                var m = ""
+                var gdms = ""
+                res.json().then(json => {
+                    for(const d of json.individualDownloads) {
+                        m += FormatDownload(d)
+                    }
+                    for(const d of json.gameDownloads) {
+                        var downloads = ""
+                        for(const download of d.downloadManagers) {
+                            downloads += FormatDownload(download)
+                        }
+                        lastDownloadProgress = d
+                        gdms += `
+                            <div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
+                                <div style="color: ${d.textColor}; margin-left: 20px;">
+                                    <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
+                                </div>
+                            </div>
+                            ${downloads}
+                            </div>`
+                        if(d.done) DownloadDone()
+                    }
+                    if (gdms == "") gdms = "<h2>No game downloads running</h2>"
+                    document.getElementById("progress").innerHTML = gdms
+                })
+            })
+        }, 500)
+    }
+    
+    function Login() {
+        localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true`
+        location = "https://auth.meta.com/"
+    }
+    
+    function Downgrade() {
+        fetch(start + "/api/cleardownloads", {method: "POST"})
+        location = start + `/?download=true&version=${SupportedBeatSaberVersions[0]}&noaccesscheck=true&game=2448060205267927&afterdownload=${encodeURIComponent(start + `/flows/beat_saber_modding?tab=download&startdownload=true`)}`
+    }
+    
+    function CheckDowngrade() {
+        UpdateSupportedBeatSaberVersions().then(() => {
+            for(const el of document.getElementsByClassName("bsVersion")) {
+                el.innerText = moddedStatus.isInstalled ? moddedStatus.version : "Not installed"
+            }
+            for(const el of document.getElementsByClassName("supportedBsVersion")) {
+                el.innerText = SupportedBeatSaberVersions[0]
+            }
+            // Check if user is logged in, if so display downgrade button else display login button
+            fetch(start + "/api/questappversionswitcher/loggedinstatus").then(res => res.json().then(j => {
+                if(j.msg == 2) {
+                    document.getElementById("downgradeLogin").style.display = `none`
+                    document.getElementById("downgradeDowngrade").style.display = `block`
+                } else {
+                    document.getElementById("downgradeLogin").style.display = `block`
+                    document.getElementById("downgradeDowngrade").style.display = `none`
+                }
+            }))
+        })
+    }
+    
+    var moddedStatus = {}
+    
+    function UpdateModdedStatus() {
+        return new Promise((resolve, reject) => {
+            fetch(start + "/api/patching/getmodstatus").then(res => res.json().then(j => {
+                moddedStatus = j;
+                resolve();
+            }))
+        })
+    }
+    
+    var qavsConfig = {}
+    
+    function UpdateQAVSConfig() {
+        return new Promise((resolve, reject) => {
+            fetch(start + `/api/questappversionswitcher/config`).then(res => res.json().then(j => {
+                qavsConfig = j;
+                resolve();
+            }))
+        })
+    }
+    
+    var patchReport = {}
+
+    function InstallCoreModsAndGetMods() {
+        UpdateModdedStatus().then(res => {
+            fetch(start + `/api/mods/installfromurl`, {
+                method: "POST",
+                body: `https://oculusdb.rui2015.me/api/coremodsdownload/${moddedStatus.version}.qmod`
+            }).then(res => {
+                location = start + "/?tab=mods"
+            })
+        })
+    }
+
+    function GetMods() {
+        location = start + "/?tab=mods"
+    }
+    
+    function PatchDone() {
+        OpenTab("afterpatch")
+    }
+    
+    function RestoreBackup() {
+        location = start + `/?package=com.beatgames.beatsaber&backup=${patchReport.backupName}&restorenow=true&noaccesscheck=true&afterrestore=${encodeURIComponent(`/flows/beat_saber_modding?tab=afterrestore`)}`
+    }
+    
+    function PatchGame() {
+        const patchOptions = {
+            otherPermissions: [],
+            debug: false,
+            handTracking: true,
+            handTrackingVersion: 0,
+            externalStorage: true
+        }
+        document.getElementById("modgamebutton").style.display = "none"
+        patchInProgressContainer.style.display = "block"
+        patchingStatus.className = ""
+        patchingStatus.classList.add("text")
+        fetch(start + `/api/patching/patchoptions`, {
+            method: "POST",
+            body: JSON.stringify(patchOptions)
+        }).then(res => {
+            fetch(start + "/api/patching/patchapk" + patchExtras, {
+                method: "POST"
+            }).then(res => {
+                res.json().then(j => {
+                    if (j.success) {
+                        patchingStatus.innerHTML = j.msg
+                        var i = setInterval(() => {
+                            fetch(start + "/api/patching/patchstatus").then(res => {
+                                res.json().then(j => {
+                                    patchReport = j
+                                    if (j.done) {
+                                        patchingStatus.innerHTML = j.currentOperation
+                                        patchingStatus.classList.add("success")
+                                        clearInterval(i)
+                                        PatchDone()
+                                    } else if (j.error) {
+                                        patchingStatus.innerHTML = j.errorText
+                                        patchingStatus.classList.add("error")
+                                        clearInterval(i)
+                                    } else {
+                                        patchingStatus.innerHTML =  j.progressString + " - " + j.currentOperation
+                                    }
+                                })
+                            })
+                        }, 500);
+                    } else {
+                        patchingStatus.innerHTML =  j.msg
+                        patchingStatus.classList.add("error")
+                    }
+                })
+            })
+        })
+    }
+    
+    function UpdateModGamePage() {
+        document.getElementById("modgamebsversion").innerText = moddedStatus.version;
+    }
+    
+    function FirstOpen() {
+        UpdateModdedStatus().then(() => {
+            if(!moddedStatus.isInstalled) {
+                // Downgrade
+                OpenTab("downgrade")
+                CheckDowngrade()
+            } else {
+                UpdateSupportedBeatSaberVersions().then(() => {
+                    if(SupportedBeatSaberVersions.includes(moddedStatus.version)) {
+                        // Continue with modding
+                        
+                        if(moddedStatus.isPatched) {
+                            // Already modded
+                            OpenTab("alreadymodded")
+                        } else {
+                            // Not modded
+                            OpenTab("modgame")
+                            UpdateModGamePage()
+                        }
+                    } else {
+                        // Downgrade
+                        OpenTab("downgrade")
+                        CheckDowngrade()
+                    }
+                })
+            }
+        })
+    }
+    
+    var SupportedBeatSaberVersions = []
+    
+    function UpdateSupportedBeatSaberVersions() {
+        return new Promise((resolve, reject) => {
+            fetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json").then(res => res.json().then(j => {
+                for(const [key, value] of Object.entries(j)) {
+                    SupportedBeatSaberVersions.push(key);
+                }
+                SupportedBeatSaberVersions.sort()
+                SupportedBeatSaberVersions.reverse()
+                resolve()
+            }))
+        })
+    }
+    function Start() {
+        location = document.getElementById("options").value;
+    }
+    
+    function OpenTab(section) {
+        Array.prototype.forEach.call(document.getElementsByClassName("content"), e => {
+            e.className = "content" + (e.id == section ? "" : " hidden")
+        })
+    }
+</script>
+</body>
+</html>

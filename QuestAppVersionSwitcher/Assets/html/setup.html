@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QAVS - Setup</title>
+    <link rel="stylesheet" type="text/css" href="newstyle.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <h1>QAVS Setup Assistant</h1>
+    <h3>Select a preset for your setup experience</h3>
+    <div class="selection">
+        <select id="options">
+            <option value="/flows/beat_saber_modding">Beat Saber Modding</option>
+            <option value="/">Other</option>
+        </select>
+        <br>
+        <button onclick="Start()">Start</button>
+    </div>
+<script>
+    function Start() {
+        localStorage.setupStarted = true
+        location = document.getElementById("options").value;
+    }
+
+    CheckUpdate()
+    function CheckUpdate() {
+        fetch("/api/questappversionswitcher/checkupdate").then(res => res.json().then(json => {
+            if(json.isUpdateAvailable) {
+                // Open main ui to show update prompt
+                location = "/?noaccesscheck=true"
+            }
+        }))
+    }
+</script>
+</body>
+</html>

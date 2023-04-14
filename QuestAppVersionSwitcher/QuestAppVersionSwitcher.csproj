@@ -141,6 +141,7 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\flows\beat_saber_modding.html" />
     <AndroidAsset Include="Assets\html\hiddenApps.json" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
@@ -217,7 +218,9 @@
     <AndroidAsset Include="Assets\html\index.html" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\newstyle.css" />
     <AndroidAsset Include="Assets\html\qavs_inject.js" />
+    <AndroidAsset Include="Assets\html\setup.html" />
     <AndroidAsset Include="Assets\html\splash.html" />
     <AndroidAsset Include="Assets\html\style.css" />
   </ItemGroup>
