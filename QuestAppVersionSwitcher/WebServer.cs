@@ -64,19 +64,7 @@ namespace QuestAppVersionSwitcher
         public override void OnPageFinished(WebView view, string url)
         {
             CookieManager.Instance.Flush();
-            if (url.Split("?")[0].Contains("oculus.com"))
-            {
-                // click login button
-                view.EvaluateJavascript("setTimeout(() => {var mySpans = document.getElementsByTagName(\"svg\");for(var i=0;i<mySpans.length;i++){if(mySpans[i].ariaLabel == 'Open Side Navigation Menu'){mySpans[i].parentElement.click();break;}}setTimeout(() => { mySpans = document.getElementsByTagName(\"h6\"); for (var i = 0; i < mySpans.length; i++) { if (mySpans[i].innerHTML == 'Log in / Sign up') { mySpans[i].click(); break; } } }, 600)}, 1000)", null);
-                
-                // send token to QAVS
-                view.EvaluateJavascript("var ws = new WebSocket('ws://localhost:" + CoreService.coreVars.serverPort + "/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf(\"accessToken\"), 200).split('\"')[2]);", null);
-            }
-            else if (url.StartsWith("https://auth.meta.com/settings"))
-            {
-                view.LoadUrl("https://oculus.com/experiences/quest");
-            }
-            else if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
+            if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
             {
                 view.EvaluateJavascript(injectJsJs, null);
             }
