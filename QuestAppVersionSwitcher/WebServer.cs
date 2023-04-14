@@ -388,6 +388,8 @@ namespace QuestAppVersionSwitcher
                 string apkPath = "";
                 if (package != null && backup != null)
                 {
+                    
+                    Logger.Log("Trying to patch apk from backup " + package + " - " + backup);
                     string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backup + "/";
                     if (!Directory.Exists(backupDir))
                     {
@@ -406,7 +408,6 @@ namespace QuestAppVersionSwitcher
                     if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
                     {
                         request.SendString(GenericResponse.GetResponse(CoreService.coreVars.currentApp + "is not installed. Please install it", true), "application/json", 202);
-
                         return true;
                     }
 
@@ -414,6 +415,7 @@ namespace QuestAppVersionSwitcher
                 }         
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 
+                Logger.Log("Using apk from  " + apkPath);
                 
                 string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
                 FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
