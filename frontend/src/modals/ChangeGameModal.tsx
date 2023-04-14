@@ -7,6 +7,8 @@ import { changeManagedApp } from "../api/app";
 import { mutateSettings } from "../store";
 import { refetchSettings } from "../store";
 import toast from "solid-toast";
+import { CustomModal } from "./CustomModal";
+import RunButton from "../components/Buttons/RunButton";
 
 
 
@@ -55,7 +57,6 @@ const [appList, { refetch: refetchApps, mutate: mutateApps }] = createResource<I
 
 
 export async function showChangeGameModal() {
-  let appList = await getAppList();
   if (appList && appList.length > 0) {
     refetchApps(appList);
   }
@@ -86,67 +87,41 @@ export default function ChangeGameModal() {
   }
 
   return (
-    <Modal
+    <CustomModal
       open={isOpen()}
-      onClose={() => { closeModal }}
+      onClose={closeModal}
       onBackdropClick={closeModal}
-      BackdropProps={{
-        sx: {
-          backdropFilter: "blur(10px)",
-        }
-      }}
+      title={"Change Game"}
+      buttons={<>
+        <RunButton onClick={closeModal} variant="error" text="Cancel"></RunButton>
+        <RunButton onClick={onOk} variant="success" text="Ok" ></RunButton>
+      </>}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          // width: 400,
-          bgcolor: "#222",
-          boxShadow: "24px",
-          p: 4,
-          display: "flex",
-          flexDirection: "column",
-          maxHeight: "80vh",
-        }}
-      >
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          Select moddable game
-        </Typography>
-        <Box sx={{ mt: 2, overflowX: "auto" }}>
-          <List>
-            <For each={appList()}>
-              {(app) => (
-                <ListItem sx={{
-                  cursor: "pointer",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  backgroundColor: selected() == app.PackageName ? "#333" : "#222",
-                }}
-                  onClick={() => setSelected(app.PackageName)}
-                >
-                  <Typography component={"div"} sx={{ color: "white" }} >
-                    {app.AppName}
-                  </Typography>
-                  <Typography component={"div"} fontSize={"0.9em"} sx={{ color: "pink" }} >
-                    {app.PackageName}
-                  </Typography>
-                </ListItem>
-              )}
-            </For>
-
-          </List>
-
-        </Box>
-
-
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Button onClick={closeModal}>Cancel</Button>
-          <Button onClick={onOk}>Ok</Button>
-        </Box>
+     
+      <Box sx={{ mt: 0, overflowX: "auto" }}>
+        <List>
+          <For each={appList()}>
+            {(app) => (
+              <ListItem sx={{
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                backgroundColor: selected() == app.PackageName ? "#2e3847" : "#1F2937",
+              }} 
+                onClick={() => setSelected(app.PackageName)}
+              >
+                <Typography component={"div"} sx={{ color: "white" }} >
+                  {app.AppName}
+                </Typography>
+                <Typography component={"div"} fontSize={"0.9em"} sx={{ color: "pink" }} >
+                  {app.PackageName}
+                </Typography>
+              </ListItem>
+            )}
+          </For>
+        </List>
       </Box>
-    </Modal>
+    </CustomModal>
   )
 }

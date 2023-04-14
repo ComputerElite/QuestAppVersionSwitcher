@@ -13,6 +13,10 @@ import { PlusIcon, UploadRounded } from "../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
 import CloseRounded from "@suid/icons-material/CloseRounded";
+import { startGame } from "../api/app";
+import { FiRefreshCcw } from "solid-icons/fi";
+
+
 async function UploadModClick() {
   var input = document.createElement('input');
   input.type = 'file';
@@ -87,7 +91,6 @@ export default function ModsPage() {
   const [dragCounter, setDragCounter] = createSignal(0);
 
   function ondragenter(e: DragEvent) {
-
     e.preventDefault();
     e.stopPropagation();
     if (dragCounter() + 1 >= 0) {
@@ -114,6 +117,16 @@ export default function ModsPage() {
     setIsDragging(false);
   }
 
+  async function reloadMods() {
+    try {
+      await refetchMods();
+      toast.success("Mods reloaded");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to reload mods");
+    }
+  }
+
   onMount(async () => {
     window.addEventListener("drop", ondrop);
     window.addEventListener("dragover", ondragover);
@@ -130,10 +143,24 @@ export default function ModsPage() {
     console.log("unmounted")
   })
 
-  let filteredData = createMemo<{ mods?: Array<IMod>, libs?: Array<IMod> }>(() => ({
-    mods: modsList()?.filter((s) => !s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name)),
-    libs: modsList()?.filter((s) => s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))
-  }));
+  let filteredData = createMemo<{ mods?: Array<IMod>, libs?: Array<IMod> }>(() => {
+    let allMods = modsList();
+    if (!allMods) return { mods: [], libs: [] };
+
+    // Deduplicate mods cause QAVS is dumb sometimes
+    let ids = new Set<string>();
+    allMods = allMods.filter((m) => {
+      if (ids.has(m.Id)) return false;
+      ids.add(m.Id);
+      return true;
+    });
+
+    return {
+      mods: allMods?.filter((s) => !s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name)),
+      libs: allMods?.filter((s) => s.IsLibrary).sort((a, b) => CompareStringsAlphabetically(a.Name, b.Name))
+    }
+  }
+  );
 
   return (
     <PageLayout>
@@ -153,7 +180,7 @@ export default function ModsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={refetchMods} />
+            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={startGame} />
             <RunButton text='Upload a mod' icon={<UploadRounded />} onClick={UploadModClick} />
             <span style={{
               "font-family": "Roboto",
@@ -170,12 +197,12 @@ export default function ModsPage() {
               Get more mods
             </span>
           </Box>
-
           <Box sx={{
             display: "flex",
             gap: 2,
             alignItems: "center",
           }}>
+            <RunButton icon={<FiRefreshCcw />} onClick={reloadMods} />
             <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
           </Box>
         </Box>
@@ -276,8 +303,6 @@ function ModCard({ mod }: { mod: IMod }) {
             lineHeight: '12px',
           }} class="text-accent"  >v{mod.VersionString} {mod.Author ? `by ${mod.Author}` : ""}</Typography>
         </Box>
-
-
         <Typography sx={{
           fontFamily: 'Roboto',
           fontStyle: 'normal',

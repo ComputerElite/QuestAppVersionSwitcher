@@ -9,7 +9,6 @@
     "serve": "vite preview"
   },
   "license": "MIT",
-  "proxy": "http://localhost:50002/api/",
   "devDependencies": {
     "typescript": "^4.9.5",
     "vite": "^4.2.1",

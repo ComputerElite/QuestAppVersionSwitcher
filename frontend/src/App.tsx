@@ -26,9 +26,17 @@ import "@fontsource/roboto/700.css"; // Weight 700.
 import style from "./App.module.scss"
 import { ThemeProvider } from '@suid/material';
 import { theme } from './theme';
+import { refetchAppInfo, refetchCosmeticTypes, refetchModdingStatus } from './store';
 
 
 const App: Component = () => {
+  // Load app info on startup
+  createEffect(async () => {
+    await refetchAppInfo();
+    await refetchModdingStatus();
+    await refetchCosmeticTypes();
+  })
+
   return (
     <MetaProvider>
      <ThemeProvider theme={theme}>

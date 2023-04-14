@@ -1,6 +1,7 @@
 import { Box, Button, Modal, Typography } from "@suid/material";
 import { createEffect, createSignal } from "solid-js"
 import { createStore, } from "solid-js/store";
+import { CustomModal } from "./CustomModal";
 
 interface ConfirmModalState {
   isOpen: boolean;
@@ -71,10 +72,6 @@ export async function showConfirmModal(state: Partial<ConfirmModalProps>): Promi
 
 export default function ConfirmModal() {
 
-  createEffect(() => {
-    console.log("confirm state changed", confirmState);
-  })
-
   function onCancel() {
     if (confirmState.onCancel)
       confirmState.onCancel();
@@ -88,46 +85,25 @@ export default function ConfirmModal() {
   }
 
   return (
-    <Modal
-      open={confirmState?.isOpen }
+    <CustomModal
+      open={confirmState?.isOpen}
       onClose={() => { onCancel }}
       onBackdropClick={onCancel}
-      BackdropProps={{
-        sx: {
-          backdropFilter: "blur(10px)",
-        }
-      }}
+      buttons={<>
+        <Button color="error" onClick={onCancel}>Cancel</Button>
+        <Button color="success" onClick={onOk}>Ok</Button>
+      </>}
+      title={confirmState?.title}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          p: 3,
-          transform: "translate(-50%, -50%)",
-          maxWidth: "80vw",
-          bgcolor: "#222",
-          boxShadow: "24px",
-          display: "flex",
-          flexDirection: "column",
-          maxHeight: "80vh",
-        }}
-      >
-        <Typography id="modal-modal-title" variant="h6" component="h2">
-          {confirmState?.title}
-        </Typography>
-        <Box sx={{ mt: 2, overflowX: "auto", pb: 3 }}>
-          <Typography>{confirmState?.message}</Typography>
-        </Box>
-
-        <Box sx={{
-          display: "flex",
-          justifyContent: "space-between"
-        }}>
-          <Button color="error" onClick={onCancel}>Cancel</Button>
-          <Button color="success" onClick={onOk}>Ok</Button>
-        </Box>
+      <Box sx={{ mt: 0, overflowX: "auto", pb: 3 }}>
+        <Typography>{confirmState?.message}</Typography>
       </Box>
-    </Modal>
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between"
+      }}>
+
+      </Box>
+    </CustomModal>
   )
 }
