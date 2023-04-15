@@ -1,4 +1,3 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
     var qavsInjectionDiv = document.createElement("div");
     document.body.appendChild(qavsInjectionDiv);
     const qavsPort = "{0}"
@@ -61,25 +60,8 @@
         console.log("oculus.com")
         // Click login button
         setTimeout(() => {
-            var mySpans = document.getElementsByTagName("svg");
-            for (var i = 0; i < mySpans.length; i++) {
-                if (mySpans[i].ariaLabel == 'Open Side Navigation Menu') {
-                    console.log("clicking side navigation menu")
-                    mySpans[i].parentElement.click();
-                    break;
-                }
-            }
-            setTimeout(() => {
-                mySpans = document.getElementsByTagName("h6");
-                for (var i = 0; i < mySpans.length; i++) {
-                    if (mySpans[i].innerHTML.toLowerCase().contains("log in") && mySpans[i].innerHTML.toLowerCase().contains("sign up") && !mySpans[i].innerHTML.toLowerCase().contains("span")) {
-                        console.log("clicking login button")
-                        mySpans[i].click();
-                        break;
-                    }
-                }
-            }, 600)
-        }, 1000)
+            location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fwww.oculus.com%2Fexperiences%2Fquest%2F'
+        }, 3000)
 
         // Send token to qavs
         var ws = new WebSocket('ws://localhost:' + qavsPort + '/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf("accessToken"), 200).split('"')[2]);
@@ -126,4 +108,3 @@
             }
         }
     }
-});
