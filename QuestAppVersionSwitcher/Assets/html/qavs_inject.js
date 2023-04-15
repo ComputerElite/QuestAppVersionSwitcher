@@ -61,7 +61,7 @@
         // Click login button
         setTimeout(() => {
             location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fwww.oculus.com%2Fexperiences%2Fquest%2F'
-        }, 1500)
+        }, 3000)
 
         // Send token to qavs
         var ws = new WebSocket('ws://localhost:' + qavsPort + '/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf("accessToken"), 200).split('"')[2]);
