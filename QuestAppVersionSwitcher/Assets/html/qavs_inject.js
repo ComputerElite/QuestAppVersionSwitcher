@@ -8,8 +8,7 @@ qavsNavbar.style = "color: #EEEEEE; position: fixed; top: 10px; right: 10px; bac
 qavsNavbar.innerHTML += `
 <div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(-1)">Back</div>
 <div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(1)">Forward</div>
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="location = 'http://127.0.0.1:${qavsPort}'">QuestAppVersionSwitcher</div>
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;" onclick="location = 'https://oculus.com/experiences/quest'">Oculus (Login)</div>`;
+<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;" onclick="location = 'http://127.0.0.1:${qavsPort}'">QuestAppVersionSwitcher</div>`;
 qavsInjectionDiv.appendChild(qavsNavbar)
 
 // Handle popups
@@ -35,11 +34,11 @@ function UpdatePopUps() {
             var errors = operations.filter(x => x.type == Error);
             
             var html = `
-                ${queuedMods.length > 0 ? `<b>${queuedMods.length}</b> mods queued<br>` : ``}
-                ${installingMods.length > 0 ? `<b>${installingMods.length}</b> mods installing<br>` : ``}
-                ${downloadingMods.length > 0 ? `<b>${downloadingMods.length}</b> mods downloading<br>` : ``}
+                ${downloadingMods.length > 0 ? `<b>${downloadingMods.length}</b> mod(s) downloading<br>` : ``}
+                ${queuedMods.length > 0 ? `<b>${queuedMods.length}</b> mod(s) queued for install<br>` : ``}
+                ${installingMods.length > 0 ? `<b>${installingMods.length}</b> mod(s) installing<br>` : ``}
                 ${downloadingDependencies.length > 0 ? `<b>${downloadingDependencies.length}</b> dependencies downloading<br>` : ``}
-                ${errors.length > 0 ? `<div style="color: #EE0000;"><b>${errors.length}</b> errors, more info in installed mods tab</div><br>` : ``}
+                ${errors.length > 0 ? `<div style="color: #EE0000;"><b>${errors.length}</b> error(s), more info in <a href="http://127.0.0.1:${qavsPort}?tab=mods">installed mods tab</a></div><br>` : ``}
             `;
             if(html.trim()) {
                 somethingWasRunning = true
@@ -83,7 +82,7 @@ if(location.host.contains("oculus.com")) {
 }
 
 // Modify sign in options on auth.meta.com
-if(location.href.contains("https://auth.meta.com")) {
+if(location.host.contains("auth.meta.com")) {
     // Remove facebook button
     for(const e of document.getElementsByTagName("span")) {
         if(e.innerHTML.toLowerCase().contains("facebook") && e.innerHTML.toLowerCase().contains("continue with") && !e.innerHTML.toLowerCase().contains("span")) {
