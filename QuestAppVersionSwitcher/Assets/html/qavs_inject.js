@@ -57,14 +57,13 @@ if(location.href.startsWith("https://auth.meta.com/settings")) {
     location = "https://oculus.com/experiences/quest"
 }
 if(location.host.contains("oculus.com")) {
-    // Send token to qavs
-    var ws = new WebSocket('ws://localhost:' + qavsPort + '/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf("accessToken"), 200).split('"')[2]);
-
+    console.log("oculus.com")
     // Click login button
     setTimeout(() => {
         var mySpans = document.getElementsByTagName("svg");
         for (var i = 0; i < mySpans.length; i++) {
             if (mySpans[i].ariaLabel == 'Open Side Navigation Menu') {
+                console.log("clicking side navigation menu")
                 mySpans[i].parentElement.click();
                 break;
             }
@@ -73,16 +72,22 @@ if(location.host.contains("oculus.com")) {
             mySpans = document.getElementsByTagName("h6");
             for (var i = 0; i < mySpans.length; i++) {
                 if (mySpans[i].innerHTML.toLowerCase().contains("log in") && mySpans[i].innerHTML.toLowerCase().contains("sign up") && !mySpans[i].innerHTML.toLowerCase().contains("span")) {
+                    console.log("clicking login button")
                     mySpans[i].click();
                     break;
                 }
             }
         }, 600)
     }, 1000)
+    
+    // Send token to qavs
+    var ws = new WebSocket('ws://localhost:' + qavsPort + '/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf("accessToken"), 200).split('"')[2]);
+
 }
 
 // Modify sign in options on auth.meta.com
 if(location.host.contains("auth.meta.com")) {
+    console.log("auth.meta.com")
     // Remove facebook button
     for(const e of document.getElementsByTagName("span")) {
         if(e.innerHTML.toLowerCase().contains("facebook") && e.innerHTML.toLowerCase().contains("continue with") && !e.innerHTML.toLowerCase().contains("span")) {
