@@ -35,6 +35,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         private ModConfig? _modConfig;
         private bool _awaitingConfigSave;
+        private bool loadingMods = false;
 
 
         public ModManager(OtherFilesManager otherFilesManager)
@@ -148,6 +149,8 @@ namespace QuestAppVersionSwitcher.Mods
             else
             {
             */
+            if (loadingMods) return;
+            loadingMods = true;
             Logger.Log("Loading mods from disk");
             _modConfig = new ModConfig();
             foreach (var provider in _modProviders.Values)
@@ -161,6 +164,7 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 await provider.LoadMods();
             }
+            loadingMods = false;
         }
 
         public async Task SaveMods()

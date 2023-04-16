@@ -16,7 +16,10 @@ namespace QuestAppVersionSwitcher
         public void OnDownloadStart(string url, string userAgent, string contentDisposition, string mimetype, long contentLength)
 		{
 			Logger.Log("Downloading mod from " + url);
-            QAVSModManager.InstallModFromUrl(url);
+            // Split cotentDisposition to get the filename
+            string[] split = contentDisposition.Split("filename=");
+            string filename = split[1].Replace("\"", "");
+            QAVSModManager.InstallModFromUrl(url, filename);
         }
     }
 }

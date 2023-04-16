@@ -1044,6 +1044,15 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(GenericResponse.GetResponse(SizeConverter.ByteSizeToString(FileManager.GetDirSize(CoreService.coreVars.QAVSBackupDir)), false), "application/json");
                 return true;
             });
+            server.AddRoute("POST", "/api/logout", request =>
+            {
+                CoreService.coreVars.token = "";
+                CoreService.coreVars.password = "";
+                CoreService.coreVars.passwordSet = false;
+                CoreService.coreVars.Save();
+                request.SendString(GenericResponse.GetResponse("Logged out", true), "application/json");
+                return true;
+            });
             server.AddRoute("POST", "/api/token", serverRequest =>
             {
                 TokenRequest r = JsonSerializer.Deserialize<TokenRequest>(serverRequest.bodyString);
@@ -1092,7 +1101,7 @@ namespace QuestAppVersionSwitcher
                 gameDownloadManagers.Add(gdm);
                 gdm.StartDownload();
                 ChangeApp(gdm.packageName);
-                serverRequest.SendString(GenericResponse.GetResponse("Added to downloads.", true), "application/json");
+                serverRequest.SendString(GenericResponse.GetResponse("Downloading!", true), "application/json");
                 return true;
             });
 			server.AddRoute("POST", "/api/canceldownload", serverRequest =>

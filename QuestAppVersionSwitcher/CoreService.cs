@@ -54,6 +54,7 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.LoadWithOverviewMode = true;
             browser.Settings.UseWideViewPort = true;
             browser.Settings.AllowFileAccess = true;
+            browser.Settings.JavaScriptCanOpenWindowsAutomatically = true;
             browser.SetWebViewClient(new QAVSWebViewClient());
             browser.SetDownloadListener(new DownloadListener());
             CookieManager.Instance.SetAcceptThirdPartyCookies(browser, true);

@@ -477,7 +477,24 @@ function CheckStartParams() {
     afterDownload = params.get("afterdownload")
 
     if(params.get("token")) {
-        OpenTokenPasswordPopup()
+        //OpenTokenPasswordPopup()
+        // No password gets set by default anymore now
+        fetch("/api/token", {
+            method: "POST",
+            body: JSON.stringify({
+                token: params.get("token"),
+                password: ""
+            })
+        }).then(res => {
+            res.json().then(j => {
+                if (j.success) {
+                    alert("Logged in")
+                    location.href.split('?')[0]
+                } else {
+                    alert("Error while logging in: " + j.msg)
+                }
+            })
+        })
         return;
     }
 
@@ -987,6 +1004,10 @@ document.getElementById("deleteAllMods").onclick = () => {
         res.json().then(j => {
             if(j.success) {
                 TextBoxGood("updateTextBox", j.msg)
+                setTimeout(() => {
+                    // Refresh mods
+                    ChangeApp(config.currentApp)
+                }, 1000)
             } else {
                 TextBoxError("updateTextBox", j.msg)
             }
@@ -1146,16 +1167,51 @@ function OpenGetPasswordPopup() {
 var options = {}
 window.onmessage = (e) => {
     options = JSON.parse(e.data)
-    OpenGetPasswordPopup()
-    if(!config.hasPassword) {
-        document.getElementById("passwordConfirm").value = ""
-        PasswordInput()
+    if(!config.passwordSet) {
+        CloseGetPasswordPopup()
+        document.getElementById("getPasswordContainer").className = "listContainer darken"
+        GotoStep(14)
+        TextBoxText("step14box", "Waiting for response and requesting obbs to download from Oculus. This may take 30 seconds...")
+        options.password = ""
+        options.app = options.parentName
+        document.getElementById("downloadStartingClosePopup").style.display = "none"
+        fetch("/api/download", {
+            method: "POST",
+            body: JSON.stringify(options)
+        }).then(res => {
+            res.json().then(j => {
+                if (!j.success) {
+                    TextBoxError("step14box", j.msg)
+                    document.getElementById("downloadStartingClosePopup").style.display = "block"
+                } else {
+                    TextBoxGood("step14box", j.msg)
+                    document.getElementById("downloadStartingClosePopup").style.display = "block"
+                    OpenTab("download")
+                    if(afterDownload) location = decodeURIComponent(afterDownload)
+                }
+            })
+        })
+    } else {
+        OpenGetPasswordPopup()
     }
 }
 document.getElementById("abortPassword").onclick = () => {
     document.getElementById("abortPassword").innerHTML = "Abort Download"
     document.getElementById("confirmPassword").style.display = "block"
     CloseGetPasswordPopup()
+}
+
+document.getElementById("downloadStartingClosePopup").onclick = () => {
+    CloseGetPasswordPopup()
+}
+
+document.getElementById("logout").onclick = () => {
+    fetch("/api/logout", {
+        method: "POST"
+    }).then(res => {
+        // open logout page for webview
+        location = `https://oculus.com/experiences/quest?logout=true`
+    })
 }
 
 function RestoreBackup(backupName, game) {

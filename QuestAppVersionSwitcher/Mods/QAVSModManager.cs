@@ -185,16 +185,16 @@ namespace QuestAppVersionSwitcher.Mods
             runningOperations[operationId].isDone = true;
         }
 
-        public static void InstallModFromUrl(string url)
+        public static void InstallModFromUrl(string url, string filename = "")
         {
-            string extension = Path.GetExtension(url.Split('?')[0]);
-            string fileName = "downloaded" + DateTime.Now.Ticks;
+            string extension = filename != "" ? Path.GetExtension(filename) : Path.GetExtension(url.Split('?')[0]);
+            string fileName = filename != "" ? Path.GetFileNameWithoutExtension(filename) : "downloaded" + DateTime.Now.Ticks;
             if (extension == "") extension = ".qmod";
             string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
             DownloadManager m = new DownloadManager();
             int operationId = operations;
             operations++;
-            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.ModDownload, name = "Downloading mod: " + Path.GetFileName(url.Split('?')[0]), operationId = operationId});
+            runningOperations.Add(operationId, new QAVSOperation {type = QAVSOperationType.ModDownload, name = "Downloading mod: " + fileName, operationId = operationId});
             m.DownloadFinishedEvent += (manager) =>
             {
                 //CoreService.browser.EvaluateJavascript("ShowToast('Downloaded, now installing', '#FFFFFF', '#222222')", null);
@@ -279,7 +279,7 @@ namespace QuestAppVersionSwitcher.Mods
             FolderPermission.DeleteDirectoryContent(modManager.ModsPath);
             FolderPermission.DeleteDirectoryContent(modManager.LibsPath);
             File.Delete(modManager.ConfigPath);
-            Update();
+            modManager.Reset();
         }
     }
 }

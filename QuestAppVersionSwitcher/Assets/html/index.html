@@ -248,6 +248,10 @@
                         <div class="button" id="login">Login</div>
                         <div class="buttonLabel">Log in with your Oculus/Facebook account to downgrade games (<b>ONLY WORKS ON QUEST, NOT ON PC</b>)</div>
                     </div>
+                    <div class="buttonContainer">
+                        <div class="button" id="logout">Logout</div>
+                        <div class="buttonLabel">Logged in with the wrong account? Log out of the account you're signed in here</div>
+                    </div>
                     <div class="headerMargin"><a onclick="document.getElementById('tokenLoginContainer').style.display = 'block'" class="underline">Other login methods</a></div>
                     <div id="tokenLoginContainer" style="display: none;">
                         <div class="buttonContainer">
@@ -315,6 +319,17 @@
                     </div>
                     <div class="buttonContainer buttonMargin">
                         <div class="button" id="confirmPassword">Start download</div>
+                    </div>
+                </div>
+            </div>
+            <div class="restoreStep" id="step14">
+                <div class="contentHeader headerMargin">
+                    Download starting
+                </div>
+                <div id="step14box" class="textBox"></div>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="downloadStartingClosePopup">Close Popup</div>
                     </div>
                 </div>
             </div>
