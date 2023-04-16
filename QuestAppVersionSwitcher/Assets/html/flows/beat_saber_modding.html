@@ -98,10 +98,33 @@
     </p>
     <button onclick="ModDowngradedGame()">Mod my game</button>
 </div>
+<div style="position: fixed; bottom: 10px; left: 10px;">
+    <button id="showSupportButton" onclick="ShowSupport()">Help</button>
+    <div id="helpSection" style="display: none;" class="box">
+        <p>
+            Are you stuck or need help? Join our Discord server at <code>https://discord.gg/zwRfHQN2UY</code>.
+        </p>
+        <h2>Upload logs</h2>
+        <p>
+            Uploading logs will upload info about your QAVS install to our server. This includes logs, your Beat Saber version, installed mods, <a href="https://github.com/ComputerElite/QuestAppVersionSwitcher/wiki/What-does-upload-logs-do">and more</a>.
+            <br>
+            You should only do this when requested to do so!
+        </p>
+        <button onclick="UploadLogs()">Upload logs</button>
+        <br>
+        <br>
+        <code id="logsInfoText" class="hidden">
+            
+        </code>
+    </div>
+</div>
 <script>
     const patchInProgressContainer = document.getElementById("gameModProgressContainer")
     const patchingStatus = document.getElementById("patchingStatus")
     const modgameloader = document.getElementById("modgameloader")
+    const helpSection = document.getElementById("helpSection")
+    const showSupportButton = document.getElementById("showSupportButton")
+    const logsInfoText = document.getElementById("logsInfoText")
     
     var params = new URLSearchParams(window.location.search);
     var tab = params.get('tab');
@@ -124,6 +147,38 @@
         OpenTab(tab);
     } else {
         FirstOpen()
+    }
+    
+    function UploadLogs() {
+        logsInfoText.className = ""
+        logsInfoText.classList.add("text")
+        logsInfoText.innerHTML = "Collecting information.. please allow us up to 30 seconds to collect everything"
+        fetch("/api/questappversionswitcher/uploadlogs", {
+            method: "POST",
+            body: ""
+        }).then(res => {
+            res.json().then(j => {
+                if (!j.success) {
+                    logsInfoText.classList.remove("text")
+                    logsInfoText.classList.add("error")
+                    logsInfoText.innerHTML = j.msg
+                } else {
+                    logsInfoText.classList.remove("text")
+                    logsInfoText.classList.add("success")
+                    logsInfoText.innerHTML = "Logs uploaded successfully. Tell your support member this ID: " + j.msg
+                }
+            })
+        })
+    }
+    
+    function ShowSupport() {
+        if(helpSection.style.display == "none") {
+            helpSection.style.display = "block"
+            showSupportButton.innerHTML = "Hide help"
+        } else {
+            helpSection.style.display = "none"
+            showSupportButton.innerHTML = "Help"
+        }
     }
     
     if(startDownload) StartDownloadMonitoring()
@@ -306,11 +361,13 @@
                                     patchReport = j
                                     if (j.done) {
                                         patchingStatus.innerHTML = j.currentOperation
+                                        patchingStatus.classList.remove("text")
                                         patchingStatus.classList.add("success")
                                         clearInterval(i)
                                         PatchDone()
                                     } else if (j.error) {
                                         patchingStatus.innerHTML = j.errorText
+                                        patchingStatus.classList.remove("text")
                                         patchingStatus.classList.add("error")
                                         ResetPatchPage()
                                         clearInterval(i)

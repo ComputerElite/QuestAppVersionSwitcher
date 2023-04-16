@@ -404,14 +404,21 @@ namespace QuestAppVersionSwitcher
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 
                 Logger.Log("Using apk from  " + apkPath);
-                
-                string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
-                FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
-                File.Copy(apkPath, appLocation);
-                ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
-                patchStatus.doneOperations = 1;
-                patchStatus.progress = .1;
-                PatchingManager.PatchAPK(apkArchive, appLocation);
+                try
+                {
+                    string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
+                    FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
+                    File.Copy(apkPath, appLocation);
+                    ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
+                    patchStatus.doneOperations = 1;
+                    patchStatus.progress = .1;
+                    PatchingManager.PatchAPK(apkArchive, appLocation);
+                }
+                catch (Exception e)
+                {
+                    patchStatus.error = true;
+                    patchStatus.errorText = "Error while patching:" + e;
+                }
                 return true;
             });
             server.AddRoute("GET", "/api/patching/patchstatus", serverRequest =>
