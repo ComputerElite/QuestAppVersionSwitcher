@@ -190,7 +190,8 @@ namespace QuestAppVersionSwitcher.Mods
             string extension = filename != "" ? Path.GetExtension(filename) : Path.GetExtension(url.Split('?')[0]);
             string fileName = filename != "" ? Path.GetFileNameWithoutExtension(filename) : "downloaded" + DateTime.Now.Ticks;
             if (extension == "") extension = ".qmod";
-            string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + extension;
+            string modPath = CoreService.coreVars.QAVSTmpModsDir + fileName + "-" + DateTime.Now.Ticks + extension;
+            if(File.Exists(modPath)) File.Delete(modPath);
             DownloadManager m = new DownloadManager();
             int operationId = operations;
             operations++;
@@ -201,7 +202,7 @@ namespace QuestAppVersionSwitcher.Mods
                 Thread t = new Thread(() =>
                 {
                     runningOperations[operationId].isDone = true;
-                    InstallMod(modPath, Path.GetFileName(modPath));
+                    InstallMod(modPath, fileName + extension);
                 });
                 t.Start();
             };
