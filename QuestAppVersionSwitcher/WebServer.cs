@@ -1178,7 +1178,7 @@ namespace QuestAppVersionSwitcher
                 CoreService.coreVars.Save();
                 CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loadoculus=true");
             }
-            else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/");
+            else CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "/setup");
             if (CoreService.started) return;
             Thread t = new Thread(() =>
             {

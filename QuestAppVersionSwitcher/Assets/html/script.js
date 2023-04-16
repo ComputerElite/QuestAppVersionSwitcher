@@ -460,10 +460,6 @@ const params = new URLSearchParams(window.location.search)
 var afterRestore = ""
 var afterDownload = ""
 
-if(!localStorage.setupStarted) {
-    location = "/setup"
-}
-
 function CheckStartParams() {
     var download = params.get("download")
     var game = params.get("game")
@@ -688,7 +684,7 @@ setInterval(() => {
 }, 500)
 
 document.getElementById("setup").onclick = () => {
-    location = "/setup"
+    location = "/setup?open=true"
 }
 
 function StopGameDownload(id) {

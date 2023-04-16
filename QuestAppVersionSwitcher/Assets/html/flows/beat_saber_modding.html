@@ -305,8 +305,9 @@
             }).then(res => {
                 fetch(start + `/api/mods/installfromurl`, {
                     method: "POST",
-                    body: `https://github.com/ComputerElite/QuestAppVersionSwitcher/releases/download/1.10.8/CustomTypesPatched.qmod`
+                    body: `https://github.com/sc2ad/Il2CppQuestTypePatching/releases/download/v0.15.24/CustomTypes.qmod`
                 }).then(res => {
+                    localStorage.openMainDefault = true
                     location = start + "/?tab=mods"
                 })
             })

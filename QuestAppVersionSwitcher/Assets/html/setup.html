@@ -16,10 +16,37 @@
         </select>
         <br>
         <button onclick="Start()">Start</button>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <button id="openQAVS" style="font-size: 1em;" onclick="OpenQAVS()"><i>Open QAVS main menu by default</i></button>
     </div>
 <script>
+    var params = new URLSearchParams(window.location.search);
+    
+    if(localStorage.openMainDefault) {
+        if(!params.get("open")) {
+            location = "/"
+        }
+        document.getElementById("openQAVS").innerHTML = "Set this as default menu"
+    }
+    
+    function OpenQAVS() {
+        if(localStorage.openMainDefault) {
+            localStorage.removeItem("openMainDefault")
+            document.getElementById("openQAVS").innerHTML = "Open QAVS main menu by default"
+        } else {
+            localStorage.openMainDefault = true
+            location = "/"
+        }
+    }
+    
+    if(!params.get("open")) {
+        
+    }
     function Start() {
-        localStorage.setupStarted = true
         location = document.getElementById("options").value;
     }
 
