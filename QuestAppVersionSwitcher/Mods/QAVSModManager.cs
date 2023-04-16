@@ -69,6 +69,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static void Update()
         {
+            modManager.Reset();
             modManager.LoadModsForCurrentApp();
         }
 
