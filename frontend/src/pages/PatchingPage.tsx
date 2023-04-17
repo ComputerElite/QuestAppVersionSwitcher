@@ -13,8 +13,9 @@ import { Box, MenuItem, Select, Switch, TextField, Typography, Chip } from "@sui
 import { OptionHeader } from "./ToolsPage";
 import { createStore, produce } from "solid-js/store";
 import { GetGameName } from "../util";
-import { HandtrackingTypes, getPatchedModdingStatus, setPatchingOptions } from "../api/patching";
+import { HandtrackingTypes, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
 import toast from "solid-toast";
+import { isPackageInstalled } from "../api/android";
 
 
 export default function PatchingPage() {
@@ -34,9 +35,26 @@ export default function PatchingPage() {
   }
 
   async function startPatching() {
-    setIsPatchingModalOpen(false);
-    getPatchedModdingStatus
-    refetchModdingStatus();
+    // Should never happen, but just in case
+    if (!config()?.currentApp) return toast.error("No game selected");
+    if (!await isPackageInstalled(config()!.currentApp)) {
+      // Something desynced, refetch the modding status
+      refetchModdingStatus();
+      return toast.error("Game is not installed");
+    }
+    
+    try {
+      let result = await patchCurrentApp();
+      if (!result) {
+        toast.error("Failed to patch the game");
+        return;
+      }
+      await refetchModdingStatus();
+      setIsPatchingModalOpen(true);
+    } catch (e) {
+      console.error(e)
+      toast.error("Failed to patch game");
+    }
   }
 
   async function updatePatchingOptions(options: Partial<InternalPatchingOptions>) {
@@ -71,7 +89,7 @@ export default function PatchingPage() {
         <Title>Patching</Title>
 
         <Show when={config()?.currentApp && moddingStatus()?.isInstalled}>
-          <RunButton text={`${moddingStatus()?.isPatched ? 'Repatch' : 'Patch'} ${GetGameName(config()!.currentApp)}`} icon={<FirePatch />} variant='success' onClick={() => { setIsPatchingModalOpen(true) }} />
+          <RunButton text={`${moddingStatus()?.isPatched ? 'Repatch' : 'Patch'} ${GetGameName(config()!.currentApp)}`} icon={<FirePatch />} variant='success' onClick={startPatching} />
 
           {/* Patching options */}
           <Box sx={{ marginY: 3 }}>

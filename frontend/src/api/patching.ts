@@ -57,3 +57,13 @@ export async function getPatchingOptions(): Promise<PatchingRequestPermissions> 
     let result = await fetch("/api/patching/getpatchoptions");
     return await result.json();
 }
+
+
+export async function patchCurrentApp(): Promise<boolean>  {
+    
+    let result = await fetch("/api/patching/patchapk");
+    if (!result.ok) {
+        throw new Error("Failed to patch app");
+    }
+    return await result.json();
+}
