@@ -37,6 +37,61 @@
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/cyoobs/",
                 "requiresModded": true
             }
+            ,
+            {
+                "name": "Hit Sounds",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/HitSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Bad Hit Sounds",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/BadHitSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Note Missed Sounds",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/NoteMissedSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Menu Music",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/MenuMusic/",
+                "requiresModded": true
+            },
+            {
+                "name": "Menu Clicks",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/MenuClicks/",
+                "requiresModded": true
+            },
+            {
+                "name": "Firework",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/Firework/",
+                "requiresModded": true
+            },
+            {
+                "name": "Level Cleared",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LevelCleared/",
+                "requiresModded": true
+            },
+            {
+                "name": "Level Failed",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LevelFailed/",
+                "requiresModded": true
+            },
+            {
+                "name": "Lobby Music",
+                "fileType": ".ogg",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LobbyMusic/",
+                "requiresModded": true
+            }
         ]
     }
 }
