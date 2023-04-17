@@ -348,7 +348,7 @@ namespace QuestAppVersionSwitcher
             }); 
             server.AddRoute("GET", "/api/patching/getmodstatus", request =>
             {
-                PatchingStatus status = PatchingManager.GetPatchingStatus();
+                PatchingStatus status = PatchingManager.GetPatchingStatus(request.queryString.Get("package"));
                 if(status == null)
                 {
                     status = new PatchingStatus

@@ -148,6 +148,15 @@
     } else {
         FirstOpen()
     }
+    ChangeApp("com.beatgames.beatsaber")
+
+    function ChangeApp(package) {
+        console.log("Changing app to " + package)
+        fetch("/api/questappversionswitcher/changeapp", {
+            method: "POST",
+            body: package
+        })
+    }
     
     function UploadLogs() {
         logsInfoText.className = ""
@@ -277,7 +286,7 @@
     
     function UpdateModdedStatus() {
         return new Promise((resolve, reject) => {
-            fetch(start + "/api/patching/getmodstatus").then(res => res.json().then(j => {
+            fetch(start + "/api/patching/getmodstatus?package=com.beatgames.beatsaber").then(res => res.json().then(j => {
                 moddedStatus = j;
                 resolve();
             }))

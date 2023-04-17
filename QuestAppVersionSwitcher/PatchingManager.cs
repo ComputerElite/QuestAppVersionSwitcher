@@ -250,13 +250,14 @@ namespace QuestAppVersionSwitcher
             return result;
         }
 
-        public static PatchingStatus GetPatchingStatus()
+        public static PatchingStatus GetPatchingStatus(string app = null)
         {
-            if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+            if (app == null) app = CoreService.coreVars.currentApp;
+            if (!AndroidService.IsPackageInstalled(app))
             {
                 return null;
             }
-            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
+            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
             return GetPatchingStatus(apk);
         }
 
