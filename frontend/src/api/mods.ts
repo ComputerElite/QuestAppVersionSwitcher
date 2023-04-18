@@ -84,3 +84,16 @@ export async function InstallModFromUrl(url: string): Promise<boolean> {
 
     return false;
 }
+
+export async function getOperations() {
+    const response = await fetch('/api/mods/operations');
+    return await response.json();
+}
+
+export async function getOperation(id: string) {
+    const response = await fetch(`/api/mods/operations`, {
+        method: 'DELETE',
+        body: id
+    });
+    return await response.json();
+}

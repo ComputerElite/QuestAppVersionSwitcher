@@ -12,10 +12,9 @@ export async function isOnlyAppData(appId: string, backupName: string): Promise<
     params.append("package", appId);
     params.append("backupname", backupName);
 
-    
     let result = await fetch(`/api/isonlyappdata?${params}`);
-    if (result.status== 200 ) {
-        let text =  await result.text();
+    if (result.status == 200) {
+        let text = await result.text();
         if (text == "true") {
             return true;
         }
@@ -36,9 +35,14 @@ export async function isOnlyAppData(appId: string, backupName: string): Promise<
  */
 export async function isPackageInstalled(appId: string): Promise<boolean> {
     let result = await fetch(`/api/android/ispackageinstalled?package=${appId}`);
-    if (result.ok ) {
-        let text =  await result.text();
-        if (text.toLowerCase() == "true") {
+    if (result.ok) {
+        let text: {
+            isAppInstalled: boolean;
+            msg: string;
+            success: boolean;
+        } = await result.json();
+
+        if (text.success && text.isAppInstalled) {
             return true;
         }
     }
@@ -46,9 +50,9 @@ export async function isPackageInstalled(appId: string): Promise<boolean> {
 }
 
 
-export async function grantManageStorageAccess(appId:string): Promise<boolean> {
+export async function grantManageStorageAccess(appId: string): Promise<boolean> {
     let result = await fetch(`/api/grantmanagestorageappaccess?package=${appId}`);
-    if (result.ok ) {
+    if (result.ok) {
         return true;
     }
     return false;
@@ -59,10 +63,10 @@ export async function grantManageStorageAccess(appId:string): Promise<boolean> {
  * @param appId  app id (com.beatgames.beatsaber)
  * @returns true if the package is uninstalled
  */
-export async function uninstallPackage(appId:string): Promise<boolean> {
+export async function uninstallPackage(appId: string): Promise<boolean> {
     let result = await fetch(`/api/android/uninstallpackage?package=${appId}`);
-    
-    if (result.ok ) {
+
+    if (result.ok) {
         return true;
     }
     if (result.status == 230) {
@@ -78,10 +82,10 @@ export async function uninstallPackage(appId:string): Promise<boolean> {
  * @param appId 
  * @returns true if the app has access
  */
-export async function gotAccessToAppAndroidFolders(appId:string): Promise<boolean> {
+export async function gotAccessToAppAndroidFolders(appId: string): Promise<boolean> {
     let result = await fetch(`/api/gotaccess?package=${appId}`);
-    if (result.ok ) {
-        let text =  await result.text();
+    if (result.ok) {
+        let text = await result.text();
         if (text.toLowerCase() == "true") {
             return true;
         }
@@ -93,7 +97,7 @@ export async function gotAccessToAppAndroidFolders(appId:string): Promise<boolea
             throw new Error(msg);
         }
     }
-    return false;   
+    return false;
 }
 
 /**
@@ -101,9 +105,9 @@ export async function gotAccessToAppAndroidFolders(appId:string): Promise<boolea
  * @param appId app id (com.beatgames.beatsaber)
  * @returns true if the app requested access
  */
-export async function grantAccessToAppAndroidFolders(appId:string): Promise<boolean> {
+export async function grantAccessToAppAndroidFolders(appId: string): Promise<boolean> {
     let result = await fetch(`/api/grantaccess?package=${appId}`);
-    if (result.ok ) {
+    if (result.ok) {
         return true;
     } else {
         if (result.status == 400) {
@@ -112,14 +116,14 @@ export async function grantAccessToAppAndroidFolders(appId:string): Promise<bool
             throw new Error(msg);
         }
     }
-    return false;   
+    return false;
 }
 
 /**
  * Upload an apk file to backups
  * @param file apk file
  */
-export async function uploadAPK(file:File) {
+export async function uploadAPK(file: File) {
     let formData = new FormData();
     formData.append("file", file);
 
@@ -157,7 +161,7 @@ export async function installAPK(path: string) {
 export async function launchCurrentApp(): Promise<string> {
     let result = await fetch("/api/android/launch");
     let text = await result.text();
-    return text;    
+    return text;
 }
 
 

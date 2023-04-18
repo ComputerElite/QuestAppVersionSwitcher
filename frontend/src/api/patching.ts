@@ -41,7 +41,15 @@ export async function setPatchingOptions(permissions: InternalPatchingOptions): 
         otherPermissions: permissions.additionalPermissions,
     }
     
-    let result = await fetch(`/api/patching/setpatchoptions?body=${encodeURIComponent(JSON.stringify(apiFriendlyPermissions))}`);
+    let result = await fetch(`/api/patching/patchoptions`,
+        {
+            method: "POST",
+            body: JSON.stringify(apiFriendlyPermissions),
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+    );
 
     return result.ok;
 }   
@@ -54,7 +62,7 @@ export enum HandtrackingTypes {
 }
 
 export async function getPatchingOptions(): Promise<PatchingRequestPermissions> {
-    let result = await fetch("/api/patching/getpatchoptions");
+    let result = await fetch("/api/patching/patchoptions");
     return await result.json();
 }
 

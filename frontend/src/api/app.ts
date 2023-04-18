@@ -113,7 +113,10 @@ export async function setOculusToken(token: string, password: string) {
  * @returns true if the request was successful
  */
 export async function changeManagedApp(appId: string): Promise<boolean> {
-    let result = await fetch(`/api/questappversionswitcher/changeapp?body=${appId}`);
+    let result = await fetch(`/api/questappversionswitcher/changeapp`, {
+        method: "POST",
+        body: appId
+    });
 
     if (result.status != 200) {
         return false;
