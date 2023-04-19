@@ -91,6 +91,13 @@
                 "fileType": ".ogg",
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LobbyMusic/",
                 "requiresModded": true
+            },
+            {
+                "name": "Custom Songs",
+                "fileType": ".zip",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/",
+                "requiresModded": true,
+                "unzip": true
             }
         ]
     }

@@ -4,6 +4,7 @@ using QuestAppVersionSwitcher.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -182,23 +183,47 @@ namespace QuestAppVersionSwitcher
 		}
 
 		public bool requiresModded { get; set; } = true;
+		public bool unzip { get; set; } = false;
 
 		public void InstallCosmetic(string currentPath, bool deleteOriginalFile = true)
 		{
-			Logger.Log("Copying Cosmetic " + currentPath + " to " + directory);
-			FileManager.CreateDirectoryIfNotExisting(directory);
-			File.Copy(currentPath, directory + Path.GetFileName(currentPath), true);
-			Logger.Log("Copied");
-			if (deleteOriginalFile) File.Delete(currentPath);
+			if (unzip)
+			{
+				
+				Logger.Log("Extracting zip " + currentPath + " to " + directory);
+				FileManager.CreateDirectoryIfNotExisting(directory);
+				ZipFile.ExtractToDirectory(currentPath, directory + Path.GetFileNameWithoutExtension(currentPath), true);
+				Logger.Log("Extracted");
+				if (deleteOriginalFile) File.Delete(currentPath);
+			}
+			else
+			{
+				
+				Logger.Log("Copying Cosmetic " + currentPath + " to " + directory);
+				FileManager.CreateDirectoryIfNotExisting(directory);
+				File.Copy(currentPath, directory + Path.GetFileName(currentPath), true);
+				Logger.Log("Copied");
+				if (deleteOriginalFile) File.Delete(currentPath);
+			}
 		}
 
 		public List<string> GetInstalledCosmetics()
 		{
 			if (!Directory.Exists(directory)) return new List<string>();
 			List<string> cosmetics = new List<string>();
-			foreach(string s in Directory.GetFiles(directory))
+			if (unzip)
 			{
-				cosmetics.Add(Path.GetFileName(s));
+				foreach(string s in Directory.GetDirectories(directory))
+				{
+					cosmetics.Add(Path.GetFileName(s));
+				}
+			}
+			else
+			{
+				foreach(string s in Directory.GetFiles(directory))
+				{
+					cosmetics.Add(Path.GetFileName(s));
+				}
 			}
 			return cosmetics;
 		}
@@ -206,7 +231,14 @@ namespace QuestAppVersionSwitcher
 		public void RemoveCosmetic(string fileName)
 		{
 			Logger.Log("Deleting Cosmetic" + fileName + " from " + directory);
-			if (File.Exists(directory + fileName)) File.Delete(directory + fileName);
+			if (unzip)
+			{
+				if (Directory.Exists(directory + fileName)) Directory.Delete(directory + fileName, true);
+			}
+			else
+			{
+				if (File.Exists(directory + fileName)) File.Delete(directory + fileName);
+			}
 		}
 	}
 }
