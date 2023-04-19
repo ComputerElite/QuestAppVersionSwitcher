@@ -309,7 +309,7 @@ function InstallCosmetic() {
                 var extensionCount = 0
                 var typeIsSelected = false
                 for(const value of cosmeticTypes.fileTypes) {
-                    if(value.fileType.map(x => x.toLowerCase()).includes(extension.toLowerCase())) {
+                    if(value.fileTypes.map(x => x.toLowerCase()).includes(extension.toLowerCase())) {
                         extensionCount++
                         if(value.id == cosmeticsTypeSelect.value)typeIsSelected = true
                     }
