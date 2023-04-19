@@ -121,7 +121,7 @@ function UpdateCosmeticsTypes() {
                 if(!fvalue) {
                     fvalue = value.id
                 }
-                html += `<option class="listItem" value="${value.id}">${value.name} (${value.fileType})</option>`
+                html += `<option class="listItem" value="${value.id}">${value.name} (${value.fileTypes.join(", ")})</option>`
             }
         }
         document.getElementById("availableAfterModdingTypes").style.display = htmlAvailableAfterModding != "" ? "block" : "none"
@@ -309,7 +309,7 @@ function InstallCosmetic() {
                 var extensionCount = 0
                 var typeIsSelected = false
                 for(const value of cosmeticTypes.fileTypes) {
-                    if(value.fileType.toLowerCase() == extension.toLowerCase()) {
+                    if(value.fileType.map(x => x.toLowerCase()).includes(extension.toLowerCase())) {
                         extensionCount++
                         if(value.id == cosmeticsTypeSelect.value)typeIsSelected = true
                     }

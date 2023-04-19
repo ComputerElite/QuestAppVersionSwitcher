@@ -1,0 +1,104 @@
+{
+    "com.beatgames.beatsaber": {
+        "fileTypes": [
+            {
+                "name": "Sabers",
+                "fileTypes": [".qsaber"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/sabers/",
+                "requiresModded": true
+            },
+            {
+                "name": "Walls",
+                "fileTypes": [".qwall"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/walls/",
+                "requiresModded": true
+            },
+            {
+                "name": "Bloqs",
+                "fileTypes": [".qbloq"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/notes/",
+                "requiresModded": true
+            },
+            {
+                "name": "Whackers",
+                "fileTypes": [".whacker"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/whackers/",
+                "requiresModded": true
+            },
+            {
+                "name": "Boxes",
+                "fileTypes": [".box"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/boxes/",
+                "requiresModded": true
+            },
+            {
+                "name": "Cyoobs",
+                "fileTypes": [".cyoob"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/cyoobs/",
+                "requiresModded": true
+            }
+            ,
+            {
+                "name": "Hit Sounds",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/HitSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Bad Hit Sounds",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/BadHitSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Note Missed Sounds",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/NoteMissedSounds/",
+                "requiresModded": true
+            },
+            {
+                "name": "Menu Music",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/MenuMusic/",
+                "requiresModded": true
+            },
+            {
+                "name": "Menu Clicks",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/MenuClicks/",
+                "requiresModded": true
+            },
+            {
+                "name": "Firework",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/Firework/",
+                "requiresModded": true
+            },
+            {
+                "name": "Level Cleared",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LevelCleared/",
+                "requiresModded": true
+            },
+            {
+                "name": "Level Failed",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LevelFailed/",
+                "requiresModded": true
+            },
+            {
+                "name": "Lobby Music",
+                "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/LobbyMusic/",
+                "requiresModded": true
+            },
+            {
+                "name": "Custom Songs",
+                "fileTypes": ["zip"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/",
+                "requiresModded": true,
+                "unzip": true
+            }
+        ]
+    }
+}

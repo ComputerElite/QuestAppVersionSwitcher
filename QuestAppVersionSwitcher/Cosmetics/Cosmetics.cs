@@ -64,13 +64,13 @@ namespace QuestAppVersionSwitcher
 
 		public static Cosmetics LoadCosmetics()
 		{
-			Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new.json");
+			Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new-new.json");
 			WebClient c = new WebClient();
 			string cosmetics = "{}";
 			string jsonLoc = CoreService.coreVars.QAVSDir + "cosmetics.json";
 			try
 			{
-				cosmetics = c.DownloadString("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new.json");
+				cosmetics = c.DownloadString("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new-new.json");
 				File.WriteAllText(jsonLoc, cosmetics);
 				Logger.Log("Caching Cosmetics");
 			} catch
@@ -122,7 +122,7 @@ namespace QuestAppVersionSwitcher
 		
 		public CosmeticType GetFileTypeByExtension(string extension)
 		{
-			return fileTypes.FirstOrDefault(x => x.fileType == extension);
+			return fileTypes.FirstOrDefault(x => x.fileTypes.Contains(extension));
 			return null;
 		}public CosmeticType GetFileTypeById(string id)
 		{
@@ -172,13 +172,14 @@ namespace QuestAppVersionSwitcher
 	{
 		public string name { get; set; } = "Unknown";
 		public string fileType { get; set; } = "Unknown";
+		public List<string> fileTypes { get; set; } = new List<string>();
 		public string directory { get; set; } = "";
 
 		public string id
 		{
 			get
 			{
-				return name + "-" + fileType;
+				return name + "-" + String.Join("-", fileTypes);
 			}
 		}
 
