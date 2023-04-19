@@ -94,7 +94,7 @@
             },
             {
                 "name": "Custom Songs",
-                "fileTypes": ["jzip"],
+                "fileTypes": [".zip"],
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/SongLoader/CustomLevels/",
                 "requiresModded": true,
                 "unzip": true
