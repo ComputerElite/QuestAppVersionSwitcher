@@ -49,7 +49,9 @@ export async function getBackups(appId: string): Promise<getBackupsResponse> {
  * @throws Error if the request was not successful
  */
 export async function restoreAppBackup(appId: string, backupName: string) {
-    let result = await fetch(`/api/restoreapp?package=${appId}&backupname=${backupName}`);
+    let result = await fetch(`/api/restoreapp?package=${appId}&backupname=${backupName}`, {
+        method: "POST"
+    });
 
     if (result.ok) {
         return true;

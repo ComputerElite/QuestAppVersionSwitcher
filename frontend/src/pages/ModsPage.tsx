@@ -1,6 +1,6 @@
 import { For, Index, JSX, Show, batch, createEffect, createMemo, createSignal, mapArray, onCleanup, onMount } from "solid-js";
 import { DeleteMod, IMod, InstallModFromUrl, UpdateModState, UploadMod, getModsList } from "../api/mods";
-import image from "./../assets/DefaultCover.png"
+import defaultImage from "./../assets/DefaultCover.png"
 import "./ModsPage.scss";
 import { modsList, mutateMods, refetchMods } from "../state/mods";
 import { CompareStringsAlphabetically, Sleep } from "../util";
@@ -323,7 +323,7 @@ function ModCard({ mod }: { mod: IMod }) {
         "width": "160px",
         "height": "92px",
         "aspect-ratio": "16 / 9",
-      }} src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : image} />
+      }} src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : defaultImage} />
       <Box
         sx={{
           flexGrow: 1,

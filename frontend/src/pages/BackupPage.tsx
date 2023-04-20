@@ -4,7 +4,7 @@ import { backupList } from '../state/backups';
 import { showChangeGameModal } from '../modals/ChangeGameModal';
 import { For, createEffect, createSignal, on } from 'solid-js';
 import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/material';
-import { IBackup } from '../api/backups';
+import { IBackup, restoreAppBackup } from '../api/backups';
 import { FaSolidWindowRestore } from 'solid-icons/fa';
 import { FiTrash } from 'solid-icons/fi'
 const [selectedBackup, setSelectedBackup] = createSignal<IBackup | null>(null);
@@ -28,6 +28,22 @@ export default function BackupPage() {
         }
     }))
 
+    async function onRestoreClick(backup: IBackup) {
+        console.log("restore");
+        let confirm = await showConfirmModal({
+            title: "Restore backup",
+            message: `Are you sure you want to restore the backup "${backup.backupName}"?`,
+            okText: "Restore",
+            cancelText: "Cancel",
+        })
+
+        if (confirm) {
+            console.log("restore confirmed");
+            
+            restoreAppBackup(config()!.currentApp, backup.backupName);
+        };
+    }
+
     async function onDeleteClick(backup: IBackup) {
         console.log("delete");
         let confirm = await showConfirmModal({
@@ -39,6 +55,7 @@ export default function BackupPage() {
 
         if (confirm) {
             console.log("delete confirmed");
+
         };
     }
 
@@ -98,7 +115,7 @@ export default function BackupPage() {
                 }}>
                     <For each={backupList()?.backups}>
                         {(backup) => (
-                            <BackupItem backup={backup} onDeleteClick={onDeleteClick} />
+                            <BackupItem backup={backup} onDeleteClick={onDeleteClick} onRestoreClick={onRestoreClick} />
                         )}
                     </For>
                 </List>
@@ -111,6 +128,7 @@ export default function BackupPage() {
 interface BackupItemProps {
     backup: IBackup;
     onDeleteClick?: (backup: IBackup) => void;
+    onRestoreClick?: (backup: IBackup) => void;
 }
 
 /**
@@ -184,7 +202,7 @@ function BackupItem(props: BackupItemProps) {
                 gap: 2,
                 alignItems: "right",
             }}>
-                <IconButton color='info' onClick={() => props.onDeleteClick != null && props?.onDeleteClick(props.backup)}>
+                <IconButton color='info' onClick={() => props.onRestoreClick != null && props?.onRestoreClick(props.backup)}>
                     <RestoreIcon />
                 </IconButton>
                 <IconButton color='error' onClick={() => props.onDeleteClick != null && props?.onDeleteClick(props.backup)}>
