@@ -51,6 +51,8 @@ const [appList, { refetch: refetchApps, mutate: mutateApps }] = createResource<I
     );
   });
 
+  resp = resp.sort((a, b) => { return a.AppName.localeCompare(b.AppName) });
+
   return resp;
 }, { storage: createDeepSignal });
 
@@ -92,14 +94,16 @@ export default function ChangeGameModal() {
       onClose={closeModal}
       onBackdropClick={closeModal}
       title={"Change Game"}
+     
       buttons={<>
         <RunButton onClick={closeModal} variant="error" text="Cancel"></RunButton>
         <RunButton onClick={onOk} variant="success" text="Ok" ></RunButton>
       </>}
     >
      
-      <Box sx={{ mt: 0, overflowX: "auto" }}>
+      <Box sx={{ mt: 0, overflowX: "auto", }}>
         <List>
+          
           <For each={appList()}>
             {(app) => (
               <ListItem sx={{

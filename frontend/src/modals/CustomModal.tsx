@@ -12,12 +12,23 @@ type ModalProps = {
     onBackdropClick?: () => void;
     offsetLess?: boolean;
     hideCloseButton?: boolean;
+    limitHeight?: boolean;
     title?: string;
     children: JSX.Element;
     buttons?: JSX.Element;
 };
 export const CustomModal = (props: ModalProps) => {
-    const [local, rest] = splitProps(props, ["open", "onClose", "onBackdropClick", "children", "hideCloseButton", "title", "offsetLess", "buttons"]);
+    const [local, rest] = splitProps(props, [
+        "open",
+        "onClose",
+        "onBackdropClick",
+        "children",
+        "hideCloseButton",
+        "title",
+        "offsetLess",
+        "buttons",
+        "limitHeight"
+    ]);
 
     const content = children(() => local.children)
     const buttons = children(() => local.buttons)
@@ -29,6 +40,7 @@ export const CustomModal = (props: ModalProps) => {
             BackdropProps={{
                 sx: {
                     backdropFilter: "blur(10px)",
+                    maxHeight: (theme) => (local.limitHeight ? "100vh" : "unset"),
                 }
             }}
             {...rest}
@@ -37,14 +49,13 @@ export const CustomModal = (props: ModalProps) => {
             <Box
                 sx={{
                     position: "absolute",
+                    display: "flex",
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     // width: 400,
                     bgcolor: "#1F2937",
                     boxShadow: "24px",
-
-                    display: "flex",
                     flexDirection: "column",
                     maxHeight: "100vh",
                     overflowY: "auto",
@@ -72,36 +83,34 @@ export const CustomModal = (props: ModalProps) => {
                         </IconButton>
                     </Show>
                 </Box>
+                {content()}
+
 
                 <Box sx={{
-                    position: "relative",
+                    px: 0,
+                    pb: 2,
+                    maxWidth: "500px",
+                    minWidth: "300px",
                 }}>
 
-                    <Box sx={{
-                        px: 0,
-                        pb: 2,
-                        maxWidth: "500px",
-                        minWidth: "300px",
-                    }}>
-                        {content()}
-                        <Show when={local.buttons}>
+                    <Show when={local.buttons}>
 
-                            <Box sx={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                mt: 2,
-                                gap: 1,
-                                px: 3,
-                                py: 1,
-                                pr: 1,
-                                pb: 0
-                            }}>
-                                {buttons()}
-                            </Box>
-                        </Show> 
-                    </Box>
+                        <Box sx={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            mt: 2,
+                            gap: 1,
+                            px: 3,
+                            py: 1,
+                            pr: 1,
+                            pb: 0
+                        }}>
+                            {buttons()}
+                        </Box>
+                    </Show>
                 </Box>
             </Box>
+
         </Modal>
     )
 }
