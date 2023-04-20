@@ -1,7 +1,9 @@
 name: .NET
 
+# Run on every push on main branch
 on:
-  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,29 +18,42 @@ jobs:
       with:
         repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils\'
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
       with:
-        dotnet-version: 5.0.x
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('QAVS/**/*.csproj') }}-${{ hashFiles('ComputerUtils/**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
+
     - name: Restore dependencies
       working-directory: 'QAVS'
       run: nuget restore
+
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
-      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid  /p:Configuration=Release
-    - uses: r0adkll/sign-android-release@v1.0.3
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage  /p:Configuration=Release
+    
+    - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       id: sign_app
       with:
-        releaseDirectory: QAVS\QuestAppVersionSwitcher\bin\Release
+        releaseDirectory: QAVS/QuestAppVersionSwitcher/bin/Release
         signingKeyBase64: ${{ secrets.SIGNING_KEY }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
       env:
         # override default build-tools version (29.0.3) -- optional
-        BUILD_TOOLS_VERSION: "30.0.2"
+        BUILD_TOOLS_VERSION: "33.0.2"
 
     # Example use of `signedReleaseFile` output -- not needed
     - uses: actions/upload-artifact@v2
