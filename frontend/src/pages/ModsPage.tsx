@@ -55,7 +55,8 @@ async function checkModsCanBeInstalled() {
     return toast.error("Game is not modded! Mod it first before installing mods");
   }
 
-  if (!(await gotAccessToAppAndroidFolders(config()!.currentApp))) {
+  let hasAccess = await gotAccessToAppAndroidFolders(config()!.currentApp);
+  if (!hasAccess) {
     toast.error("Failed to get access to game folders. We will request access again in 3 seconds, try again after that.");
     Sleep(3000);
     let result = await grantAccessToAppAndroidFolders(config()!.currentApp);
@@ -68,8 +69,6 @@ async function checkModsCanBeInstalled() {
 async function onFileDrop(e: DragEvent) {
   e.preventDefault();
   e.stopPropagation();
-
-  if (!(await checkModsCanBeInstalled())) return;
 
 
   // If dropped items aren't files, reject them
@@ -99,10 +98,12 @@ async function onFileDrop(e: DragEvent) {
         filesToUpload.push(file);
       });
     }
-
-
-
+    // Get the url if there is one
     let url = e.dataTransfer.getData("URL");
+
+    // Check if we can install mods here because we will lose the drag event if we await
+    if (!(await checkModsCanBeInstalled())) return;
+
     if (url) {
       await InstallModFromUrl(url);
       await Sleep(2000);

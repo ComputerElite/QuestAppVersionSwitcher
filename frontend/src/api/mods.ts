@@ -44,12 +44,25 @@ export async function getModsList(): Promise<ModListResponse> {
 };
 
 export async function UploadMod(file: File): Promise<boolean> {
-    const response = await fetch(`/api/mods/install?filename=${file.name}`, {
+    const response = await fetch(`/api/install?filename=${file.name}`, {
         method: 'POST',
         body: file
     });
 
-    return true;
+    if (response.ok) { 
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await response.json();
+        if (!json.success) {
+            throw new Error(json.msg);
+        }
+        if (json.success) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 
@@ -60,7 +73,19 @@ export async function UploadMod(file: File): Promise<boolean> {
  */
 export async function DeleteMod(id: string): Promise<boolean> {
     const response = await fetch(`/api/mods/delete?id=${id}`, {method: "POST"});
-    return true;
+    if (response.ok) {
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await response.json();
+        if (!json.success) {
+            throw new Error(json.msg);
+        }
+        if (json.success) {
+            return true;
+        }
+    }
+    return false;
 }
 
 

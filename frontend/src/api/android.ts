@@ -77,6 +77,11 @@ export async function uninstallPackage(appId: string): Promise<boolean> {
     throw new Error(await result.text());
 }
 
+interface gotAccessToAppAndroidFoldersResult {
+    success: boolean;
+    msg: string;
+    gotAccess: boolean;
+} 
 /**
  * Checks if QAVS has access to the android folders /sdcard/Android/data/ and /sdcard/Android/obb/
  * @param appId 
@@ -85,8 +90,8 @@ export async function uninstallPackage(appId: string): Promise<boolean> {
 export async function gotAccessToAppAndroidFolders(appId: string): Promise<boolean> {
     let result = await fetch(`/api/gotaccess?package=${appId}`);
     if (result.ok) {
-        let text = await result.text();
-        if (text.toLowerCase() == "true") {
+        let json: gotAccessToAppAndroidFoldersResult = await result.json();
+        if (json.gotAccess === true) {
             return true;
         }
     } else {
@@ -106,7 +111,9 @@ export async function gotAccessToAppAndroidFolders(appId: string): Promise<boole
  * @returns true if the app requested access
  */
 export async function grantAccessToAppAndroidFolders(appId: string): Promise<boolean> {
-    let result = await fetch(`/api/grantaccess?package=${appId}`);
+    let result = await fetch(`/api/grantaccess?package=${appId}`, {
+        method: "POST"
+    });
     if (result.ok) {
         return true;
     } else {
