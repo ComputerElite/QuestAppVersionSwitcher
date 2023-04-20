@@ -67,6 +67,7 @@ namespace QuestAppVersionSwitcher
                     }
                 }
                 AndroidCore.context.StartActivity(typeof(MainActivity));
+                Finish();
             },200);
         }
     }
