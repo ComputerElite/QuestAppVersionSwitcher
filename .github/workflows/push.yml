@@ -18,19 +18,38 @@ jobs:
       with:
         repository: 'ComputerElite/ComputerUtils'
         path: 'ComputerUtils\'
+
+    - name: Cache NodeJS packages
+      uses: actions/cache@v3
+      with:
+        path: QAVS/frontend/node_modules
+        key: ${{ runner.os }}-node-${{ hashFiles('QAVS/frontend/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('QAVS/**/*.csproj') }}-${{ hashFiles('ComputerUtils/**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
+
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
+
     - name: Restore dependencies
       working-directory: 'QAVS'
       run: nuget restore
 
     # Setup and build react app
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
         node-version: '18'
         cache: 'yarn'
