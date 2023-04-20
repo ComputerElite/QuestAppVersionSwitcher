@@ -1,0 +1,69 @@
+name: .NET
+
+# Run on every push on main branch
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: 'QAVS'
+    - uses: actions/checkout@v3
+      with:
+        repository: 'ComputerElite/ComputerUtils'
+        path: 'ComputerUtils\'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Restore dependencies
+      working-directory: 'QAVS'
+      run: nuget restore
+
+    # Setup and build react app
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: QAVS/frontend/yarn.lock
+    
+    # Install and cache dependencies
+    - name: Install frontend dependencies
+      working-directory: 'QAVS/frontend/'
+      run: yarn install
+
+    # Build the frontend
+    - name: Build frontend
+      working-directory: 'QAVS/frontend/'
+      run: yarn build
+
+    - name: Build
+      working-directory: 'QAVS\QuestAppVersionSwitcher'
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage  /p:Configuration=Release
+    
+    - uses: r0adkll/sign-android-release@v1.0.4
+      name: Sign app APK
+      id: sign_app
+      with:
+        releaseDirectory: QAVS/QuestAppVersionSwitcher/bin/Release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+      env:
+        # override default build-tools version (29.0.3) -- optional
+        BUILD_TOOLS_VERSION: "33.0.2"
+
+    # Example use of `signedReleaseFile` output -- not needed
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Signed app bundle
+        path: ${{steps.sign_app.outputs.signedReleaseFile}}
