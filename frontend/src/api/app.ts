@@ -33,7 +33,7 @@ export async function setConfig(config: getConfigResponse) {
 }
 
 /**
- * Close the app
+ * Close the QAVS app
  * @returns 
  */
 export async function exitApp() {
@@ -41,14 +41,6 @@ export async function exitApp() {
     return await result.text();
 }
 
-/**
- * Close the app
- * @returns 
- */
-export async function startGame() {
-    let result = await fetch("/api/questappversionswitcher/kill");
-    return await result.text();
-}
 
 /**
  * Change the port of WebUI

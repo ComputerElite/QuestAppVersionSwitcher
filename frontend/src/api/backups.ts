@@ -29,7 +29,7 @@ export interface getBackupsResponse {
  * - If backup directory does not exist: {}
  * - If backup directory exists: {backups: Array<IBackup>, lastRestored: string, backupsSize: number, backupsSizeString: string}
  */
-export async function getBackups(appId: string): Promise<getBackupsResponse | {}> {
+export async function getBackups(appId: string): Promise<getBackupsResponse> {
     let result = await fetch(`/api/backups?package=${appId}`);
     if (result.ok) {
         return await result.json();

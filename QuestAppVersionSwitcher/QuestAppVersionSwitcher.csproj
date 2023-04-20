@@ -346,4 +346,14 @@
     <Target Name="AfterBuild">
     </Target>
   -->
+  <ItemGroup>
+    <ReactOutput Include="../frontend/dist/**/*" />
+  </ItemGroup>
+  <Target Name="CopyReactOutputToAssets" BeforeTargets="PrepareForBuild">
+    <Message Text="Copying React output to assets..." Importance="high" />
+    <Copy SourceFiles="@(ReactOutput)" DestinationFiles="@(ReactOutput->'$(MSBuildProjectDirectory)/Assets/new/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ItemGroup>
+        <AndroidAsset Include="@(ReactOutput->'$(MSBuildProjectDirectory)/Assets/new/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+</Target>
 </Project>

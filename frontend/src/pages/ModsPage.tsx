@@ -13,11 +13,16 @@ import { PlusIcon, UploadRounded } from "../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
 import CloseRounded from "@suid/icons-material/CloseRounded";
-import { startGame } from "../api/app";
 import { FiRefreshCcw } from "solid-icons/fi";
+import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCurrentApp } from "../api/android";
+import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../store";
+import { showChangeGameModal } from "../modals/ChangeGameModal";
+import { getPatchedModdingStatus } from "../api/patching";
 
 
 async function UploadModClick() {
+  if (!(await checkModsCanBeInstalled())) return;
+
   var input = document.createElement('input');
   input.type = 'file';
   input.multiple = true;
@@ -35,10 +40,37 @@ async function UploadModClick() {
   })
 }
 
+async function checkModsCanBeInstalled() {
+  if (config()?.currentApp == null) {
+    showChangeGameModal();
+    toast.error("No game selected! Select a game first");
+    return false;
+  }
+
+  if (!(moddingStatus()?.isInstalled ?? false)) {
+    return toast.error("Game is not installed! Install it first before installing mods");
+  }
+
+  if (!(moddingStatus()?.isPatched ?? false)) {
+    return toast.error("Game is not modded! Mod it first before installing mods");
+  }
+
+  if (!(await gotAccessToAppAndroidFolders(config()!.currentApp))) {
+    toast.error("Failed to get access to game folders. We will request access again in 3 seconds, try again after that.");
+    Sleep(3000);
+    let result = await grantAccessToAppAndroidFolders(config()!.currentApp);
+    return false;
+  }
+
+  return true;
+}
 
 async function onFileDrop(e: DragEvent) {
   e.preventDefault();
   e.stopPropagation();
+
+  if (!(await checkModsCanBeInstalled())) return;
+
 
   // If dropped items aren't files, reject them
   if (!e.dataTransfer) return;
@@ -67,6 +99,8 @@ async function onFileDrop(e: DragEvent) {
         filesToUpload.push(file);
       });
     }
+
+
 
     let url = e.dataTransfer.getData("URL");
     if (url) {
@@ -127,6 +161,23 @@ export default function ModsPage() {
     }
   }
 
+  async function onGameStart() {
+    await refetchSettings();
+    
+    if (!config()?.currentApp) {
+      toast.error("Please select a game first");
+      return await showChangeGameModal();
+    }
+
+    await refetchModdingStatus();
+    if (!(moddingStatus()?.isInstalled ?? false)) {
+      return toast.error("Game is not installed");
+    }
+
+    await launchCurrentApp();
+    toast.success("Game started");
+  }
+
   onMount(async () => {
     window.addEventListener("drop", ondrop);
     window.addEventListener("dragover", ondragover);
@@ -180,7 +231,7 @@ export default function ModsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={startGame} />
+            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={onGameStart} />
             <RunButton text='Upload a mod' icon={<UploadRounded />} onClick={UploadModClick} />
             <span style={{
               "font-family": "Roboto",

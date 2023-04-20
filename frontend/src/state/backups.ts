@@ -1,9 +1,6 @@
-import { Signal, createEffect, createResource, createSignal, on } from "solid-js"
+import { Signal, createEffect, createResource, on } from "solid-js"
 import { createStore, reconcile, unwrap } from "solid-js/store";
-import { IMod, getModsList } from "../api/mods"
-import { getPatchingModStatus } from "../api/patching";
-import { getConfig } from "../api/app";
-import { IBackup, getBackups, getBackupsResponse } from "../api/backups";
+import { getBackups, getBackupsResponse } from "../api/backups";
 import { config } from "../store";
 
 // Reconclile
@@ -35,6 +32,7 @@ export const [backupList, { refetch: refetchBackups, mutate: mutateBackups }] = 
             backups: [],
             backupsSize: 0,
             backupsSizeString: "",
+            lastRestored: ""
         };
     }
 

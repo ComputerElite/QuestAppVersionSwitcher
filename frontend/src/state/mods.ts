@@ -1,8 +1,7 @@
-import { Signal, createEffect, createResource, createSignal, on } from "solid-js"
+import { Signal, createResource } from "solid-js"
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import { IMod, getModsList } from "../api/mods"
-import { getPatchingModStatus } from "../api/patching";
-import { getConfig } from "../api/app";
+
 
 // Reconclile
  function createDeepSignal<T>(value: T): Signal<T> {
