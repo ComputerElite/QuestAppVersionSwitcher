@@ -16,18 +16,15 @@ import ToolsPage from './pages/ToolsPage';
 import { MetaProvider } from '@solidjs/meta';
 import ModalContainer from './modals/ModalContainer';
 
-// Fonts
-import "@fontsource/roboto"; // Defaults to weight 400.
-import "@fontsource/roboto/300.css"; // Weight 300.
-import "@fontsource/roboto/500.css"; // Weight 500.
-import "@fontsource/roboto/700.css"; // Weight 700.
-
 
 import style from "./App.module.scss"
 import { ThemeProvider } from '@suid/material';
 import { theme } from './theme';
 import { refetchAppInfo, refetchCosmeticTypes, refetchModdingStatus } from './store';
 
+
+// Font roboto
+import '@fontsource/roboto';
 
 const App: Component = () => {
   // Load app info on startup

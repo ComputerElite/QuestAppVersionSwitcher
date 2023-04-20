@@ -12,9 +12,6 @@ export default defineConfig({
       }
     },
   },
-  build: {
-    target: 'esnext',
-  },
   resolve: {
     alias: {
       '@': '/src',
@@ -26,5 +23,15 @@ export default defineConfig({
           additionalData: `@import "@/assets/global.scss"; `
         }
       }
+  },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name].js`,
+        chunkFileNames: `assets/[name].js`,
+        assetFileNames: `assets/[name].[ext]`
+      }
+    }
   }
 });
