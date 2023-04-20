@@ -30,6 +30,7 @@ using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Android.Graphics;
 using Android.OS;
 using Android.Provider;
@@ -271,6 +272,32 @@ namespace QuestAppVersionSwitcher
                     CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
                 });
             };
+            server.AddRoute("GET", "/api/proxy", request =>
+            {
+                WebClient c = new WebClient();
+                c.Headers.Add("user-agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
+                try
+                {
+                    string s = c.DownloadString(request.queryString.Get("url"));
+                    request.SendString(s);
+                }
+                catch (Exception e)
+                {
+                    request.SendString("", "text/plain", 500);
+                }
+                return true;
+            });
+            server.AddRoute("POST", "/api/base64", request =>
+            {
+                string fileMimeType = request.queryString.Get("mime");
+                Logger.Log("fileMimeType of blob: " + fileMimeType);
+                string extension = ".qmod";
+                if (fileMimeType == "application/qmod") extension = ".qmod"; // future proof for more supported mime types
+                Regex regex = new Regex("^data:" + fileMimeType + ";base64,");
+                byte[] bytes = Convert.FromBase64String( regex.Replace(request.bodyString, ""));
+                QAVSModManager.InstallMod(bytes, "mod" + extension, "");
+                return true;
+            });
             server.AddRoute("GET", "/api/mods/mods", request =>
             {
                 request.SendString(QAVSModManager.GetMods(), "application/json");

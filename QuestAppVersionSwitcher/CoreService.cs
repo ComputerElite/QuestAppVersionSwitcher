@@ -24,6 +24,7 @@ using Com.Xamarin.Formsviewgroup;
 using ComputerUtils.Android;
 using Xamarin.Essentials;
 using Environment = Android.OS.Environment;
+using Object = Java.Lang.Object;
 
 namespace QuestAppVersionSwitcher.Core
 {
@@ -56,6 +57,8 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.AllowFileAccess = true;
             browser.Settings.JavaScriptCanOpenWindowsAutomatically = true;
             browser.SetWebViewClient(new QAVSWebViewClient());
+            browser.Settings.DefaultTextEncodingName = "utf-8";
+            browser.AddJavascriptInterface(new QAVSJavascriptInterface(), "QAVSJavascript");
             browser.SetDownloadListener(new DownloadListener());
             CookieManager.Instance.SetAcceptThirdPartyCookies(browser, true);
             
@@ -88,7 +91,7 @@ namespace QuestAppVersionSwitcher.Core
             started = true;
         }
     }
-    
+
     public class ManageStoragePermissionCallback : Java.Lang.Object, IActivityResultCallback
     {
         public void OnActivityResult(Java.Lang.Object result)

@@ -127,6 +127,7 @@
     <Compile Include="OculusGraphQLApiLib\Results\User.cs" />
     <Compile Include="OculusGraphQLApiLib\Tests.cs" />
     <Compile Include="PatchingManager.cs" />
+    <Compile Include="QAVSJavascriptInterface.cs" />
     <Compile Include="QuestPatcher\ApkAligner.cs" />
     <Compile Include="QuestPatcher\APKSignatureSchemeV2.cs" />
     <Compile Include="QuestPatcher\APKSigningBlock.cs" />
