@@ -51,9 +51,41 @@ export async function isPackageInstalled(appId: string): Promise<boolean> {
 
 
 export async function grantManageStorageAccess(appId: string): Promise<boolean> {
-    let result = await fetch(`/api/grantmanagestorageappaccess?package=${appId}`);
+    let result = await fetch(`/api/grantmanagestorageappaccess?package=${appId}`,
+        {
+            method: "POST"
+        }
+    );
     if (result.ok) {
-        return true;
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await result.json();
+
+        if (json.success) {
+            return true;
+        }
+        throw new Error(json.msg);
+    }
+    return false;
+}
+
+export async function hasManageStorageAccess(appId: string): Promise<boolean> {
+    let result = await fetch(`/api/hasmanagestorageappaccess?package=${appId}`);
+    if (result.ok) {
+        let json: {
+            success: boolean;
+            msg: string;
+            gotAccess: boolean;
+        } = await result.json();
+
+        if (json.success && json.gotAccess) {
+            return true;
+        }
+        if (json.success && !json.gotAccess) {
+            return false;
+        }
+        throw new Error(json.msg);
     }
     return false;
 }
@@ -64,24 +96,38 @@ export async function grantManageStorageAccess(appId: string): Promise<boolean> 
  * @returns true if the package is uninstalled
  */
 export async function uninstallPackage(appId: string): Promise<boolean> {
-    let result = await fetch(`/api/android/uninstallpackage?package=${appId}`);
+    let result = await fetch(`/api/android/uninstallpackage?package=${appId}`, {
+        method: "POST"
+    });
+
+
 
     if (result.ok) {
-        return true;
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await result.json();
+
+        if (json.success) {
+            return true;
+        }
+
+        throw new Error(json.msg);
+
     }
+
     if (result.status == 230) {
         toast("App is already uninstalled");
         return true;
     }
-
-    throw new Error(await result.text());
+    return false;
 }
 
 interface gotAccessToAppAndroidFoldersResult {
     success: boolean;
     msg: string;
     gotAccess: boolean;
-} 
+}
 /**
  * Checks if QAVS has access to the android folders /sdcard/Android/data/ and /sdcard/Android/obb/
  * @param appId 
@@ -165,10 +211,21 @@ export async function installAPK(path: string) {
  * Launches currently selected app
  * @returns 
  */
-export async function launchCurrentApp(): Promise<string> {
-    let result = await fetch("/api/android/launch");
-    let text = await result.text();
-    return text;
+export async function launchCurrentApp(): Promise<boolean> {
+    let result = await fetch("/api/android/launch", {
+        method: "POST"
+    });
+    if (result.ok) {
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await result.json();
+        if (json.success) {
+            return true;
+        }
+        throw new Error(json.msg);
+    }
+    return false;
 }
 
 

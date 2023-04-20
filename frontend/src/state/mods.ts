@@ -18,7 +18,6 @@ import { IMod, getModsList } from "../api/mods"
         typeof v === "function" && (v = v(unwrapped));
         setStore("value", reconcile(v));
         return store.value;
-        debugger;
       }
     ] as Signal<T>;
   }

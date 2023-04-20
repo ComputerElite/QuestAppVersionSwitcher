@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta"
 import "./ToolsPage.scss"
 import { changePort, exitApp } from "../api/app"
-import { uninstallPackage, isPackageInstalled, launchCurrentApp } from "../api/android"
+import { uninstallPackage, isPackageInstalled, launchCurrentApp, hasManageStorageAccess, grantManageStorageAccess, gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders } from "../api/android"
 import { showChangeGameModal } from "../modals/ChangeGameModal"
 import PageLayout from "../Layouts/PageLayout"
 import { Box, TextField, Typography } from "@suid/material"
@@ -28,7 +28,7 @@ export const OptionHeader = (props: { children: any }) => {
 
 export default function ToolsPage() {
   // Local state
-  const [port, setPort] = createSignal<number|null>(config()?.serverPort ?? null)
+  const [port, setPort] = createSignal<number | null>(config()?.serverPort ?? null)
 
 
   // React to port change in config
@@ -41,7 +41,7 @@ export default function ToolsPage() {
 
 
 
-  function uninstallGame() {
+  async function uninstallGame() {
     let currentGame = config()?.currentApp;
 
     if (!currentGame) return toast.error("No game selected! Open Change App modal and select a game.")
@@ -50,7 +50,11 @@ export default function ToolsPage() {
       toast("Uninstall dialog is open on quest itself!")
     }
 
-    uninstallPackage(currentGame);
+    if (!await isPackageInstalled(currentGame)) {
+      return toast.error("Game is not installed, install the game to delete it lol!")
+    }
+
+    await uninstallPackage(currentGame);
   }
 
   async function startGame() {
@@ -69,6 +73,32 @@ export default function ToolsPage() {
     await launchCurrentApp();
   }
 
+
+  async function getPermissionsToGameFolderClick() {
+    let currentGame = config()?.currentApp;
+    if (!currentGame) {
+      return toast.error("No game selected! Open Change App modal and select a game.")
+    }
+
+    if (await gotAccessToAppAndroidFolders(currentGame)) {
+      return toast.error("Permissions are already granted!")
+    }
+    
+    await grantAccessToAppAndroidFolders(currentGame);
+  }
+
+  async function allowManageStorageClick() {
+    let currentGame = config()?.currentApp;
+    if (!currentGame) {
+      return toast.error("No game selected! Open Change App modal and select a game.")
+    }
+
+    if (await hasManageStorageAccess(currentGame)) {
+      return toast.error("Permission is already granted!")
+    }
+    grantManageStorageAccess(currentGame);
+  }
+
   async function changePortClick() {
     let requestedPort = port()
     if (!requestedPort) return toast.error("Invalid port!")
@@ -79,7 +109,7 @@ export default function ToolsPage() {
     try {
       await changePort(requestedPort)
       toast.success(`Port changed to ${requestedPort}, restart the app to apply changes!`)
-      
+
       // Refresh application state to keep the ui working
       await refetchSettings();
     } catch (e) {
@@ -130,8 +160,8 @@ export default function ToolsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Give permissions to game folder' icon={<PlayArrowRounded />} />
-            <RunButton text='Allow manage storage permission' icon={<DeleteIcon />} />
+            <RunButton text='Give permissions to game folder' icon={<PlayArrowRounded />} onClick={getPermissionsToGameFolderClick} />
+            <RunButton text='Allow manage storage permission' icon={<DeleteIcon />} onClick={allowManageStorageClick} />
           </Box>
         </Box>
 
