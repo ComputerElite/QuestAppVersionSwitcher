@@ -19,7 +19,7 @@ let links = [
     { name: "Downgrade", href: "/downgrade", icon: FastRewindSharp },
     { name: "Downloads", href: "/downloads", icon: DownloadRounded },
     { name: "Patch the game", href: "/patching", icon: FirePatch },
-    { name: "Installed Mods", href: "/mods", icon: DeployedCodeIcon },
+    { name: "Installed Mods", href: "/mods", icon: DeployedCodeIcon, noScroll: true },
     { name: "Cosmetics & more", href: "/cosmetics", icon: Brush },
     // { name: "Get Mods & cosmetics", href: "/getMods", icon: SettingsBackupRestore },
     { name: "Tools & Options", href: "/tools", icon: Settings },
@@ -48,7 +48,7 @@ export default function Sidebar() {
             <div class={styles["menuContainer"]}>
                 <For each={links} >
                     {(link) => (
-                        <A href={link.href} class={styles.menuItem} activeClass={styles.selected} >
+                        <A href={link.href} class={styles.menuItem} activeClass={styles.selected} noScroll={link.noScroll} >
                             <link.icon></link.icon> <span>{link.name}</span>
                         </A>
                     )}

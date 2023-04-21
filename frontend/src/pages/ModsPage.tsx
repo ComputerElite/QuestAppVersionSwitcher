@@ -121,9 +121,20 @@ async function onFileDrop(e: DragEvent) {
 
 }
 
+let lastScrollPosition = 0;
+
 export default function ModsPage() {
   const [isDragging, setIsDragging] = createSignal(false);
   const [dragCounter, setDragCounter] = createSignal(0);
+
+  // Remember last scroll position
+  onMount(() => {
+    // SCROLL TO LAST POSITION
+    window.scrollTo(0, lastScrollPosition);
+  })
+  onCleanup(() => {
+    lastScrollPosition = window.scrollY;
+  });
 
   function ondragenter(e: DragEvent) {
     e.preventDefault();
