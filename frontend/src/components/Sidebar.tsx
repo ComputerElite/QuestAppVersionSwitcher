@@ -1,4 +1,4 @@
-import { Routes, Route, A } from "@solidjs/router";
+import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import styles from "./Sidebar.module.scss"
 import { config } from "../store";
@@ -6,10 +6,12 @@ import { FiEdit2 } from 'solid-icons/fi'
 import SettingsBackupRestore from "@suid/icons-material/SettingsBackupRestore"
 import DownloadRounded from "@suid/icons-material/DownloadRounded"
 import FastRewindSharp from "@suid/icons-material/FastRewindSharp"
+import Brush from "@suid/icons-material/Brush"
+import Settings from "@suid/icons-material/Settings"
 
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { Button } from "./Buttons/Button";
-import { FirePatch } from "../assets/Icons";
+import { DeployedCodeIcon, FirePatch } from "../assets/Icons";
 import { GetGameName } from "../util";
 
 let links = [
@@ -17,10 +19,10 @@ let links = [
     { name: "Downgrade", href: "/downgrade", icon: FastRewindSharp },
     { name: "Downloads", href: "/downloads", icon: DownloadRounded },
     { name: "Patch the game", href: "/patching", icon: FirePatch },
-    { name: "Installed Mods", href: "/mods", icon: SettingsBackupRestore },
-    { name: "Cosmetics & more", href: "/cosmetics", icon: SettingsBackupRestore },
+    { name: "Installed Mods", href: "/mods", icon: DeployedCodeIcon },
+    { name: "Cosmetics & more", href: "/cosmetics", icon: Brush },
     // { name: "Get Mods & cosmetics", href: "/getMods", icon: SettingsBackupRestore },
-    { name: "Tools & Options", href: "/tools", icon: SettingsBackupRestore },
+    { name: "Tools & Options", href: "/tools", icon: Settings },
 ]
 
 export default function Sidebar() {

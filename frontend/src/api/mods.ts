@@ -110,13 +110,32 @@ export async function InstallModFromUrl(url: string): Promise<boolean> {
     return false;
 }
 
-export async function getOperations() {
+export enum QAVSModOperationType {
+    ModInstall = 0,
+    ModUninstall = 1,
+    ModDisable = 2,
+    ModDelete = 3,
+    DependencyDownload = 4,
+    Other = 5,
+    Error = 6,
+    ModDownload = 7,
+    QueuedModInstall = 8
+}
+
+export interface ModTask {
+    operationId: number;
+    name: string;
+    type: QAVSModOperationType;
+    isDone: boolean;
+}
+
+export async function getModOperations(): Promise<Array<ModTask>> {
     const response = await fetch('/api/mods/operations');
     return await response.json();
 }
 
-export async function getOperation(id: string) {
-    const response = await fetch(`/api/mods/operations`, {
+export async function deleteOperation(id: string) {
+    const response = await fetch(`/api/mods/operation`, {
         method: 'DELETE',
         body: id
     });

@@ -18,6 +18,7 @@ import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCur
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../store";
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { getPatchedModdingStatus } from "../api/patching";
+import { startRefetchingModTasks } from "../state/moddingEvents";
 
 
 async function UploadModClick() {
@@ -32,11 +33,11 @@ async function UploadModClick() {
     if (this.files && this.files.length > 0) {
       for (const file of this.files) {
         await UploadMod(file);
+        
       }
     }
-    console.log("done")
-    refetchMods();
-    toast.success("Mods installed");
+    // Start refetching mod tasks to get the result of the upload
+    startRefetchingModTasks();
   })
 }
 
@@ -106,17 +107,16 @@ async function onFileDrop(e: DragEvent) {
 
     if (url) {
       await InstallModFromUrl(url);
-      await Sleep(2000);
+      await Sleep(100);
+      startRefetchingModTasks();
     }
 
     if (filesToUpload.length > 0) {
       for (const file of filesToUpload)
         await UploadMod(file);
 
-      refetchMods();
-      toast.success("Mods installed");
+      startRefetchingModTasks();
     }
-
   }
 
 }

@@ -160,8 +160,8 @@ export default function ToolsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Give permissions to game folder' icon={<PlayArrowRounded />} onClick={getPermissionsToGameFolderClick} />
-            <RunButton text='Allow manage storage permission' icon={<DeleteIcon />} onClick={allowManageStorageClick} />
+            <RunButton text='Give permissions to game folder'  onClick={getPermissionsToGameFolderClick} />
+            <RunButton text='Allow manage storage permission'  onClick={allowManageStorageClick} />
           </Box>
         </Box>
 
@@ -184,8 +184,8 @@ export default function ToolsPage() {
             alignItems: "center",
             marginTop: 1,
           }}>
-            <RunButton text='Login using email and password' icon={<PlayArrowRounded />} disabled={!IsOnQuest()} />
-            <RunButton text='Login using a token' icon={<DeleteIcon />} />
+            <RunButton text='Login using email and password' disabled={!IsOnQuest()} />
+            <RunButton text='Login using a token' />
           </Box>
         </Box>
 
