@@ -232,8 +232,14 @@ export default function ModsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Run the app' variant="success" icon={<PlayArrowRounded />} onClick={onGameStart} />
-            <RunButton text='Upload a mod' icon={<UploadRounded />} onClick={UploadModClick} />
+            <RunButton text='Run the app' variant="success" hideTextOnMobile icon={<PlayArrowRounded />} onClick={onGameStart} />
+            <RunButton text='Upload a mod' icon={<UploadRounded />} hideTextOnMobile onClick={UploadModClick} /> 
+          </Box>
+          <Box sx={{
+            display: "flex",
+            gap: 2,
+            alignItems: "center",
+          }}>
             <span style={{
               "font-family": "Roboto",
               "font-style": "normal",
@@ -248,14 +254,8 @@ export default function ModsPage() {
             }} class="text-accent" >
               Get more mods
             </span>
-          </Box>
-          <Box sx={{
-            display: "flex",
-            gap: 2,
-            alignItems: "center",
-          }}>
             <RunButton icon={<FiRefreshCcw />} onClick={reloadMods} />
-            <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
+            {/* <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} /> */}
           </Box>
         </Box>
 

@@ -13,7 +13,7 @@
   background: #111827;
   box-shadow: 0px 4px 5px -2px rgba(0, 0, 0, 0.25);
 
-  font-family: 'Roboto';
+  font-family: "Roboto";
   font-style: normal;
   font-weight: 400;
   font-size: 12px;
@@ -24,7 +24,9 @@
   align-items: center;
   text-align: center;
 
-  color: #D1D5DB;
+  
+
+  color: #d1d5db;
   &:hover {
     background: #2d3b4f;
   }
@@ -34,6 +36,23 @@
     width: 32px;
   }
 
+  &.hideTextOnMobile {
+    .text {
+      display: none;
+    }
+    .icon {
+      padding: 0px 0px;
+      margin-right: 0 ;
+    }
+    @include respond-to("small") {
+      .text {
+        display: block;
+      }
+      .icon {
+        margin-right: 6px;
+      }
+    }
+  }
 }
 
 .success {
@@ -46,7 +65,7 @@
 
 .error {
   background: #b01e1e;
- 
+
   &:hover {
     background: #9a1717;
   }
@@ -55,11 +74,9 @@
 .info {
   background: rgb(4, 101, 180);
 
-
   &:hover {
     background: rgb(3, 81, 145);
   }
-
 }
 
 .icon {
@@ -71,13 +88,11 @@
     padding: 0px 0px;
     margin: 0;
   }
-  
 }
 
 .textOnly {
   min-width: 50px;
 }
-
 
 .text {
   font-family: "Roboto";
@@ -89,9 +104,7 @@
 
   display: flex;
   align-items: center;
-
 }
-
 
 .button:disabled {
   // background: #2d3b4f;

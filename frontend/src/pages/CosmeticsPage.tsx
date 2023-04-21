@@ -23,8 +23,8 @@ export default function BackupPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Launch Game' variant="success" icon={<PlayArrowRounded />} />
-            <RunButton text='Upload a cosmetic' icon={<UploadRounded />} />
+            <RunButton text='Launch Game' variant="success" icon={<PlayArrowRounded />} hideTextOnMobile />
+            <RunButton text='Upload a cosmetic' icon={<UploadRounded />} hideTextOnMobile />
             <span style={{
               "font-family": "Roboto",
               "font-style": "normal",

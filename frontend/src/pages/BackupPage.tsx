@@ -72,7 +72,7 @@ export default function BackupPage() {
                     justifyContent: "space-between",
                     marginBottom: 2,
                 }}>
-                    <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { }} />
+                    <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { }} hideTextOnMobile />
                     <Box sx={{
                         display: "flex",
                         gap: 2,

@@ -3,8 +3,10 @@ $sidebar-margin-top: 30px;
 .sidebar {
   background-color: var(--bg-color-secondary);
   width: 200px;
-  margin-top: $sidebar-margin-top;
-  padding: 0 10px 10px 10px;
+  position: sticky;
+  top: $sidebar-margin-top;
+  max-height: calc(100vh - #{$sidebar-margin-top});
+  padding: 0 10px 0px 10px;
   a {
     text-decoration: none;
   }
