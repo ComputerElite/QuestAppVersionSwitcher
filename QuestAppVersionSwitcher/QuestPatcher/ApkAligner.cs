@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ComputerUtils.Android.Logging;
+using QuestAppVersionSwitcher;
 using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core.Apk;
 using Xamarin.Forms;
@@ -41,8 +42,19 @@ namespace QuestPatcher.Core
                 LocalFileHeader lfh = new LocalFileHeader(memory);
                 byte[] data = memory.ReadBytes(cd.CompressedSize);
                 DataDescriptor? dd = null;
-                if((lfh.GeneralPurposeFlag & 0x08) != 0) 
-                    dd = new DataDescriptor(memory);
+                try
+                {
+                    if((lfh.GeneralPurposeFlag & 0x08) != 0) 
+                        dd = new DataDescriptor(memory);
+                }
+                catch (Exception e)
+                {
+                    // Error reading DataDescriptor, abort aligning
+                    QAVSWebserver.patchStatus.error = true;
+                    QAVSWebserver.patchStatus.errorText = "Error while aligning apk: " + e.Message;
+                    QAVSWebserver.BroadcastPatchingStatus();
+                    return;
+                }
                 if(lfh.CompressionMethod == 0) {
                     short padding = (short) ((outMemory.Position + 30 + FileMemory.StringLength(lfh.FileName) + lfh.ExtraField.Length) % 4);
                     if(padding > 0)

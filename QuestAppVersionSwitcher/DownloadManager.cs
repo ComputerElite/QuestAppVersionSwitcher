@@ -119,7 +119,7 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.BroadcastDownloads(true);
                 if (DownloadErrorEvent != null) DownloadErrorEvent(this);
             };
-            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, 10);
+            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, 15);
         }
 
         public void StartDownload(string url, string path)
