@@ -80,6 +80,11 @@
 // Modify sign in options on auth.meta.com
     if(location.host.contains("auth.meta.com")) {
         console.log("auth.meta.com")
+        if(location.href.startsWith("https://auth.meta.com/register/facebook/")) {
+            // Registering with facebook shouldn't be happening on headset
+            alert("You mustn't register a new meta account on your headset. Please use another method to log in")
+            location = "https://auth.meta.com/"
+        }
         setTimeout(() => {
             // Remove facebook button
             /*
@@ -110,6 +115,7 @@
             for(const e of document.getElementsByTagName("span")) {
                 if (e.innerHTML.toLowerCase().contains("log in") && e.innerHTML.toLowerCase().contains("email") && !e.innerHTML.toLowerCase().contains("span")) {
                     console.log(e.parentElement)
+                    e.innerHTML = "Log in with email (preferred method)"
                     e.parentElement.parentElement.parentElement.parentElement.style.backgroundColor = "#1B2930"
                     e.style.color = "#F2F2F2"
                     

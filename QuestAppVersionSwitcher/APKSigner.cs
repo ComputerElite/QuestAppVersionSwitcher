@@ -302,6 +302,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         public static async Task SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
             QAVSWebserver.patchStatus.currentOperation = "Preparing apk aligning and signing";
+            QAVSWebserver.BroadcastPatchingStatus();
             //await using Stream manifestFile = apkArchive.CreateAndOpenEntry("META-INF/MANIFEST.MF");
             await using Stream manifestFile = new MemoryStream();
             //await using Stream signaturesFile = apkArchive.CreateAndOpenEntry("META-INF/BS.SF");
@@ -372,12 +373,15 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             QAVSWebserver.patchStatus.doneOperations = 6;
             QAVSWebserver.patchStatus.progress = .6;
             QAVSWebserver.patchStatus.currentOperation = "Aligning apk";
+            QAVSWebserver.BroadcastPatchingStatus();
             Logger.Log("Aligning Apk");
             ApkAligner.AlignApk(path);
+            
             QAVSWebserver.patchStatus.doneOperations = 7;
             QAVSWebserver.patchStatus.progress = .75;
-
             QAVSWebserver.patchStatus.currentOperation = "Signing apk. This may take 2 minutes. Please wait.";
+            QAVSWebserver.BroadcastPatchingStatus();
+            
             Logger.Log("Make APK Signature Scheme v2");
             FileStream fs = new FileStream(path, FileMode.Open);
             using FileMemory memory = new FileMemory(fs);

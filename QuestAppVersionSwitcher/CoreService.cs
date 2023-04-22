@@ -12,7 +12,6 @@ using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Content.PM;
@@ -22,8 +21,11 @@ using Android.Provider;
 using AndroidX.Activity.Result;
 using Com.Xamarin.Formsviewgroup;
 using ComputerUtils.Android;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xamarin.Essentials;
 using Environment = Android.OS.Environment;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using Object = Java.Lang.Object;
 
 namespace QuestAppVersionSwitcher.Core
@@ -83,6 +85,9 @@ namespace QuestAppVersionSwitcher.Core
                 if (!File.Exists(coreVars.QAVSConfigLocation))
                     File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
                 coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
+                if (!File.Exists(coreVars.QAVSUIConfigLocation))
+                    File.WriteAllText(coreVars.QAVSUIConfigLocation, "{}");
+                QAVSWebserver.uiConfig = JsonConvert.DeserializeObject(File.ReadAllText(coreVars.QAVSUIConfigLocation));
                 QAVSModManager.Init();
                 CoreVars.cosmetics = Cosmetics.LoadCosmetics();
             }

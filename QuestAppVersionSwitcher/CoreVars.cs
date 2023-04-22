@@ -4,14 +4,26 @@ using System.Text.Json;
 
 namespace QuestAppVersionSwitcher.Core
 {
-    public class CoreVars // aka config
+    public class StrippedConfig
     {
         public string currentApp { get; set; } = "";
+        public string currentAppName { get; set; } = "";
         public int serverPort { get; set; } = 50002;
-        public string token { get; set; } = "";
+
+        public int wsPort
+        {
+            get
+            {
+                return serverPort + 1;
+            }
+        }
         public int loginStep { get; set; } = 0;
-        public string password { get; set; } = "";
         public bool passwordSet { get; set; } = false;
+    }
+    public class CoreVars : StrippedConfig // aka config
+    {
+        public string password { get; set; } = "";
+        public string token { get; set; } = "";
         public PatchingPermissions patchingPermissions = new PatchingPermissions();
 		public static Cosmetics cosmetics = new Cosmetics();
 		public readonly string QAVSDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/";
@@ -25,6 +37,7 @@ namespace QuestAppVersionSwitcher.Core
         public readonly string QAVSPatchingFilesDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/patchingFiles/";
         public readonly string QAVSBackupDir = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/Backups/";
         public readonly string QAVSConfigLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/config.json";
+        public readonly string QAVSUIConfigLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/QuestAppVersionSwitcher/uiconfig.json";
         public readonly string AndroidAppLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data/";
         public readonly string AndroidObbLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/";
         public static string fileDir = "";
@@ -33,6 +46,7 @@ namespace QuestAppVersionSwitcher.Core
         public void Save()
         {
             File.WriteAllText(QAVSConfigLocation, JsonSerializer.Serialize(this));
+            QAVSWebserver.BroadcastConfig();
         }
     }
 

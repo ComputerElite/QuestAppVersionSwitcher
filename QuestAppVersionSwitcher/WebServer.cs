@@ -44,9 +44,13 @@ using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
 using Org.BouncyCastle.Math.EC.Endo;
 using Android.Widget;
+using Fleck;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xamarin.Forms;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 using Math = System.Math;
 using Path = System.IO.Path;
 using WebView = Android.Webkit.WebView;
@@ -85,7 +89,7 @@ namespace QuestAppVersionSwitcher
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            
+            return base.ShouldInterceptRequest(view, request);
             foreach (KeyValuePair<string, string> p in QAVSWebViewClient.headers)
             {
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
@@ -249,11 +253,13 @@ namespace QuestAppVersionSwitcher
     public class QAVSWebserver
     {
         HttpServer server = new HttpServer();
+        ComputerUtils.Android.Webserver.WebsocketServer wsServer = new WebsocketServer();
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '&', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public static List<DownloadManager> managers = new List<DownloadManager>();
         public static List<GameDownloadManager> gameDownloadManagers = new List<GameDownloadManager>();
         public SHA256 hasher = SHA256.Create();
         public static PatchStatus patchStatus = new PatchStatus();
+        public static dynamic uiConfig = null;
 
         public LoggedInStatus GetLoggedInStatus()
         {
@@ -261,8 +267,79 @@ namespace QuestAppVersionSwitcher
             return LoggedInStatus.LoggedIn;
         }
 
+
+        public static void BroadcaseMessageOnWebSocket<T>(QAVSWebsocketMessage<T> qavsWebsocketMessage)
+        {
+            for (int i = 0; i < clients.Count; i++)
+            {
+                if (!clients[i].IsAvailable)
+                {
+                    clients.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+                clients[i].Send(JsonConvert.SerializeObject(qavsWebsocketMessage, Formatting.None, new JsonSerializerSettings()
+                { 
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                }));
+            }
+        }
+        
+        public static DateTime lastBroadcast = DateTime.Now;
+        
+        public static void BroadcastDownloads(bool forceBroadcast)
+        {
+            if(lastBroadcast.AddSeconds(.2) > DateTime.Now && !forceBroadcast) return;
+            lastBroadcast = DateTime.Now;
+            DownloadStatus status = new DownloadStatus();
+            foreach (DownloadManager m in managers)
+            {
+                status.individualDownloads.Add(m);
+            }
+            foreach (GameDownloadManager gdm in gameDownloadManagers)
+            {
+                status.gameDownloads.Add(gdm);
+            }
+            BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<DownloadStatus>("/api/downloads", status));
+        }
+
+        public static void BroadcastPatchingStatus()
+        {
+            BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<PatchStatus>("/api/patching/patchstatus", patchStatus));
+        }
+        
+        public static void BroadcaseBackupStatus()
+        {
+            BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<BackupStatus>("/api/backupstatus", backupStatus));
+        }
+        public static void BroadcastConfig()
+        {
+            BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<StrippedConfig>("/api/questappversionswitcher/config", (StrippedConfig)CoreService.coreVars));
+        }
+        public static void BroadcastUIConfig()
+        {
+            BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<dynamic>("/api/questappversionswitcher/uiconfig", uiConfig));
+        }
+        
+        public static List<IWebSocketConnection> clients = new List<IWebSocketConnection>();
+        public static BackupStatus backupStatus = new BackupStatus();
+        
         public void Start()
         {
+            wsServer.OnMessage = (socket, msg) =>
+            {
+                Logger.Log("Recieved message from " + socket.ConnectionInfo.ClientIpAddress + ": " + msg);
+            };
+            wsServer.OnOpen = (socket) =>
+            {
+                clients.Add(socket);
+                socket.Send("Hello from QuestAppVersionSwitcher!");
+            };
+            wsServer.OnClose = (socket) =>
+            {
+                clients.Remove(socket);
+            };
+            wsServer.StartServer(CoreService.coreVars.wsPort);
             server.onWebsocketConnectRequest = uRL =>
             {
                 if (uRL.Length <= 10) return;
@@ -318,6 +395,7 @@ namespace QuestAppVersionSwitcher
                 }
 
                 QAVSModManager.runningOperations.Remove(operation);
+                QAVSModManager.BroadcastModsAndStatus();
                 request.SendString(GenericResponse.GetResponse("Removed operation " + operation + " from running Operations", true), "application/json");
                 return true;
             });
@@ -350,11 +428,11 @@ namespace QuestAppVersionSwitcher
                 request.SendString(GenericResponse.GetResponse("Trying to install from " + request.bodyString, true), "application/json");
                 return true;
             });
-            server.AddRoute("GET", "/api/mods/cover", request =>
+            server.AddRoute("GET", "/api/mods/cover/", request =>
             {
-                request.SendData(QAVSModManager.GetModCover(request.queryString.Get("id")), "image/xyz");
+                request.SendData(QAVSModManager.GetModCover(request.pathDiff), "image/xyz");
                 return true;
-            });
+            }, true);
             server.AddRoute("POST", "/api/mods/uninstall", request =>
             {
                 QAVSModManager.UninstallMod(request.queryString.Get("id"));
@@ -430,6 +508,7 @@ namespace QuestAppVersionSwitcher
                 }         
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 
+                BroadcastPatchingStatus();
                 Logger.Log("Using apk from  " + apkPath);
                 try
                 {
@@ -439,12 +518,14 @@ namespace QuestAppVersionSwitcher
                     ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
                     patchStatus.doneOperations = 1;
                     patchStatus.progress = .1;
+                    BroadcastPatchingStatus();
                     PatchingManager.PatchAPK(apkArchive, appLocation);
                 }
                 catch (Exception e)
                 {
                     patchStatus.error = true;
                     patchStatus.errorText = "Error while patching:" + e;
+                    BroadcastPatchingStatus();
                 }
                 return true;
             });
@@ -454,7 +535,18 @@ namespace QuestAppVersionSwitcher
                 return true;
             });
 
-
+            server.AddRoute("GET", "/api/questappversionswitcher/uiconfig", request =>
+            {
+                request.SendString(JsonConvert.SerializeObject(uiConfig), "application/json");
+                return true;
+            });server.AddRoute("POST", "/api/questappversionswitcher/uiconfig", request =>
+            {
+                uiConfig = JsonConvert.DeserializeObject(request.bodyString);
+                File.WriteAllText(CoreService.coreVars.QAVSUIConfigLocation, JsonConvert.SerializeObject(uiConfig));
+                BroadcastUIConfig();
+                request.SendString(GenericResponse.GetResponse("Set UI config", true), "application/json");
+                return true;
+            });
             server.AddRoute("POST", "/api/questappversionswitcher/kill", request =>
             {
                 CookieManager.Instance.Flush();
@@ -474,9 +566,19 @@ namespace QuestAppVersionSwitcher
                     request.SendString(GenericResponse.GetResponse("Port must be greater than 50000!", false), "application/json", 400);
                     return true;
                 }
+                if(port > 60000)
+                {
+                    request.SendString(GenericResponse.GetResponse("Port must be less than 60000!", false), "application/json", 400);
+                    return true;
+                }
+                if (CoreService.coreVars.wsPort == port)
+                {
+                    request.SendString(GenericResponse.GetResponse("Port must not be the same as the websocket port", false), "application/json", 400);
+                    return true;
+                }
                 CoreService.coreVars.serverPort = port;
                 CoreService.coreVars.Save();
-                request.SendString(GenericResponse.GetResponse("Changed port to " +request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.", true), "application/json");
+                request.SendString(GenericResponse.GetResponse("Changed port to " + request.bodyString + ". Restart QuestAppVersionSwitcher for the changes to take affect.", true), "application/json");
                 return true;
             });
 			/* FS loading for dev if wanted
@@ -685,7 +787,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/questappversionswitcher/config", serverRequest =>
             {
-                serverRequest.SendString(JsonSerializer.Serialize(CoreService.coreVars), "application/json");
+                serverRequest.SendString(JsonSerializer.Serialize((StrippedConfig)CoreService.coreVars), "application/json");
                 return true;
             });
             server.AddRoute("GET", "/api/questappversionswitcher/about", serverRequest =>
@@ -700,8 +802,7 @@ namespace QuestAppVersionSwitcher
                 File.WriteAllBytes(tmpFile.Path, serverRequest.bodyBytes);
                 string packageName = GetAPKPackageName(tmpFile.Path);
                 string version = GetAPKVersion(tmpFile.Path);
-                CoreService.coreVars.currentApp = packageName;
-                CoreService.coreVars.Save();
+                ChangeApp(packageName);
                 string backupDir = CoreService.coreVars.QAVSBackupDir + packageName + "/" + version + "/";
                 Logger.Log("Moving file");
                 FileManager.CreateDirectoryIfNotExisting(backupDir);
@@ -736,7 +837,6 @@ namespace QuestAppVersionSwitcher
                 }
                 return true;
             });
-            BackupStatus backupStatus = new BackupStatus();
             server.AddRoute("POST", "/api/backup", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
@@ -777,12 +877,14 @@ namespace QuestAppVersionSwitcher
                 backupStatus = new BackupStatus();
                 backupStatus.currentOperation = "Creating Backup. Please wait until it has finished. This can take up to 2 minutes";
                 backupStatus.totalOperations = 4;
+                BroadcaseBackupStatus();
                 Directory.CreateDirectory(backupDir);
                 if (!AndroidService.IsPackageInstalled(package))
                 {
                     Logger.Log(package + " is not installed. Aborting backup");
                     backupStatus.errorText = package + " is not installed. Please select a different app.";
                     backupStatus.error = true;
+                    BroadcaseBackupStatus();
                     return true;
                 }
                 string apkDir = AndroidService.FindAPKLocation(package);
@@ -796,6 +898,7 @@ namespace QuestAppVersionSwitcher
                     if (serverRequest.queryString.Get("onlyappdata") == null)
                     {
                         backupStatus.currentOperation = "Copying APK. Please wait until it has finished. This can take up to 2 minutes";
+                        BroadcaseBackupStatus();
                         Logger.Log("Copying APK from " + apkDir + " to " + backupDir + "app.apk");
                         File.Copy(apkDir, backupDir + "app.apk");
                     } else
@@ -806,6 +909,7 @@ namespace QuestAppVersionSwitcher
                     backupStatus.doneOperations = 2;
                     backupStatus.progress = .4;
                     backupStatus.currentOperation = "Copying App Data. Please wait until it has finished. This can take up to 2 minutes";
+                    BroadcaseBackupStatus();
                     try
                     {
                         if(Directory.Exists(gameDataDir)) FolderPermission.DirectoryCopy(gameDataDir, backupDir + package);
@@ -814,24 +918,29 @@ namespace QuestAppVersionSwitcher
                     {
                         backupStatus.errorText = e.ToString();
                         backupStatus.error = true;
+                        BroadcaseBackupStatus();
                         return true;
                     }
                     backupStatus.doneOperations = 3;
                     backupStatus.progress = .6;
+                    BroadcaseBackupStatus();
 
                     if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
                     {
                         backupStatus.currentOperation = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
+                        BroadcaseBackupStatus();
                         Directory.CreateDirectory(backupDir + "obb/" + package);
                         FolderPermission.DirectoryCopy(CoreService.coreVars.AndroidObbLocation + package, backupDir + "obb/" + package);
                     }
                     backupStatus.doneOperations = 4;
                     backupStatus.progress = 1;
+                    BroadcaseBackupStatus();
                 }
                 catch (Exception e)
                 {
                     Logger.Log("Backup failed: " + e);
                     backupStatus.errorText = "Backup failed: " + e;
+                    BroadcaseBackupStatus();
                     return true;
                 }
 
@@ -839,6 +948,7 @@ namespace QuestAppVersionSwitcher
 
                 backupStatus.done = true;
                 backupStatus.currentOperation = "Backup of " + package + " with the name " + backupname + " finished";
+                BroadcaseBackupStatus();
                 return true;
             });
             server.AddRoute("GET", "/api/backupstatus", serverRequest =>
@@ -1237,6 +1347,7 @@ namespace QuestAppVersionSwitcher
         {
             Logger.Log("Settings selected app to " + packageName);
             CoreService.coreVars.currentApp = packageName;
+            CoreService.coreVars.currentAppName = AndroidService.GetAppname(packageName);
             CoreService.coreVars.Save();
             QAVSModManager.Update();
         }

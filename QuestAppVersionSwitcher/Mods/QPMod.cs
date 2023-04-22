@@ -245,9 +245,6 @@ namespace QuestAppVersionSwitcher.Mods
         /// <param name="installedInBranch">The number of mods that are currently downloading down this branch of the install "tree", used to check for cyclic dependencies</param>
         private async Task PrepareDependency(Dependency dependency, List<string> installedInBranch)
         {
-            int operationId = QAVSModManager.operations;
-            QAVSModManager.operations++;
-            QAVSModManager.runningOperations.Add(operationId, new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, operationId = operationId });
             Logger.Log($"Preparing dependency of {dependency.Id} version {dependency.VersionRange}");
             int existingIndex = installedInBranch.FindIndex(downloadedDep => downloadedDep == dependency.Id);
             if (existingIndex != -1)
@@ -258,7 +255,6 @@ namespace QuestAppVersionSwitcher.Mods
                     dependMessage += $"{installedInBranch[i]} depends on ";
                 }
                 dependMessage += dependency.Id;
-                QAVSModManager.runningOperations[operationId].isDone = true;
                 throw new InstallationException($"Recursive dependency detected: {dependMessage}");
             }
 
@@ -274,7 +270,6 @@ namespace QuestAppVersionSwitcher.Mods
                         Logger.Log($"Installing dependency {dependency.Id} . . .");
                         await existing.Install(installedInBranch);
                     }
-                    QAVSModManager.runningOperations[operationId].isDone = true;
                     return;
                 }
 
@@ -284,16 +279,17 @@ namespace QuestAppVersionSwitcher.Mods
                 }
                 else
                 {
-                    QAVSModManager.runningOperations[operationId].isDone = true;
                     throw new InstallationException($"Dependency with ID {dependency.Id} is already installed but with an incorrect version ({existing.Version} does not intersect {dependency.VersionRange}). Upgrading was not possible as there was no download link provided");
                 }
             }
             else if (dependency.DownloadUrlString == null)
             {
-                QAVSModManager.runningOperations[operationId].isDone = true;
                 throw new InstallationException($"Dependency {dependency.Id} is not installed, and the mod depending on it does not specify a download path if missing");
             }
-
+            int operationId = QAVSModManager.operations;
+            QAVSModManager.operations++;
+            QAVSModManager.AddRunningOperation(new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, operationId = operationId, modId = dependency.Id});
+            
             QPMod installedDependency;
             TempFile downloadFile = new TempFile();
             Logger.Log($"Downloading dependency {dependency.Id} . . .");
@@ -304,7 +300,7 @@ namespace QuestAppVersionSwitcher.Mods
             catch (WebException ex)
             {
                 // Print a nicer error message
-                QAVSModManager.runningOperations[operationId].isDone = true;
+                QAVSModManager.MarkOperationAsDone(operationId);
                 throw new InstallationException($"Failed to download dependency from URL {dependency.DownloadIfMissing}: {ex.Message}", ex);
             }
 
@@ -318,17 +314,17 @@ namespace QuestAppVersionSwitcher.Mods
             if (dependency.Id != installedDependency.Id)
             {
                 await _provider.DeleteMod(installedDependency);
-                QAVSModManager.runningOperations[operationId].isDone = true;
+                QAVSModManager.MarkOperationAsDone(operationId);
                 throw new InstallationException($"Downloaded dependency had ID {installedDependency.Id}, whereas the dependency stated ID {dependency.Id}");
             }
 
             if (!dependency.VersionRange.IsSatisfied(installedDependency.Version))
             {
                 await _provider.DeleteMod(installedDependency);
-                QAVSModManager.runningOperations[operationId].isDone = true;
+                QAVSModManager.MarkOperationAsDone(operationId);
                 throw new InstallationException($"Downloaded dependency {installedDependency.Id} v{installedDependency.Version} was not within the version range stated in the dependency info ({dependency.VersionRange})");
             }
-            QAVSModManager.runningOperations[operationId].isDone = true;
+            QAVSModManager.MarkOperationAsDone(operationId);
         }
     }
 }

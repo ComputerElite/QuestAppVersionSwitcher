@@ -60,6 +60,7 @@ namespace QuestAppVersionSwitcher
             File.WriteAllText(questLoaderVersionLocation, questLoaderVersion);
             QAVSWebserver.patchStatus.doneOperations = 2;
             QAVSWebserver.patchStatus.progress = .1;
+            QAVSWebserver.BroadcastPatchingStatus();
         }
 
         public static void DownloadFileIfMissing(string currentQuestLoaderVersion, string filePath, string downloadLink)
@@ -68,6 +69,7 @@ namespace QuestAppVersionSwitcher
             {
                 string fileName = Path.GetFileName(filePath);
                 QAVSWebserver.patchStatus.currentOperation = "Downloading dependency " + fileName;
+                QAVSWebserver.BroadcastPatchingStatus();
                 Logger.Log(fileName + " doesn't exist. Downloading");
                 WebClient c = new WebClient();
                 c.DownloadFile(downloadLink, filePath);
@@ -107,21 +109,25 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;
                 QAVSWebserver.patchStatus.currentOperation = "App is already patched";
                 QAVSWebserver.patchStatus.progress = 1;
+                QAVSWebserver.BroadcastPatchingStatus();
                 return;
             }
             DownloadDependencies();
             PatchManifest(apkArchive);
             QAVSWebserver.patchStatus.doneOperations = 3;
             QAVSWebserver.patchStatus.progress = .2;
+            QAVSWebserver.BroadcastPatchingStatus();
             Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes = AddLibsAndPatchGame(apkArchive);
             apkArchive.Dispose();
             QAVSWebserver.patchStatus.doneOperations = 5;
             QAVSWebserver.patchStatus.progress = .55;
+            QAVSWebserver.BroadcastPatchingStatus();
             
             await ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes);
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
+            QAVSWebserver.BroadcastPatchingStatus();
             PatchingStatus status = GetPatchingStatus();
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
@@ -135,6 +141,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;
             QAVSWebserver.patchStatus.currentOperation = "Done";
             QAVSWebserver.patchStatus.backupName = backupName;
+            QAVSWebserver.BroadcastPatchingStatus();
         }
 
         // Uses https://github.com/Lauriethefish/QuestUnstrippedUnity to download an appropriate unstripped libunity.so for beat saber if there is one
@@ -169,6 +176,7 @@ namespace QuestAppVersionSwitcher
             bool isApk64Bit = apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null;
 
             QAVSWebserver.patchStatus.currentOperation = "Adding unstripped libunity to APK if available";
+            QAVSWebserver.BroadcastPatchingStatus();
             string libpath = isApk64Bit ? "lib/arm64-v8a/" : "lib/armeabi-v7a/";
             string versionName = GetPatchingStatus(apkArchive).version;
             
@@ -184,11 +192,13 @@ namespace QuestAppVersionSwitcher
 
             QAVSWebserver.patchStatus.progress = .35;
             QAVSWebserver.patchStatus.currentOperation = "Adding modloader";
+            QAVSWebserver.BroadcastPatchingStatus();
             apkArchive.CreateEntryFromFile(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so");
             moddedJson.modifiedFiles.Add(libpath + "libmodloader.so");
 
             QAVSWebserver.patchStatus.progress = .45;
             QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
+            QAVSWebserver.BroadcastPatchingStatus();
             ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
             if (main != null) main.Delete();
             moddedJson.modifiedFiles.Add(libpath + "libmain.so");
@@ -202,8 +212,10 @@ namespace QuestAppVersionSwitcher
         {
             Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes;
             QAVSWebserver.patchStatus.currentOperation = "Preparing pre patch hashes";
+            QAVSWebserver.BroadcastPatchingStatus();
             prePatchHashes = ApkSigner.CollectPrePatchHashes(apkArchive).Result;
             QAVSWebserver.patchStatus.progress = .25;
+            QAVSWebserver.BroadcastPatchingStatus();
 
             ModdedJson moddedJson = new ModdedJson();
 
@@ -217,6 +229,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.currentOperation = "Creating modding json";
             QAVSWebserver.patchStatus.progress = .5;
             QAVSWebserver.patchStatus.doneOperations = 4;
+            QAVSWebserver.BroadcastPatchingStatus();
             moddedJson.modifiedFiles.Add(ManifestPath);
             apkArchive.CreateEntry(QAVSTagName);
             apkArchive.CreateEntry(LegacyTagName);
@@ -294,11 +307,13 @@ namespace QuestAppVersionSwitcher
         public static bool PatchManifest(ZipArchive apkArchive)
         {
             QAVSWebserver.patchStatus.currentOperation = "Patching manifest";
+            QAVSWebserver.BroadcastPatchingStatus();
             ZipArchiveEntry? manifestEntry = apkArchive.GetEntry(ManifestPath);
             if (manifestEntry == null)
             {
                 QAVSWebserver.patchStatus.error = true;
                 QAVSWebserver.patchStatus.errorText = "Manifest doesn't exist. Cannot mod game";
+                QAVSWebserver.BroadcastPatchingStatus();
                 return false;
             }
 

@@ -17,6 +17,98 @@ const browser = document.getElementById("browser")
 const toastsE = document.getElementById("toasts")
 document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 
+// connect to websocket one port higher than the server
+var socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
+socket.onerror = function (error) {
+    console.log("WebSocket Error: " + error);
+    // reconnect
+    socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
+}
+
+socket.onclose = function (e) {
+    console.log("WebSocket closed. Reconnecting...");
+    // reconnect
+    socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
+}
+
+socket.onmessage = function (e) {
+    var data = JSON.parse(e.data);
+    if(data.route == "/api/downloads") {
+        UpdateDownloads(data.data)
+    } else if(data.route == "/api/mods/mods") {
+        UpdateMods(data.data)
+    } else if(data.route == "/api/patching/patchstatus") {
+        UpdatePatchStatus(data.data)
+    }
+}
+
+function UpdatePatchStatus(j) {
+    if (j.done) {
+        TextBoxGood("patchingTextBox", j.currentOperation)
+        patchInProgress = false
+        if(j.backupName) {
+            if(!IsOnQuest()) {
+                alert("Restore the backup " + j.backupName + " from within your Quest to finalize the patching process")
+                return
+            }
+            // patching returned a backup name to restore so restore the backup
+            selectedBackup = j.backupName
+            OpenRestorePopup();
+        }
+        UpdateUI()
+
+    } else if (j.error) {
+        TextBoxError("patchingTextBox", j.errorText)
+        clearInterval(i)
+        patchInProgress = false
+        UpdateUI()
+    } else {
+        TextBoxText("patchingTextBox", j.progressString + " - " + j.currentOperation)
+    }
+}
+
+UpdateModsManually()
+function UpdateModsManually() {
+    fetch("/api/mods/mods").then(res => res.json().then(res => {
+        UpdateMods(res)
+    }))
+}
+
+function UpdateMods(res) {
+    res.operations = res.operations.filter(x => !x.isDone)
+    operationsOngoing = res.operations.length > 0
+    var mods = ``
+    if(!operationsOngoing) {
+        operationsElement.style.display = "none"
+    } else {
+        operationsElement.style.display = "block"
+        var operations = ""
+        for(const operation of res.operations){
+            operations += `
+                    <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
+                        ${operation.name}
+                    </div>
+                    `
+        }
+        operationsList.innerHTML = operations
+        ongoingCount.innerHTML = `Ongoing operations: ${res.operations.length}`
+    }
+    for(const mod of res.mods){
+        mods += FormatMod(mod, !operationsOngoing)
+    }
+    if(mods == "") {
+        mods = `<div class="mod" style="padding: 20px;">None installed</div>`
+    }
+    document.getElementById("modsList").innerHTML = mods
+    var libs = ``
+    for(const mod of res.libs){
+        libs += FormatMod(mod, !operationsOngoing)
+    }
+    if(libs == "") {
+        libs = `<div class="mod" style="padding: 20px;">None installed</div>`
+    }
+    document.getElementById("libsList").innerHTML = libs
+}
 function IsOnQuest() {
     return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
 }
@@ -220,10 +312,6 @@ function UpdatePatchingStatus() {
     })
 }
 
-setInterval(() => {
-    UpdateModsAndLibs()
-}, 2000);
-
 var operationsOngoing = false
 const operationsElement = document.getElementById("operations")
 const ongoingCount = document.getElementById("ongoingCount")
@@ -235,46 +323,6 @@ const handTrackingVersion = document.getElementById("handtrackingversion")
 const debugCheckbox = document.getElementById("debug")
 const otherContainer = document.getElementById("other")
 var otherPermissions = []
-
-function UpdateModsAndLibs() {
-    fetch(`/api/mods/mods`).then(res => {
-        res.json().then(res => {
-            res.operations = res.operations.filter(x => !x.isDone)
-            operationsOngoing = res.operations.length > 0
-            var mods = ``
-            if(!operationsOngoing) {
-                operationsElement.style.display = "none"
-            } else {
-                operationsElement.style.display = "block"
-                var operations = ""
-                for(const operation of res.operations){
-                    operations += `
-                    <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
-                        ${operation.name}
-                    </div>
-                    `
-                }
-                operationsList.innerHTML = operations
-                ongoingCount.innerHTML = `Ongoing operations: ${res.operations.length}`
-            }
-            for(const mod of res.mods){
-                mods += FormatMod(mod, !operationsOngoing)
-            }
-            if(mods == "") {
-                mods = `<div class="mod" style="padding: 20px;">None installed</div>`
-            }
-            document.getElementById("modsList").innerHTML = mods
-            var libs = ``
-            for(const mod of res.libs){
-                libs += FormatMod(mod, !operationsOngoing)
-            }
-            if(libs == "") {
-                libs = `<div class="mod" style="padding: 20px;">None installed</div>`
-            }
-            document.getElementById("libsList").innerHTML = libs
-        })
-    })
-}
 
 function UploadMod() {
     var input = document.createElement('input');
@@ -327,22 +375,18 @@ function InstallCosmetic() {
 }
 
 function DeleteMod(id) {
-    fetch(`/api/mods/delete?id=${id}`, {method: "POST"}).then(res => {
-        UpdateModsAndLibs()
-    })
+    fetch(`/api/mods/delete?id=${id}`, {method: "POST"})
 }
 
 function UpdateModState(id, enable) {
-    fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"}).then(res => {
-        UpdateModsAndLibs()
-    })
+    fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"})
 }
 
 function FormatMod(mod, active = true) {
     return `
     <div class="mod">
         <div class="leftRightSplit">
-            <img class="modCover" src="${mod.hasCover ? `/api/mods/cover?id=${mod.Id}` : `https://raw.githubusercontent.com/ComputerElite/ComputerElite.github.io/main/assets/ModCover.png`}">
+            <img class="modCover" src="${mod.hasCover ? `/api/mods/cover/${mod.Id}` : `https://raw.githubusercontent.com/ComputerElite/ComputerElite.github.io/main/assets/ModCover.png`}">
             <div class="upDownSplit spaceBetween">
                 <div class="upDownSplit">
                     <div class="leftRightSplit nomargin">
@@ -415,35 +459,6 @@ function PatchGame() {
                 if (j.success) {
                     TextBoxText("patchingTextBox", j.msg)
                     patchStatus.innerHTML = `<h2>Patching game<br><br>${squareLoader}</h2>`
-                    var i = setInterval(() => {
-                        fetch("/api/patching/patchstatus").then(res => {
-                            res.json().then(j => {
-                                if (j.done) {
-                                    TextBoxGood("patchingTextBox", j.currentOperation)
-                                    clearInterval(i)
-                                    patchInProgress = false
-                                    if(j.backupName) {
-                                        if(!IsOnQuest()) {
-                                            alert("Restore the backup " + j.backupName + " from within your Quest to finalize the patching process")
-                                            return
-                                        }
-                                        // patching returned a backup name to restore so restore the backup
-                                        selectedBackup = j.backupName
-                                        OpenRestorePopup();
-                                    }
-                                    UpdateUI()
-                                    
-                                } else if (j.error) {
-                                    TextBoxError("patchingTextBox", j.errorText)
-                                    clearInterval(i)
-                                    patchInProgress = false
-                                    UpdateUI()
-                                } else {
-                                    TextBoxText("patchingTextBox", j.progressString + " - " + j.currentOperation)
-                                }
-                            })
-                        })
-                    }, 500);
                 } else {
                     TextBoxError("patchingTextBox", j.msg)
                 }
@@ -652,36 +667,32 @@ function FormatDownload(d) {
                     </div>
                 </div>`
 }
-
-setInterval(() => {
-    fetch("/api/downloads").then(res => {
-        var m = ""
-        var gdms = ""
-        res.json().then(json => {
-            for(const d of json.individualDownloads) {
-                m += FormatDownload(d)
-            }
-            for(const d of json.gameDownloads) {
-                var downloads = ""
-                for(const download of d.downloadManagers) {
-                    downloads += FormatDownload(download)
-                }
-                gdms += `<div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
-                     ${!d.done ? (d.canceled || d.error ? `` : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; font-size: 1.2em;" value="Cancel" onclick="StopGameDownload('${d.id}')">`) : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; color: #00FF00; font-size: 1.2em;" value="Install Version" onclick="RestoreBackup('${d.backupName}', '${d.packageName}')">`}
-                    <div class="DownloadText" style="color: ${d.textColor};">
-                        <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
-                    </div>
+function UpdateDownloads(json) {
+    var m = ""
+    var gdms = ""
+    for(const d of json.individualDownloads) {
+        m += FormatDownload(d)
+    }
+    for(const d of json.gameDownloads) {
+        var downloads = ""
+        for(const download of d.downloadManagers) {
+            downloads += FormatDownload(download)
+        }
+        gdms += `<div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
+                 ${!d.done ? (d.canceled || d.error ? `` : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; font-size: 1.2em;" value="Cancel" onclick="StopGameDownload('${d.id}')">`) : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; color: #00FF00; font-size: 1.2em;" value="Install Version" onclick="RestoreBackup('${d.backupName}', '${d.packageName}')">`}
+                <div class="DownloadText" style="color: ${d.textColor};">
+                    <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
                 </div>
-                ${downloads}
-                </div>`
-            }
-            if (m == "") m = "<h2>No downloads running</h2>"
-            if (gdms == "") gdms = "<h2>No game downloads running</h2>"
-            document.getElementById("progressBarContainers").innerHTML = m
-            document.getElementById("gameProgressBarContainers").innerHTML = gdms
-        })
-    })
-}, 500)
+            </div>
+            ${downloads}
+            </div>`
+    }
+    if (m == "") m = "<h2>No downloads running</h2>"
+    if (gdms == "") gdms = "<h2>No game downloads running</h2>"
+    document.getElementById("progressBarContainers").innerHTML = m
+    document.getElementById("gameProgressBarContainers").innerHTML = gdms
+}
+
 
 document.getElementById("setup").onclick = () => {
     location = "/setup?open=true"
