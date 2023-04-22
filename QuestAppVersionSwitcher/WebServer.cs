@@ -86,6 +86,7 @@ namespace QuestAppVersionSwitcher
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
+            return base.ShouldInterceptRequest(view, request);
             foreach (KeyValuePair<string, string> p in headers)
             {
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
@@ -243,7 +244,7 @@ namespace QuestAppVersionSwitcher
         public static readonly char[] ReservedChars = new char[] { '|', '\\', '?', '*', '<', '&', '\'', ':', '>', '+', '[', ']', '/', '\'', ' ' };
         public static List<DownloadManager> managers = new List<DownloadManager>();
         public static List<GameDownloadManager> gameDownloadManagers = new List<GameDownloadManager>();
-        public SHA256 hasher = SHA256.Create();
+        public static SHA256 hasher = SHA256.Create();
         public static PatchStatus patchStatus = new PatchStatus();
         public static dynamic uiConfig = null;
 
@@ -744,7 +745,31 @@ namespace QuestAppVersionSwitcher
                     }
                 }
                 Logger.Log("---Backups---");
-                FileManager.LogTree(CoreService.coreVars.QAVSBackupDir, 0);
+                foreach (string app in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
+                {
+                    Logger.Log(Path.GetFileName(app));
+                    foreach (string backup in Directory.GetDirectories(app))
+                    {
+                        Logger.Log("├── " + Path.GetFileName(app));
+                        foreach (string file in Directory.GetFiles(backup))
+                        {
+                            Logger.Log("|  ├── " + Path.GetFileName(file));
+                        }
+                        foreach (string dir in Directory.GetDirectories(backup))
+                        {
+                            if (dir == "obb")
+                            {
+                                FileManager.LogTree(dir, 2);
+                            }
+                            else
+                            {
+                                Logger.Log("|  ├── " + Path.GetFileName(dir));
+                                Logger.Log("|  |  ├── Directory contents will not be shown");
+                            }
+                        }
+                    }
+                }
+                //FileManager.LogTree(CoreService.coreVars.QAVSBackupDir, 0);
                 report.log = Logger.log;
                 WebRequest r = WebRequest.Create("https://oculusdb.rui2015.me/api/v1/qavsreport");
                 r.Method = "POST";
@@ -1178,7 +1203,6 @@ namespace QuestAppVersionSwitcher
             {
                 CoreService.coreVars.token = "";
                 CoreService.coreVars.password = "";
-                CoreService.coreVars.passwordSet = false;
                 CoreService.coreVars.Save();
                 request.SendString(GenericResponse.GetResponse("Logged out", true), "application/json");
                 return true;
@@ -1202,11 +1226,9 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 
-                CoreService.coreVars.passwordSet = true;
                 if (r.password == "")
                 {
                     r.password = AndroidService.GetDeviceID();
-                    CoreService.coreVars.passwordSet = false;
                 }
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
@@ -1338,7 +1360,7 @@ namespace QuestAppVersionSwitcher
             QAVSModManager.Update();
         }
 
-        public string GetSHA256OfString(string input)
+        public static string GetSHA256OfString(string input)
         {
             return BitConverter.ToString(hasher.ComputeHash(Encoding.UTF8.GetBytes(input))).Replace("-", "");
         }
@@ -1385,7 +1407,7 @@ namespace QuestAppVersionSwitcher
 			return version;
 		}
 
-        public BackupInfo GetBackupInfo(string path, bool loadAnyway = false)
+        public static BackupInfo GetBackupInfo(string path, bool loadAnyway = false)
         {
             BackupInfo info = new BackupInfo();
             string pathWithoutSlash = path.EndsWith(Path.DirectorySeparatorChar)
@@ -1394,7 +1416,7 @@ namespace QuestAppVersionSwitcher
             if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
             {
                 info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
-                if (info.BackupInfoVersion < BackupInfoVersion.V3) return GetBackupInfo(path, true);
+                if (info.BackupInfoVersion < BackupInfoVersion.V4) return GetBackupInfo(path, true);
                 return info;
             }
 
@@ -1457,7 +1479,7 @@ namespace QuestAppVersionSwitcher
 
     public class BackupInfo
     {
-        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V3;
+        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V4;
         public string backupName { get; set; } = "";
         public string backupLocation { get; set; } = "";
         public bool containsAppData { get; set; } = false;

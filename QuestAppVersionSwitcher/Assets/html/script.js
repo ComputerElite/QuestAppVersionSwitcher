@@ -20,7 +20,7 @@ document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/sea
 // connect to websocket one port higher than the server
 var socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
 socket.onerror = function (error) {
-    console.log("WebSocket Error: " + error);
+    console.log("WebSocket Error: " + error + ". Reconnecting...");
     // reconnect
     socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
 }
@@ -500,7 +500,7 @@ function CheckStartParams() {
             res.json().then(j => {
                 if (j.success) {
                     alert("Logged in")
-                    location.href.split('?')[0]
+                    location = location.href.split('?')[0]
                 } else {
                     alert("Error while logging in: " + j.msg)
                 }

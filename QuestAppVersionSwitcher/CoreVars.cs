@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
+using ComputerUtils.Android.AndroidTools;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace QuestAppVersionSwitcher.Core
 {
@@ -18,11 +20,19 @@ namespace QuestAppVersionSwitcher.Core
             }
         }
         public int loginStep { get; set; } = 0;
-        public bool passwordSet { get; set; } = false;
+
+        public bool passwordSet
+        {
+            get
+            {
+                return QAVSWebserver.GetSHA256OfString(AndroidService.GetDeviceID()) != password;
+            }
+        }
+        [JsonIgnore]
+        public string password { get; set; } = "";
     }
     public class CoreVars : StrippedConfig // aka config
     {
-        public string password { get; set; } = "";
         public string token { get; set; } = "";
         public PatchingPermissions patchingPermissions = new PatchingPermissions();
 		public static Cosmetics cosmetics = new Cosmetics();

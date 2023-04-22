@@ -31,6 +31,9 @@ namespace QuestAppVersionSwitcher
         public bool canceled = false;
         [JsonIgnore]
         public string obbFileName = "";
+
+        [JsonIgnore]
+        public int connections = 1;
         
         public void StopDownload()
 		{
@@ -119,7 +122,7 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.BroadcastDownloads(true);
                 if (DownloadErrorEvent != null) DownloadErrorEvent(this);
             };
-            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, 10);
+            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, connections);
         }
 
         public void StartDownload(string url, string path)
