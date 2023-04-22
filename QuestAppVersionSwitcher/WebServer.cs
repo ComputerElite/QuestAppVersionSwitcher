@@ -59,9 +59,6 @@ namespace QuestAppVersionSwitcher
 {
     public class QAVSWebViewClient : WebViewClient
     {
-        //public string navButtonsScript = "var qavsInjectionDiv = document.createElement(\"div\");qavsInjectionDiv.style = \"color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;\"; qavsInjectionDiv.innerHTML += `<div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(-1)\">Back</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"history.go(1)\">Forward</div><div style=\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\" onclick=\"location = 'http://localhost:" + CoreService.coreVars.serverPort + "'\">QuestAppVersionSwitcher</div><div style=\\\"border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;\\\" onclick=\\\"location = 'https://oculus.com/experiences/quest'\\\">Oculus (Login)</div>`; document.body.appendChild(qavsInjectionDiv)";
-        //public string toastCode = "var QAVSScript = document.createElement(\"script\");QAVSScript.innerHTML = `var QAVSToastsE = document.createElement(\"div\");document.body.appendChild(QAVSToastsE);let QAVStoasts = 0;let currentQAVSToasts = 0;function ShowToast(msg, color, bgc) {    QAVStoasts++;    currentQAVSToasts++;    let QAVStoastId = QAVStoasts;    QAVSToastsE.innerHTML += \\`<div id=\"QAVStoast\\${QAVStoastId}\" style=\"background-color: \\${bgc}; color: \\${color}; padding: 5px; height: 100px; width: 250px; position: fixed; bottom: \\${(currentQAVSToasts - 1) * 120 + 20}px; right: 30px; border-radius: 10px\">\\${msg}</div>\\`;    setTimeout(() => {        document.getElementById(\\`QAVStoast\\${QAVStoastId}\\`).remove();        currentQAVSToasts--;    }, 5000)}`; document.body.appendChild(QAVSScript);";
-
         public string injectJsJs = "var tag = document.createElement('script');tag.src = 'http://localhost:" +
                                    CoreService.coreVars.serverPort + "/inject.js';document.head.appendChild(tag)";
         
@@ -89,15 +86,15 @@ namespace QuestAppVersionSwitcher
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            return base.ShouldInterceptRequest(view, request);
-            foreach (KeyValuePair<string, string> p in QAVSWebViewClient.headers)
+            foreach (KeyValuePair<string, string> p in headers)
             {
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
                 else request.RequestHeaders[p.Key] = p.Value;
             }
             if (request.RequestHeaders.ContainsKey("document-policy")) request.RequestHeaders.Remove("document-policy");
-
             if (request.RequestHeaders.ContainsKey("document-domain")) request.RequestHeaders.Remove("document-domain");
+            
+            /*
             string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
             if (cookie != null) request.RequestHeaders["cookie"] = cookie;
             if (request.Method == "POST")
@@ -105,18 +102,7 @@ namespace QuestAppVersionSwitcher
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
             }
-            if(request.Url.Path.Contains("consent") && request.Url.Host.Contains("oculus"))
-            {
-                Thread t = new Thread(() =>
-                {
-                    Thread.Sleep(1000);
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        view.LoadUrl(CoreVars.oculusLoginUrl);
-                    });
-                });
-                t.Start();
-            }
+            */
             /*
             // somehow user webclient to handle the request and then change the response headers. No idea how to get the request body from the webview
             WebClient c = new WebClient();

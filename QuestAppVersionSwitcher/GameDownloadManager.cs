@@ -5,6 +5,7 @@ using System.Threading;
 using ComputerUtils.Android.Encryption;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
+using Newtonsoft.Json;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using Org.BouncyCastle.Bcpg.OpenPgp;
@@ -29,8 +30,9 @@ namespace QuestAppVersionSwitcher
         
         public List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
         public List<ObbEntry> obbsToDo { get; set; } = new List<ObbEntry>();
-        
+        [JsonIgnore]
         public DownloadRequest request = null;
+        [JsonIgnore]
         public Thread updateThread = null;
         public bool canceled { get; set; } = false;
         public bool error { get; set; } = false;
@@ -55,9 +57,9 @@ namespace QuestAppVersionSwitcher
             m.DownloadErrorEvent += DownloadError;
             m.isCancelable = false;
             
-            //Get OBBs via Oculus api
             try
             {
+                //Get OBBs via Oculus api
                 GraphQLClient.retryTimes = 1;
                 GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
                 AndroidBinary b = GraphQLClient.GetBinaryDetails(request.binaryId).data.node;
@@ -112,6 +114,7 @@ namespace QuestAppVersionSwitcher
             textColor = "#00FF00";
             done = true;
             UpdateManagersAndProgress();
+            QAVSWebserver.BroadcastDownloads(true);
         }
 
         public void UpdateManagersAndProgress()
@@ -130,6 +133,7 @@ namespace QuestAppVersionSwitcher
                 downloadManagers.Add(m);
                 obbsToDo.RemoveAt(0);
             }
+            QAVSWebserver.BroadcastDownloads(false);
         }
 
         private void DownloadError(DownloadManager manager)
@@ -138,6 +142,7 @@ namespace QuestAppVersionSwitcher
             error = true;
             canceled = false;
             status = "An unknown error occurred during the download of " + gameName + " " + version + ". Please try again.";
+            QAVSWebserver.BroadcastDownloads(true);
         }
 
         public void Cancel()
@@ -150,6 +155,7 @@ namespace QuestAppVersionSwitcher
                 d.StopDownload();
             }
             downloadManagers.Clear();
+            QAVSWebserver.BroadcastDownloads(true);
         }
 
         public void DownloadCompleted(DownloadManager m)

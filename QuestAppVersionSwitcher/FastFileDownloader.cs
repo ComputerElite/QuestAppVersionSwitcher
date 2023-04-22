@@ -110,7 +110,7 @@ namespace QuestAppVersionSwitcher
                 // Merge downloaded chunks into a single file
                 using (FileStream fileStream = new FileStream(savePath, FileMode.Create, FileAccess.Write))
                 {
-                    byte[] buffer = new byte[4096];
+                    byte[] buffer = new byte[1024 * 1024 * 20]; // 20MB buffer
 
                     for (int i = 0; i < numConnections; i++)
                     {

@@ -76,7 +76,7 @@ namespace QuestAppVersionSwitcher
                     BytesToRecieve = downloader.totalBytes;
                     long bytesPerSec = (long)Math.Round((downloader.downloadedBytes - lastBytes) / secondsPassed);
                     lastBytesPerSec.Add(bytesPerSec);
-                    if (lastBytesPerSec.Count > 5) lastBytesPerSec.RemoveAt(0);
+                    if (lastBytesPerSec.Count > 15) lastBytesPerSec.RemoveAt(0);
                     lastBytes = downloader.downloadedBytes;
                     long avg = 0;
                     foreach (long l in lastBytesPerSec) avg += l;
@@ -119,7 +119,7 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.BroadcastDownloads(true);
                 if (DownloadErrorEvent != null) DownloadErrorEvent(this);
             };
-            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, 15);
+            downloader.DownloadFile("https://securecdn.oculus.com/binaries/download/?id=" + binaryid + "&access_token=" + decodedToken, tmpPath, 10);
         }
 
         public void StartDownload(string url, string path)
