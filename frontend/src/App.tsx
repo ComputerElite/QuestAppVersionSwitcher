@@ -25,6 +25,7 @@ import { refetchAppInfo, refetchCosmeticTypes, refetchModdingStatus } from './st
 
 // Font roboto
 import '@fontsource/roboto';
+import { InitWS } from './state/eventBus';
 
 const App: Component = () => {
   // Load app info on startup
@@ -32,6 +33,7 @@ const App: Component = () => {
     await refetchAppInfo();
     await refetchModdingStatus();
     await refetchCosmeticTypes();
+    await InitWS();
   })
 
   return (

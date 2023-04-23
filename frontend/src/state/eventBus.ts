@@ -2,10 +2,17 @@ import { createStore } from "solid-js/store";
 import { ModTask, QAVSModOperationType, getModOperations } from "../api/mods";
 import { createSignal } from "solid-js";
 import toast from "solid-toast";
-import { refetchModdingStatus } from "../store";
+import { refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { refetchMods } from "./mods";
+import { GetWSFullURL } from "../util";
 
 
+enum WebSocketStatus {
+    CONNECTING = 0,
+    CONNECTED = 1,
+    DISCONNECTED = 2,
+    ERROR = 3,
+}
 
 /**
  * The task manager is used to keep track of all the tasks that are currently running.
@@ -14,6 +21,7 @@ import { refetchMods } from "./mods";
  */
 
 let [tasks, setTasks] = createStore<ModTask[]>([]);
+let [socketStatus, setSocketStatus] = createSignal<WebSocketStatus>(WebSocketStatus.CONNECTING);
 
 type TaskType = "tasks-done" | "task-done" | "task-new";
 
@@ -46,7 +54,11 @@ class BackendEventsClass extends EventTarget {
     }
 }
 
+
+
 export const BackendEvents = new BackendEventsClass();
+
+
 
 let [operationsInProgress, setOperationsInProgress] = createSignal<boolean>(false);
 
@@ -64,70 +76,6 @@ export function getTask(operationId: number) {
 
 export function getTasks() {
     return tasks;
-}
-
-export async function refetchTasks() {
-    try {
-        let resp: ModTask[] = await getModOperations();
-
-        // Flags 
-        let hasTasksInProgress = false;
-
-        let oldTasks = tasks;
-
-        // Analyze tasks that we have and tasks that we got from the backend
-        resp.forEach((task) => {
-            // If we have a task that is not in the list, add it
-            if (!hasTasksInProgress && !task.isDone) {
-                hasTasksInProgress = true;
-            }
-
-            // Compare status of old task and new task
-            let oldTask = getTask(task.operationId);
-            if (!oldTask) {
-                if (task.isDone) {
-                    hasTasksInProgress = true;
-                }
-                BackendEvents.emitNewTask(task);
-            } else {
-                // We assume that the task cannot go from done to not done
-                if (oldTask.isDone !== task.isDone) {
-                    BackendEvents.emitTaskDone(task);
-                }
-            }
-        });
-
-        // Track operations in progress
-        if (!hasTasksInProgress && operationsInProgress()) {
-            setOperationsInProgress(false);
-            BackendEvents.emitTasksDone();
-        } else if (hasTasksInProgress && !operationsInProgress()) {
-            setOperationsInProgress(true);
-        }
-
-
-
-        // Set the tasks
-        setTasks(resp);
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-let refetchingInterval: NodeJS.Timer | null = null;
-export function startRefetchingModTasks() {
-
-    console.log("Starting refetching mod tasks");
-    // If we are already refetching, don't do anything
-    if (refetchingInterval) return;
-    console.log("Starting refetching mod tasks");
-    refetchingInterval = setInterval(async () => {
-        await refetchTasks();
-        if (!operationsInProgress()) {
-            refetchingInterval && clearInterval(refetchingInterval);
-        }
-    }
-        , 1000);
 }
 
 BackendEvents.addEventListener("task-done", async (e) => {
@@ -153,3 +101,53 @@ BackendEvents.addEventListener("tasks-done", async (e) => {
     await refetchModdingStatus();
     await refetchMods();
 });
+
+
+// Websocket connection
+let ws: WebSocket | null = null;
+
+export function InitWS() {
+    ws = new WebSocket(GetWSFullURL());
+    // connect to websocket one port higher than the server
+    ws.onerror = function (error) {
+        setSocketStatus(WebSocketStatus.ERROR);
+        console.log("WebSocket Error: " + error + ". Reconnecting...");
+        // reconnect
+        ws = new WebSocket(GetWSFullURL());
+    }
+
+    ws.onclose = function (e) {
+        setSocketStatus(WebSocketStatus.DISCONNECTED);
+        console.log("WebSocket closed. Reconnecting...");
+        // reconnect
+        ws = new WebSocket(GetWSFullURL());
+    }
+
+    ws.onopen = function (e) {
+        console.log("WebSocket connected");
+        setSocketStatus(WebSocketStatus.CONNECTED);
+    }
+
+    ws.onmessage = function (e) {
+        // TODO: We need to handle chunked messages here too, because the data can be split up into multiple messages if it's too big
+        try {
+            var data = JSON.parse(e.data);
+            console.log("WS Data", data);
+            if (data.route == "/api/downloads") {
+                // refetch
+                // TODO: Implement this
+            } else if (data.route == "/api/mods/mods") {
+                refetchMods();
+            } else if (data.route == "/api/patching/patchstatus") {
+                refetchModdingStatus();
+            }
+        }
+        catch (error) {
+            console.warn("Invalid WS Data", e.data);
+            return;
+        }
+
+    }
+}
+
+

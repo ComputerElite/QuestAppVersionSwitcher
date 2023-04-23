@@ -33,3 +33,23 @@ const _isOnQuest = window.navigator.userAgent == "Mozilla/5.0 (X11; Linux x86_64
 export function IsOnQuest() {
     return _isOnQuest;
 }
+
+// get port from window.location
+export function GetPort(): number {
+    return Number.parseInt(window.location.port);
+}
+
+// Assume that the websocket port is always one higher than the http port
+export function GetWSPort(): number {
+    return GetPort() + 1;
+}
+
+// 
+export function GetWSFullURL(route?: string): string {
+    // if https, use wss
+    if (window.location.protocol == "https:") {
+        return `wss://${window.location.hostname}:${GetWSPort()}${route ?? ""}`;
+    }
+
+    return `ws://${window.location.hostname}:${GetWSPort()}${route ?? ""}`;
+}

@@ -18,7 +18,7 @@ import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCur
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../store";
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { getPatchedModdingStatus } from "../api/patching";
-import { startRefetchingModTasks } from "../state/moddingEvents";
+
 
 
 async function UploadModClick() {
@@ -36,8 +36,6 @@ async function UploadModClick() {
         
       }
     }
-    // Start refetching mod tasks to get the result of the upload
-    startRefetchingModTasks();
   })
 }
 
@@ -108,14 +106,12 @@ async function onFileDrop(e: DragEvent) {
     if (url) {
       await InstallModFromUrl(url);
       await Sleep(100);
-      startRefetchingModTasks();
+
     }
 
     if (filesToUpload.length > 0) {
       for (const file of filesToUpload)
         await UploadMod(file);
-
-      startRefetchingModTasks();
     }
   }
 
@@ -335,7 +331,7 @@ function ModCard({ mod }: { mod: IMod }) {
         "width": "160px",
         "height": "92px",
         "aspect-ratio": "16 / 9",
-      }} src={(mod.hasCover) ? `/api/mods/cover?id=${mod.Id}` : defaultImage} />
+      }} src={(mod.hasCover) ? `/api/mods/cover/${mod.Id}` : defaultImage} />
       <Box
         sx={{
           flexGrow: 1,
