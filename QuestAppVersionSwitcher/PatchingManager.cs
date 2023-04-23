@@ -122,8 +122,11 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = 5;
             QAVSWebserver.patchStatus.progress = .55;
             QAVSWebserver.BroadcastPatchingStatus();
-            
-            await ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes);
+
+            if (!await ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes))
+            {
+                return;
+            }
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
@@ -268,7 +271,11 @@ namespace QuestAppVersionSwitcher
             if (app == null) app = CoreService.coreVars.currentApp;
             if (!AndroidService.IsPackageInstalled(app))
             {
-                return null;
+                return new PatchingStatus
+                {
+                    isInstalled = false,
+                    canBePatched = false,
+                };
             }
             ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
             return GetPatchingStatus(apk);

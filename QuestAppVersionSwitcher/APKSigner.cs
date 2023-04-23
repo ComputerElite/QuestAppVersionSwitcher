@@ -52,6 +52,7 @@ using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core;
 using QuestPatcher.Core.Apk;
+using Exception = Java.Lang.Exception;
 using PemReader = Org.BouncyCastle.OpenSsl.PemReader;
 
 namespace QuestAppVersionSwitcher
@@ -287,9 +288,9 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         /// <param name="path">Path to the APK to sign</param>
         /// <param name="knownHashes">Optionally, the hashes of the files within the APK at some earlier point.
         /// Using existing hashes reduces signing time, since only the files within the APK that have actually changed have to get signed.</param>
-        public static async Task SignApkWithPatchingCertificate(string path, Dictionary<string, PrePatchHash>? knownHashes = null)
+        public static async Task<bool> SignApkWithPatchingCertificate(string path, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
-            await SignApk(path, PatchingCertificatePem, knownHashes);
+            return await SignApk(path, PatchingCertificatePem, knownHashes);
         }
 
         /// <summary>
@@ -299,7 +300,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
         /// <param name="pemData">PEM of the certificate and private key</param>
         /// <param name="knownHashes">Optionally, the hashes of the files within the APK at some earlier point.
         /// Using existing hashes reduces signing time, since only the files within the APK that have actually changed have to get signed.</param>
-        public static async Task SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
+        public static async Task<bool> SignApk(string path, string pemData, Dictionary<string, PrePatchHash>? knownHashes = null)
         {
             QAVSWebserver.patchStatus.currentOperation = "Preparing apk aligning and signing";
             QAVSWebserver.BroadcastPatchingStatus();
@@ -375,7 +376,11 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             QAVSWebserver.patchStatus.currentOperation = "Aligning apk";
             QAVSWebserver.BroadcastPatchingStatus();
             Logger.Log("Aligning Apk");
-            ApkAligner.AlignApk(path);
+            if (!ApkAligner.AlignApk(path))
+            {
+                Logger.Log("Aligning failed... Aborting", LoggingType.Warning);
+                return false;
+            }
             
             QAVSWebserver.patchStatus.doneOperations = 7;
             QAVSWebserver.patchStatus.progress = .75;
@@ -395,9 +400,18 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             }
             memory.Position -= 4;
             var eocdPosition = memory.Position;
-            EndOfCentralDirectory eocd = new EndOfCentralDirectory(memory);
-            if(eocd == null)
-                return;
+            EndOfCentralDirectory eocd;
+            try
+            {
+                 eocd = new EndOfCentralDirectory(memory);
+            }
+            catch (Exception e)
+            {
+                QAVSWebserver.patchStatus.error = true;
+                QAVSWebserver.patchStatus.errorText = "Error while signing apk: " + e.Message;
+                QAVSWebserver.BroadcastPatchingStatus();
+                return false;
+            }
             var cd = eocd.OffsetOfCD;
             memory.Position = cd-16-8;
             
@@ -455,6 +469,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             tmp.Close();
             if(File.Exists(path)) File.Delete(path);
             File.Move(t.Path, path);
+            return true;
         }
 
         public static async Task<List<byte[]>> GetSectionDigests(FileStream fs, long startOffset, long endOffset)

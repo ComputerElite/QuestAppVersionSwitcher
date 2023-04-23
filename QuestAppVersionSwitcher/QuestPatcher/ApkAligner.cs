@@ -16,7 +16,7 @@ namespace QuestPatcher.Core
     public class ApkAligner
     {
 
-        public static void AlignApk(string path)
+        public static bool AlignApk(string path)
         {
             using FileStream fs = new FileStream(path, FileMode.Open);
             using FileMemory memory = new FileMemory(fs);
@@ -30,9 +30,18 @@ namespace QuestPatcher.Core
             }
             memory.Position -= 4;
             List<CentralDirectoryFileHeader> cDs = new List<CentralDirectoryFileHeader>();
-            EndOfCentralDirectory eocd = new EndOfCentralDirectory(memory);
-            if(eocd == null)
-                return;
+            EndOfCentralDirectory eocd;
+            try
+            {
+                eocd = new EndOfCentralDirectory(memory);
+            }
+            catch (Exception e)
+            {
+                QAVSWebserver.patchStatus.error = true;
+                QAVSWebserver.patchStatus.errorText = "Error while aligning apk: " + e.Message;
+                QAVSWebserver.BroadcastPatchingStatus();
+                return false;
+            }
             memory.Position = eocd.OffsetOfCD;
             for(int i = 0; i < eocd.NumberOfCDsOnDisk; i++)
             {
@@ -53,7 +62,7 @@ namespace QuestPatcher.Core
                     QAVSWebserver.patchStatus.error = true;
                     QAVSWebserver.patchStatus.errorText = "Error while aligning apk: " + e.Message;
                     QAVSWebserver.BroadcastPatchingStatus();
-                    return;
+                    return false;
                 }
                 if(lfh.CompressionMethod == 0) {
                     short padding = (short) ((outMemory.Position + 30 + FileMemory.StringLength(lfh.FileName) + lfh.ExtraField.Length) % 4);
@@ -84,6 +93,7 @@ namespace QuestPatcher.Core
             tmp.Close();
             if (File.Exists(path)) File.Delete(path);
             File.Move(t.Path, path);
+            return true;
         }
 
     }

@@ -441,14 +441,6 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/api/patching/getmodstatus", request =>
             {
                 PatchingStatus status = PatchingManager.GetPatchingStatus(request.queryString.Get("package"));
-                if(status == null)
-                {
-                    status = new PatchingStatus
-                    {
-                        isInstalled = false,
-                        canBePatched = false,
-                    };
-                }
                 request.SendString(JsonSerializer.Serialize(status), "application/json");
                 return true;
             });
@@ -716,6 +708,7 @@ namespace QuestAppVersionSwitcher
                 QAVSModManager.Update();
                 report.modsAndLibs = QAVSModManager.GetModsAndLibs();
                 PatchingStatus status = PatchingManager.GetPatchingStatus();
+                report.appStatus = status;
                 Logger.Log("-------Status of selected app-------\n" + (status == null ? "Not installed" : JsonSerializer.Serialize(status, new JsonSerializerOptions
                 {
                     WriteIndented = true
@@ -770,7 +763,7 @@ namespace QuestAppVersionSwitcher
                     }
                 }
                 //FileManager.LogTree(CoreService.coreVars.QAVSBackupDir, 0);
-                report.log = Logger.log;
+                report.log = FileManager.GetLastCharactersOfFile(CoreService.coreVars.QAVSDir + "qavslog.log", 2 * 1024 * 1024); // 2 MB
                 WebRequest r = WebRequest.Create("https://oculusdb.rui2015.me/api/v1/qavsreport");
                 r.Method = "POST";
                 byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(report));
@@ -1508,6 +1501,7 @@ namespace QuestAppVersionSwitcher
 		public bool userIsLoggedIn { get; set; }
         public List<string> userEntitlements { get; set; } = new List<string>();
 		public long availableSpace { get; set; }
+        public PatchingStatus appStatus { get; set; }
 		public string availableSpaceString
 		{
 			get

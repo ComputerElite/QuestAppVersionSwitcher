@@ -1262,7 +1262,7 @@ function StopDownload(name) {
 }
 
 document.getElementById("logs").onclick = () => {
-    TextBoxText("logsText", "Collecting information.. please allow us up to 30 seconds to collect everything")
+    TextBoxText("logsText", "Collecting information.. Please allow us 40 seconds to collect and upload everything")
     fetch("/api/questappversionswitcher/uploadlogs", {
         method: "POST",
         body: encodeURIComponent(document.getElementById("logspwd").value)

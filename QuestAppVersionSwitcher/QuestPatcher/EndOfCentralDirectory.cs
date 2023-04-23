@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ComputerUtils.Android.Logging;
 
 namespace QuestPatcher.Core.Apk
 {
@@ -21,8 +22,11 @@ namespace QuestPatcher.Core.Apk
         public EndOfCentralDirectory(FileMemory memory)
         {
             int signature = memory.ReadInt();
-            if(signature != SIGNATURE)
-                throw new Exception("Invalid EndOfCentralDirectory signature " + signature.ToString("X4"));
+            if (signature != SIGNATURE)
+            {
+                Logger.Log("Invalid EndOfCentralDirectory signature " + signature.ToString("X4") + ". APK may be corrupted", LoggingType.Error);
+                throw new Exception("Invalid EndOfCentralDirectory signature " + signature.ToString("X4") + ". APK may be corrupted");
+            }
             NumberOfDisk = memory.ReadShort();
             CDStartDisk = memory.ReadShort();
             NumberOfCDsOnDisk = memory.ReadShort();

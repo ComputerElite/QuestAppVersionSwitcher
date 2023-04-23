@@ -57,6 +57,7 @@ namespace QuestAppVersionSwitcher
             {
                 //Get OBBs via Oculus api
                 GraphQLClient.retryTimes = 1;
+                GraphQLClient.log = false;
                 GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
                 AndroidBinary b = GraphQLClient.GetBinaryDetails(request.binaryId).data.node;
                 if (b.obb_binary != null)
