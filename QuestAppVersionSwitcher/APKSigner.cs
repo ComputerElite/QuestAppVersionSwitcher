@@ -52,7 +52,6 @@ using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.Core;
 using QuestPatcher.Core.Apk;
-using Exception = Java.Lang.Exception;
 using PemReader = Org.BouncyCastle.OpenSsl.PemReader;
 
 namespace QuestAppVersionSwitcher
