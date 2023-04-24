@@ -26,6 +26,7 @@ import { refetchAppInfo, refetchCosmeticTypes, refetchModdingStatus } from './st
 // Font roboto
 import '@fontsource/roboto';
 import { InitWS } from './state/eventBus';
+import GetBeatSabersModsPage from './pages/BeatSaber/GetBeatSaberMods';
 
 const App: Component = () => {
   // Load app info on startup
@@ -53,6 +54,7 @@ const App: Component = () => {
               <Route path="/cosmetics" element={<CosmeticsPage />} />
               {/* <Route path="/getMods" element={<GetModsPage />} /> */}
               <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/bsmods" element={<GetBeatSabersModsPage />} />
             </Routes>
           </div>
         </div>

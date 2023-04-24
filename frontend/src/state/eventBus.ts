@@ -1,6 +1,6 @@
 import { createStore } from "solid-js/store";
 import { ModTask, QAVSModOperationType, getModOperations } from "../api/mods";
-import { createSignal } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 import toast from "solid-toast";
 import { refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { refetchMods } from "./mods";
@@ -92,7 +92,7 @@ BackendEvents.addEventListener("task-done", async (e) => {
 
 BackendEvents.addEventListener("task-new", async (e) => {
     let task = (e as CustomEvent).detail as ModTask;
-    // toast(`${task.name}`);
+    toast(`${task.name}`);
 });
 
 
@@ -137,6 +137,7 @@ export function InitWS() {
                 // refetch
                 // TODO: Implement this
             } else if (data.route == "/api/mods/mods") {
+                updateTasks(data.data.operations);
                 refetchMods();
             } else if (data.route == "/api/patching/patchstatus") {
                 refetchModdingStatus();
@@ -151,3 +152,64 @@ export function InitWS() {
 }
 
 
+export async function updateTasks(newState: ModTask[]) {
+    try {
+        let resp: ModTask[] = newState;
+        
+        // // Flags 
+        // let hasTasksInProgress = false;
+
+       
+        // Analyze tasks that we have and tasks that we got from the backend
+        resp.forEach((task) => {
+            // If we have a task that is not in the list, add it
+            // if (!hasTasksInProgress && !task.isDone) {
+            //     hasTasksInProgress = true;
+            // }
+
+            // Compare status of old task and new task
+            let oldTask = getTask(task.operationId);
+            if (!oldTask) {
+                // if (task.isDone) {
+                //     hasTasksInProgress = true;
+                // }
+                if (task.isDone) {
+                    BackendEvents.emitTaskDone(task);
+                } else {
+                    BackendEvents.emitNewTask(task);
+                }
+
+            } else {
+                // We assume that the task cannot go from done to not done
+                if (oldTask.isDone !== task.isDone) {
+                    BackendEvents.emitTaskDone(task);
+                }
+            }
+        });
+
+        // Track operations in progress
+        // if (!hasTasksInProgress && operationsInProgress()) {
+        //     setOperationsInProgress(false);
+        //     BackendEvents.emitTasksDone();
+        // } else if (hasTasksInProgress && !operationsInProgress()) {
+        //     setOperationsInProgress(true);
+        // }
+
+
+
+        // Set the tasks
+        setTasks(resp);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Fetch the mod operations on page load
+createEffect(async () => {
+    try {
+        let operations = await getModOperations();
+        setTasks(operations);
+    } catch (e) {
+        console.error(e);
+    }   
+});

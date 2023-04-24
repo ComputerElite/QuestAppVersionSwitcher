@@ -18,10 +18,11 @@ import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCur
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../store";
 import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { getPatchedModdingStatus } from "../api/patching";
-
-
+import { proxyFetch } from "../api/app";
+import { ModDropper } from "../components/ModDropper";
 
 async function UploadModClick() {
+
   if (!(await checkModsCanBeInstalled())) return;
 
   var input = document.createElement('input');
@@ -65,63 +66,9 @@ async function checkModsCanBeInstalled() {
   return true;
 }
 
-async function onFileDrop(e: DragEvent) {
-  e.preventDefault();
-  e.stopPropagation();
-
-
-  // If dropped items aren't files, reject them
-  if (!e.dataTransfer) return;
-
-  // If it's files, process them and send them to the server one by one
-  if (e.dataTransfer) {
-    let filesToUpload: Array<File> = [];
-
-
-    // Try 2 ways of getting files 
-    if (e.dataTransfer.items) {
-      // Use DataTransferItemList interface to access the file(s)
-      [...e.dataTransfer.items].forEach((item, i) => {
-        // If dropped items aren't files, reject them
-        if (item.kind === 'file') {
-          const file = item.getAsFile();
-          if (file) {
-            console.log(`… file[${i}].name = ${file.name}`);
-            filesToUpload.push(file);
-          }
-        }
-      });
-    } else {
-      // Use DataTransfer interface to access the file(s)
-      [...e.dataTransfer.files].forEach((file, i) => {
-        filesToUpload.push(file);
-      });
-    }
-    // Get the url if there is one
-    let url = e.dataTransfer.getData("URL");
-
-    // Check if we can install mods here because we will lose the drag event if we await
-    if (!(await checkModsCanBeInstalled())) return;
-
-    if (url) {
-      await InstallModFromUrl(url);
-      await Sleep(100);
-
-    }
-
-    if (filesToUpload.length > 0) {
-      for (const file of filesToUpload)
-        await UploadMod(file);
-    }
-  }
-
-}
-
 let lastScrollPosition = 0;
 
 export default function ModsPage() {
-  const [isDragging, setIsDragging] = createSignal(false);
-  const [dragCounter, setDragCounter] = createSignal(0);
 
   // Remember last scroll position
   onMount(() => {
@@ -131,33 +78,6 @@ export default function ModsPage() {
   onCleanup(() => {
     lastScrollPosition = window.scrollY;
   });
-
-  function ondragenter(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (dragCounter() + 1 >= 0) {
-      setIsDragging(true);
-    }
-    setDragCounter(dragCounter() + 1);
-  }
-  function ondragleave(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragCounter(dragCounter() - 1);
-    if (dragCounter() <= 0) {
-      setIsDragging(false);
-    }
-  }
-
-  function ondragover(e: DragEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  function ondrop(e: DragEvent) {
-    onFileDrop(e);
-    setIsDragging(false);
-  }
 
   async function reloadMods() {
     try {
@@ -186,22 +106,6 @@ export default function ModsPage() {
     toast.success("Game started");
   }
 
-  onMount(async () => {
-    window.addEventListener("drop", ondrop);
-    window.addEventListener("dragover", ondragover);
-    window.addEventListener("dragleave", ondragleave);
-    window.addEventListener("dragenter", ondragenter);
-    console.log("mounted")
-  })
-
-  onCleanup(() => {
-    window.removeEventListener("drop", ondrop);
-    window.removeEventListener("dragover", ondragover);
-    window.removeEventListener("dragleave", ondragleave);
-    window.removeEventListener("dragenter", ondragenter);
-    console.log("unmounted")
-  })
-
   let filteredData = createMemo<{ mods?: Array<IMod>, libs?: Array<IMod> }>(() => {
     let allMods = modsList();
     if (!allMods) return { mods: [], libs: [] };
@@ -223,6 +127,7 @@ export default function ModsPage() {
 
   return (
     <PageLayout>
+      <ModDropper/>
       <div
         class=" contentItem modsPage"
       >
@@ -265,14 +170,6 @@ export default function ModsPage() {
             {/* <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} /> */}
           </Box>
         </Box>
-
-        <div classList={{
-          "dragOverlay": true,
-          "active": isDragging()
-        }
-        }>
-          <div class="dragOverlayText">Drop to install</div>
-        </div>
         <List sx={{
           display: "flex",
           flexDirection: "column",
@@ -303,9 +200,9 @@ export default function ModsPage() {
 
 async function ToggleModState(modId: string, newState: boolean) {
   await UpdateModState(modId, newState);
-  await Sleep(300);
-  refetchMods();
-  toast.success(`Mod ${modId} is ${newState ? "enabled" : "disabled"}`)
+  // await Sleep(300);
+  // refetchMods();
+  // toast.success(`Mod ${modId} is ${newState ? "enabled" : "disabled"}`)
 }
 
 async function DeleteModClick(mod: IMod) {

@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import styles from "./Sidebar.module.scss"
 import { config } from "../store";
 import { FiEdit2 } from 'solid-icons/fi'
@@ -53,7 +53,14 @@ export default function Sidebar() {
                         </A>
                     )}
                 </For>
+                <Show when={config()?.currentApp === "com.beatgames.beatsaber"}>
+                    <A href="/bsmods" class={styles.menuItem} activeClass={styles.selected} noScroll={true} >
+                        <DeployedCodeIcon></DeployedCodeIcon> <span>Beat Saber Mods</span>
+                    </A>
+                </Show>
             </div>
+            
+                
 
         </div>
     )

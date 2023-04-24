@@ -161,3 +161,9 @@ export async function getLoggedInStatus(): Promise<boolean> {
     let result = await fetch("/api/questappversionswitcher/loggedinstatus");
     return await result.text() == "2";
 }
+
+
+export async function proxyFetch(url: string): Promise<string> {
+    let result = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
+    return await result.text();
+}
