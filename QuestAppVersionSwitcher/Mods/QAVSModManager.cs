@@ -327,10 +327,8 @@ namespace QuestAppVersionSwitcher.Mods
         {
             foreach (IMod m in modManager.AllMods)
             {
-                Logger.Log(m.Id + " = " + id);
                 if (m.Id == id)
                 {
-                    Logger.Log("found mod");
                     return m.OpenCover();
                 }
             }
