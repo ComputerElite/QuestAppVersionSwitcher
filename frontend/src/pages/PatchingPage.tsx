@@ -5,7 +5,7 @@ import PageLayout from "../Layouts/PageLayout";
 import RunButton from "../components/Buttons/RunButton";
 import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded";
 import { DeleteIcon, FirePatch } from "../assets/Icons";
-import { InternalPatchingOptions, appInfo, config, moddingStatus, mutatePatchingOptions, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
+import { InternalPatchingOptions, appInfo, config, currentApplication, moddingStatus, mutatePatchingOptions, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { For, Show, children, createEffect, createSignal, splitProps } from "solid-js";
 import { CustomModal } from "../modals/CustomModal";
 import { FiRefreshCcw } from "solid-icons/fi";
@@ -16,7 +16,10 @@ import { GetGameName } from "../util";
 import { HandtrackingTypes, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
 import toast from "solid-toast";
 import { isPackageInstalled } from "../api/android";
-
+import { BackendEvents, PatchingProgressData } from "../state/eventBus";
+import { onCleanup } from "solid-js";
+import { LinearProgress } from "@suid/material"
+import { refetchBackups } from "../state/backups";
 
 export default function PatchingPage() {
   let [isPatchingModalOpen, setIsPatchingModalOpen] = createSignal(false);
@@ -42,27 +45,16 @@ export default function PatchingPage() {
       refetchModdingStatus();
       return toast.error("Game is not installed");
     }
-    
-    try {
-      let result = await patchCurrentApp();
-      if (!result) {
-        toast.error("Failed to patch the game");
-        return;
-      }
-      await refetchModdingStatus();
-      setIsPatchingModalOpen(true);
-    } catch (e) {
-      console.error(e)
-      toast.error("Failed to patch game");
-    }
+
+    setIsPatchingModalOpen(true);
   }
 
   async function updatePatchingOptions(options: Partial<InternalPatchingOptions>) {
     let newOptions = patchingOptions();
     if (!newOptions) return console.warn("Patching options are null");
 
-    newOptions = {...newOptions, ...options} 
-    
+    newOptions = { ...newOptions, ...options }
+
     try {
       let result = await setPatchingOptions(newOptions);
       if (!result) {
@@ -74,6 +66,12 @@ export default function PatchingPage() {
       console.error(e)
       toast.error("Failed to update patching options");
     }
+  }
+
+  function onPatchFinished() {
+    setIsPatchingModalOpen(false);
+    refetchModdingStatus();
+    refetchBackups();
   }
 
   /**
@@ -120,7 +118,7 @@ export default function PatchingPage() {
                 sx={{
                   minWidth: 200,
                 }}
-                size="small" variant="outlined" color="primary" value={patchingOptions()?.handtracking?? null} onChange={
+                size="small" variant="outlined" color="primary" value={patchingOptions()?.handtracking ?? null} onChange={
                   (e) => {
                     updatePatchingOptions({ handtracking: e.target.value })
                   }
@@ -191,9 +189,12 @@ export default function PatchingPage() {
         <Show when={!config()?.currentApp}>
           <NoticeText>No game selected, select your game from the left menu, if it's not there, install it first</NoticeText>
         </Show>
-        <PatchingModal
-          open={isPatchingModalOpen()} onClose={() => { setIsPatchingModalOpen(false) }}
-        />
+        <Show when={isPatchingModalOpen()} >
+          <PatchingModal
+            open={isPatchingModalOpen()} onClose={() => { setIsPatchingModalOpen(false) }} onPatchFinished={onPatchFinished}
+          />
+        </Show>
+
       </div>
     </PageLayout >
 
@@ -201,13 +202,99 @@ export default function PatchingPage() {
 }
 
 
-function PatchingModal(props: { open: boolean, onClose?: () => void }) {
-  return <CustomModal title={"Patching modal"} open={props.open} onClose={props.onClose}
+function PatchingModal(props: { open: boolean, onClose?: () => void, onPatchFinished?: () => void }) {
+
+  const [progress, setProgress] = createSignal(0);
+
+  const [log, setLog] = createSignal<PatchingProgressData[]>([]);
+
+  let logElement:  HTMLPreElement | undefined;
+
+  // Update log when a new event is received
+  function onPatchProgress(e: CustomEvent) {
+    let data = e.detail as PatchingProgressData;
+    console.log(data);
+    console.log(currentApplication);
+
+    // find previous operation
+    let prevOperation = log().find((l) => l.currentOperation === data.currentOperation);
+
+    if (prevOperation) {
+      // if the operation is the same, replace it
+      setLog((old) => old.map((l) => {
+        if (l.currentOperation === data.currentOperation) {
+          return data;
+        }
+        return l;
+      }))
+    } else {
+      // if the operation is not the same, add it
+      setLog((old) => [...old, data]);
+    }
+
+    logElement?.scrollTo(0, logElement.scrollHeight);
+
+    setProgress(data.progress*100);
+
+    if (data.done) {
+      props.onPatchFinished?.();
+      toast.success("Game patched successfully");
+    }
+    
+  }
+
+  createEffect(async () => {
+    try {
+      let result = await patchCurrentApp();
+      if (!result) {
+        toast.error("Failed to patch the game");
+        return;
+      }
+      await refetchModdingStatus();
+    } catch (e) {
+      console.error(e)
+      toast.error("Failed to patch game");
+    }
+
+    // @ts-ignore
+    BackendEvents.addEventListener("patch-progress", onPatchProgress);
+  })
+
+  onCleanup(() => {
+    // @ts-ignore
+    BackendEvents.removeEventListener("patch-progress", onPatchProgress);
+  })
+
+
+  return <CustomModal title={"Patching modal"} open={props.open} onClose={props.onClose} 
     buttons={<>
-      <RunButton text="Patch" icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
+      <RunButton text="Patch" icon={<PlayArrowRounded />} variant='success' onClick={() => { 
+        
+       }} />
     </>} >
-    <div>sadaa</div>
+    <Box sx={{ width: "100%" }}>
+      <LinearProgress variant="determinate" value={progress()} />
+    </Box>
+    <pre ref={logElement} style={{
+      background: "black",
+      color: "white",
+      padding: "10px",
+      "border-radius": "0px",
+      "min-width": "400px",
+      "max-width": "100vw",
+      height: "300px",
+      "overflow-y": "auto",
+      "font-size": "12px",
+    }}>
+      <For each={log()}>
+        {(line) => <LogLine line={line} />}
+      </For>
+    </pre>
   </CustomModal>
+}
+
+function LogLine({line}: { line: PatchingProgressData}) {
+  return <div>({line.doneOperations-1}/{line.totalOperations}) {line.currentOperation}{line.done?"OK":"..."} </div>
 }
 
 

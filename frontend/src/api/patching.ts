@@ -40,7 +40,7 @@ export async function setPatchingOptions(permissions: InternalPatchingOptions): 
         debug: permissions.addDebug,
         otherPermissions: permissions.additionalPermissions,
     }
-    
+
     let result = await fetch(`/api/patching/patchoptions`,
         {
             method: "POST",
@@ -52,7 +52,7 @@ export async function setPatchingOptions(permissions: InternalPatchingOptions): 
     );
 
     return result.ok;
-}   
+}
 
 export enum HandtrackingTypes {
     None = 0,
@@ -67,9 +67,14 @@ export async function getPatchingOptions(): Promise<PatchingRequestPermissions> 
 }
 
 
-export async function patchCurrentApp(): Promise<boolean>  {
-    
-    let result = await fetch("/api/patching/patchapk");
+export async function patchCurrentApp(): Promise<{
+    msg: string;
+    success: boolean;
+}> {
+
+    let result = await fetch("/api/patching/patchapk", {
+        method: "POST",
+    });
     if (!result.ok) {
         throw new Error("Failed to patch app");
     }

@@ -55,13 +55,10 @@ export default function Sidebar() {
                 </For>
                 <Show when={config()?.currentApp === "com.beatgames.beatsaber"}>
                     <A href="/bsmods" class={styles.menuItem} activeClass={styles.selected} noScroll={true} >
-                        <DeployedCodeIcon></DeployedCodeIcon> <span>Beat Saber Mods</span>
+                        <DeployedCodeIcon></DeployedCodeIcon> <span>Get Mods</span>
                     </A>
                 </Show>
             </div>
-            
-                
-
         </div>
     )
 }

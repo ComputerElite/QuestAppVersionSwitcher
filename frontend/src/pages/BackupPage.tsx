@@ -1,10 +1,10 @@
 import { Title, Link, Meta } from '@solidjs/meta';
 import { config } from '../store';
-import { backupList } from '../state/backups';
+import { backupList, refetchBackups } from '../state/backups';
 import { showChangeGameModal } from '../modals/ChangeGameModal';
 import { For, createEffect, createSignal, on } from 'solid-js';
 import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/material';
-import { IBackup, restoreAppBackup } from '../api/backups';
+import { IBackup, deleteBackup, restoreAppBackup } from '../api/backups';
 import { FaSolidWindowRestore } from 'solid-icons/fa';
 import { FiTrash } from 'solid-icons/fi'
 const [selectedBackup, setSelectedBackup] = createSignal<IBackup | null>(null);
@@ -13,6 +13,7 @@ import { showConfirmModal } from '../modals/ConfirmModal';
 import PageLayout from '../Layouts/PageLayout';
 import RunButton from '../components/Buttons/RunButton';
 import { PlusIcon, RestoreIcon } from '../assets/Icons';
+import toast from 'solid-toast';
 
 
 export default function BackupPage() {
@@ -45,7 +46,6 @@ export default function BackupPage() {
     }
 
     async function onDeleteClick(backup: IBackup) {
-        console.log("delete");
         let confirm = await showConfirmModal({
             title: "Delete backup",
             message: `Are you sure you want to delete the backup "${backup.backupName}"?`,
@@ -54,8 +54,11 @@ export default function BackupPage() {
         })
 
         if (confirm) {
-            console.log("delete confirmed");
-
+            let result = await deleteBackup(config()!.currentApp, backup.backupName);
+            if (result) {
+                toast.success("Backup deleted");
+                refetchBackups();
+            }
         };
     }
 
