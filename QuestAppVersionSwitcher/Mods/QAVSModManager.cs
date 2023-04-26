@@ -53,29 +53,48 @@ namespace QuestAppVersionSwitcher.Mods
         public static void AddRunningOperation(QAVSOperation operation)
         {
             runningOperations.Add(operation.operationId, operation);
-            BroadcastModsAndStatus();
+            BroadcastOperation(operation.operationId);
+            //BroadcastModsAndStatus();
         }
 
         public static void MarkOperationAsError(int operationId)
         {
             runningOperations[operationId].error = true;
-            BroadcastModsAndStatus();
+            BroadcastOperation(operationId);
+            //BroadcastModsAndStatus();
         }
         public static void MarkOperationAsDone(int operationId)
         {
             runningOperations[operationId].isDone = true;
-            BroadcastModsAndStatus();
+            if (runningOperations[operationId].type == QAVSOperationType.ModDelete
+                || runningOperations[operationId].type == QAVSOperationType.ModDisable
+                || runningOperations[operationId].type == QAVSOperationType.ModInstall
+                || runningOperations[operationId].type == QAVSOperationType.ModUninstall)
+            {
+                // on mod install, uninstall, disable or delete, send all mods
+                BroadcastModsAndStatus();
+            }
+            else
+            {
+                BroadcastOperation(operationId);
+            }
         }
 
         public static void UpdateOperationModId(int operationId, string modId)
         {
             runningOperations[operationId].modId = modId;
-            BroadcastModsAndStatus();
+            BroadcastOperation(operationId);
+            //BroadcastModsAndStatus();
         }
 
         public static void BroadcastModsAndStatus()
         {
             QAVSWebserver.BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<ModsAndLibs>("/api/mods/mods", GetModsAndLibs()));
+        }
+
+        public static void BroadcastOperation(int operationId)
+        {
+            QAVSWebserver.BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<QAVSOperation>("/api/mods/operation/" + operationId, runningOperations[operationId]));
         }
 
         public static void Init()
@@ -97,10 +116,18 @@ namespace QuestAppVersionSwitcher.Mods
             return false;
         }
 
-        public static void Update()
+        public static async void Update()
         {
-            modManager.Reset();
-            modManager.LoadModsForCurrentApp();
+            try
+            {
+                modManager.Reset();
+                await modManager.LoadModsForCurrentApp();
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Exception while loading mods for current app " + e, LoggingType.Error);
+            }
+            BroadcastModsAndStatus();
         }
 
         public static void InstallMod(byte[] modBytes, string fileName, string cosmeticsType = "")
@@ -148,7 +175,7 @@ namespace QuestAppVersionSwitcher.Mods
                 MarkOperationAsError(operationId);
                 operationId = operations;
                 operations++;
-                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId });
+                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, isDone = true, error = true});
             }
             modManager.ForceSave();
             FileManager.DeleteFileIfExisting(installQueue[0].path);
@@ -268,7 +295,7 @@ namespace QuestAppVersionSwitcher.Mods
                         MarkOperationAsError(operationId);
 						operationId = operations;
 						operations++;
-						AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error enabling mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId });
+						AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error enabling mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, isDone = true, error = true});
 					}
                     break;
                 }
@@ -300,8 +327,10 @@ namespace QuestAppVersionSwitcher.Mods
         {
             foreach (IMod m in modManager.AllMods)
             {
+                Logger.Log(m.Id + " = " + id);
                 if (m.Id == id)
                 {
+                    Logger.Log("found mod");
                     return m.OpenCover();
                 }
             }

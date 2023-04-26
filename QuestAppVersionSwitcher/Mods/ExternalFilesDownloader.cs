@@ -24,5 +24,24 @@ namespace QuestAppVersionSwitcher.Mods
                 Logger.Log("Error downloading file from " +downloadUrlString + ": " + e, LoggingType.Warning);
             }
         }
+
+        public static string DownloadStringWithTimeout(string url, int timeout)
+        {
+            HttpWebRequest r = new HttpWebRequest(new Uri(url));
+            r.Timeout = timeout;
+            WebResponse res = r.GetResponse();
+            try
+            {
+                using (StreamReader reader = new StreamReader(res.GetResponseStream()))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error while downloading string from " + url + ": " + e, LoggingType.Error);
+                return "";
+            }
+        }
     }
 }

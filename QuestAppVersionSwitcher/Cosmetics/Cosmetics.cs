@@ -65,12 +65,11 @@ namespace QuestAppVersionSwitcher
 		public static Cosmetics LoadCosmetics()
 		{
 			Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new-new.json");
-			WebClient c = new WebClient();
 			string cosmetics = "{}";
 			string jsonLoc = CoreService.coreVars.QAVSDir + "cosmetics.json";
 			try
 			{
-				cosmetics = c.DownloadString("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new-new.json");
+				cosmetics = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/cosmetics-new-new.json", 5000);
 				File.WriteAllText(jsonLoc, cosmetics);
 				Logger.Log("Caching Cosmetics");
 			} catch
@@ -94,16 +93,13 @@ namespace QuestAppVersionSwitcher
 		public void AddCopyType(string packageId, FileCopyType type)
 		{
 			if(!games.ContainsKey(packageId)) games.Add(packageId, new CosmeticsGame());
-			foreach (string extension in type.SupportedExtensions)
+			games[packageId].fileTypes.Add(new CosmeticType()
 			{
-				games[packageId].fileTypes.Add(new CosmeticType()
-				{
-					directory = type.Path,
-					fileType = extension,
-					name = type.NamePlural,
-					requiresModded = true
-				});
-			}
+				directory = type.Path,
+				fileTypes = type.SupportedExtensions,
+				name = type.NamePlural,
+				requiresModded = true
+			});
 		}
 		
 		public void RemoveCopyType(string packageId, FileCopyType type)

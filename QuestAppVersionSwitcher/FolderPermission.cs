@@ -215,11 +215,14 @@ namespace QuestAppVersionSwitcher
             }
             // Remove trailing slash because it causes problems
             if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
-            DocumentFile directory = GetAccessToFile(Directory.GetParent(path).FullName);
-            string name = Path.GetFileName(path);
-            // If name is empty no need to create directory
-            if (name == "") return;
-            if (directory.FindFile(name) == null) directory.CreateDirectory(name);
+            try
+            {
+                GetAccessToFile(path);
+            }
+            catch (System.Exception e)
+            {
+                Logger.Log("Error creating directory if it doesn't exist: " + e);
+            }
         }
 
         /// <summary>
@@ -344,7 +347,16 @@ namespace QuestAppVersionSwitcher
             }
 
             if (path.EndsWith(Path.DirectorySeparatorChar)) path = path.Substring(0, path.Length - 1);
-            DocumentFile directory = GetAccessToFile(path);
+            DocumentFile directory;
+            try
+            {
+                directory = GetAccessToFile(path);
+            }
+            catch (System.Exception e)
+            {
+                Logger.Log("Error while getting access to directory " + e, LoggingType.Error);
+                return new List<string>();
+            }
             List<string> files = new List<string>();
             foreach (DocumentFile f in directory.ListFiles())
             {

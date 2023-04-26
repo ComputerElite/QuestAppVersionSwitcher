@@ -367,6 +367,19 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             });
+            server.AddRoute("GET", "/api/mods/operation/", request =>
+            {
+                try
+                {
+                    int id = int.Parse(request.pathDiff);
+                    request.SendString(JsonSerializer.Serialize(QAVSModManager.runningOperations[id]), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString("{}", "application/json", 404);
+                }
+                return true;
+            });
             server.AddRoute("GET", "/api/mods/operations", request =>
             {
                 request.SendString(QAVSModManager.GetOperations(), "application/json");
@@ -417,9 +430,10 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/mods/cover/", request =>
             {
+                Logger.Log("Getting cover of " + request.pathDiff);
                 request.SendData(QAVSModManager.GetModCover(request.pathDiff), "image/xyz");
                 return true;
-            }, true);
+            }, true, true, true, false, 0, true, 3600); // cache for 1 hours on client
             server.AddRoute("POST", "/api/mods/uninstall", request =>
             {
                 QAVSModManager.UninstallMod(request.queryString.Get("id"));
@@ -498,7 +512,7 @@ namespace QuestAppVersionSwitcher
                     patchStatus.doneOperations = 1;
                     patchStatus.progress = .1;
                     BroadcastPatchingStatus();
-                    PatchingManager.PatchAPK(apkArchive, appLocation);
+                    PatchingManager.PatchAPK(apkArchive, appLocation, request.queryString.Get("force") != null);
                 }
                 catch (Exception e)
                 {

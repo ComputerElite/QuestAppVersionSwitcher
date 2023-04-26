@@ -4,6 +4,7 @@ using QuestAppVersionSwitcher.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -15,7 +16,13 @@ namespace QuestAppVersionSwitcher.Mods
         public List<IMod> Mods { get; } = new List<IMod>();
         public List<IMod> Libraries { get; } = new List<IMod>();
 
-        public List<IMod> AllMods => _modConfig?.Mods ?? EmptyModList;
+        public List<IMod> AllMods
+        {
+            get
+            {
+                return Mods.Concat(Libraries).ToList();
+            }
+        }
         private static readonly List<IMod> EmptyModList = new List<IMod>();
 
         public string ModsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/mods/";

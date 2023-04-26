@@ -101,9 +101,9 @@ namespace QuestAppVersionSwitcher
             return JsonSerializer.Deserialize<ModdedJson>(json);
         }
 
-        public static async void PatchAPK(ZipArchive apkArchive, string appLocation)
+        public static async void PatchAPK(ZipArchive apkArchive, string appLocation, bool forcePatch)
         {
-            if (IsAPKModded(apkArchive))
+            if (!forcePatch && IsAPKModded(apkArchive))
             {
                 QAVSWebserver.patchStatus.done = true;
                 QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;

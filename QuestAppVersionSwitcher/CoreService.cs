@@ -79,9 +79,6 @@ namespace QuestAppVersionSwitcher.Core
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
                 Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
-                ExternalFilesDownloader.DownloadUrl(
-                    "https://raw.githubusercontent.com/Lauriethefish/QuestPatcher/main/QuestPatcher.Core/Resources/file-copy-paths.json",
-                    coreVars.QAVSFileCopiesFile);
                 if (!File.Exists(coreVars.QAVSConfigLocation))
                     File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
                 coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));

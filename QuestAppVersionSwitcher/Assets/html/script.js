@@ -36,9 +36,18 @@ socket.onmessage = function (e) {
     if(data.route == "/api/downloads") {
         UpdateDownloads(data.data)
     } else if(data.route == "/api/mods/mods") {
-        UpdateMods(data.data)
+        modStatus = data.data
+        UpdateMods()
     } else if(data.route == "/api/patching/patchstatus") {
         UpdatePatchStatus(data.data)
+    } else if(data.route.startsWith("/api/mods/operation/")) {
+        var i = modStatus.operations.indexOf(modStatus.operations.find(x => x.operationId == data.data.operationId))
+        if(i == -1) {
+            modStatus.operations.push(data.data)
+        } else {
+            modStatus.operations[i] = data.data
+        }
+        UpdateMods()
     }
 }
 
@@ -70,20 +79,21 @@ function UpdatePatchStatus(j) {
 UpdateModsManually()
 function UpdateModsManually() {
     fetch("/api/mods/mods").then(res => res.json().then(res => {
-        UpdateMods(res)
+        modStatus = res
+        UpdateMods()
     }))
 }
-
-function UpdateMods(res) {
-    res.operations = res.operations.filter(x => !x.isDone)
-    operationsOngoing = res.operations.length > 0
+var modStatus = {}
+function UpdateMods() {
+    modStatus.operations = modStatus.operations.filter(x => !x.isDone && !x.isError)
+    operationsOngoing = modStatus.operations.length > 0
     var mods = ``
     if(!operationsOngoing) {
         operationsElement.style.display = "none"
     } else {
         operationsElement.style.display = "block"
         var operations = ""
-        for(const operation of res.operations){
+        for(const operation of modStatus.operations){
             operations += `
                     <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
                         ${operation.name}
@@ -91,9 +101,9 @@ function UpdateMods(res) {
                     `
         }
         operationsList.innerHTML = operations
-        ongoingCount.innerHTML = `Ongoing operations: ${res.operations.length}`
+        ongoingCount.innerHTML = `Ongoing operations: ${modStatus.operations.length}`
     }
-    for(const mod of res.mods){
+    for(const mod of modStatus.mods){
         mods += FormatMod(mod, !operationsOngoing)
     }
     if(mods == "") {
@@ -101,7 +111,7 @@ function UpdateMods(res) {
     }
     document.getElementById("modsList").innerHTML = mods
     var libs = ``
-    for(const mod of res.libs){
+    for(const mod of modStatus.libs){
         libs += FormatMod(mod, !operationsOngoing)
     }
     if(libs == "") {
