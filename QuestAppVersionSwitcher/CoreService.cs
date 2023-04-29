@@ -57,6 +57,7 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.LoadWithOverviewMode = true;
             browser.Settings.UseWideViewPort = true;
             browser.Settings.AllowFileAccess = true;
+            browser.Settings.MixedContentMode = MixedContentHandling.AlwaysAllow;
             browser.Settings.JavaScriptCanOpenWindowsAutomatically = true;
             browser.SetWebViewClient(new QAVSWebViewClient());
             browser.Settings.DefaultTextEncodingName = "utf-8";

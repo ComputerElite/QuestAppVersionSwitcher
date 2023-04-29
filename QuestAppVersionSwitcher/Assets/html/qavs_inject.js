@@ -16,22 +16,22 @@
     qavsPopupContainer.style = "font-size: 24px; border: 1px solid #4aaf8b; position: fixed; bottom: 10px; right: 10px; z-index: 50000; padding: 10px; border-radius: 5px; background-color: #414141; color: #EEEEEE; display: none;"
     qavsInjectionDiv.appendChild(qavsPopupContainer);
 
-    const ModInstall = 0
-    const DependencyDownload = 4
-    const ModDownload = 7
-    const QueuedModInstall = 8
-    const Error = 6
+    const QAVSModInstall = 0
+    const QAVSDependencyDownload = 4
+    const QAVSModDownload = 7
+    const QAVSQueuedModInstall = 8
+    const QAVSError = 6
 
-    var somethingWasRunning = false;
+    var QAVSsomethingWasRunning = false;
     function UpdatePopUps() {
         fetch("http://localhost:" + qavsPort + "/api/mods/operations").then(res => {
             res.json().then(operations => {
                 operations = operations.filter(x => !x.isDone);
-                var queuedMods = operations.filter(x => x.type == QueuedModInstall);
-                var installingMods = operations.filter(x => x.type == ModInstall);
-                var downloadingMods = operations.filter(x => x.type == ModDownload);
-                var downloadingDependencies = operations.filter(x => x.type == DependencyDownload);
-                var errors = operations.filter(x => x.type == Error);
+                var queuedMods = operations.filter(x => x.type == QAVSQueuedModInstall);
+                var installingMods = operations.filter(x => x.type == QAVSModInstall);
+                var downloadingMods = operations.filter(x => x.type == QAVSModDownload);
+                var downloadingDependencies = operations.filter(x => x.type == QAVSDependencyDownload);
+                var errors = operations.filter(x => x.type == QAVSError);
 
                 var html = `
                 ${downloadingMods.length > 0 ? `<b>${downloadingMods.length}</b> mod(s) downloading<br>` : ``}
@@ -41,12 +41,12 @@
                 ${errors.length > 0 ? `<div style="color: #EE0000;"><b>${errors.length}</b> error(s), more info in <a href="http://127.0.0.1:${qavsPort}?tab=mods">installed mods tab</a></div><br>` : ``}
             `;
                 if(html.trim()) {
-                    somethingWasRunning = true
+                    QAVSsomethingWasRunning = true
                 } else {
                     html = "All done!"
                 }
                 qavsPopupContainer.innerHTML = html;
-                qavsPopupContainer.style.display = somethingWasRunning ? "block" : "none";
+                qavsPopupContainer.style.display = QAVSsomethingWasRunning ? "block" : "none";
             })
         })
     }

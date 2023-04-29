@@ -218,14 +218,22 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 if(m.Id == id)
                 {
-                    m.Uninstall();
-                    modManager.ForceSave();
+                    try
+                    {
+                        m.Uninstall().Wait();
+                        modManager.ForceSave();
+                        MarkOperationAsDone(operationId);
+                    } catch(Exception e)
+                    {
+                        MarkOperationAsDone(operationId);
+                        MarkOperationAsError(operationId);
+                        operationId = operations;
+                        operations++;
+                        AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error uninstalling mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, isDone = true, error = true});
+                    }
                     break;
                 }
             }
-
-            // {"success": true, "msg": "Success/Error: blah blah"}
-            MarkOperationAsDone(operationId);
         }
 
         public static void DeleteMod(string id)
@@ -237,12 +245,22 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 if (m.Id == id)
                 {
-                    modManager.DeleteMod(m);
-                    modManager.ForceSave();
+                    try
+                    {
+                        modManager.DeleteMod(m).Wait();
+                        modManager.ForceSave();
+                        MarkOperationAsDone(operationId);
+                    } catch(Exception e)
+                    {
+                        MarkOperationAsDone(operationId);
+                        MarkOperationAsError(operationId);
+                        operationId = operations;
+                        operations++;
+                        AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error deleting mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, isDone = true, error = true});
+                    }
                     break;
                 }
             }
-            MarkOperationAsDone(operationId);
         }
 
         public static void InstallModFromUrl(string url, string filename = "")

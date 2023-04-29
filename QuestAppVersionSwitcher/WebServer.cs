@@ -84,6 +84,7 @@ namespace QuestAppVersionSwitcher
             ["cross-origin-opener-policy"] = "unsafe-none"
         };
 
+        /*
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
             return base.ShouldInterceptRequest(view, request);
@@ -95,7 +96,6 @@ namespace QuestAppVersionSwitcher
             if (request.RequestHeaders.ContainsKey("document-policy")) request.RequestHeaders.Remove("document-policy");
             if (request.RequestHeaders.ContainsKey("document-domain")) request.RequestHeaders.Remove("document-domain");
             
-            /*
             string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
             if (cookie != null) request.RequestHeaders["cookie"] = cookie;
             if (request.Method == "POST")
@@ -103,8 +103,6 @@ namespace QuestAppVersionSwitcher
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
             }
-            */
-            /*
             // somehow user webclient to handle the request and then change the response headers. No idea how to get the request body from the webview
             WebClient c = new WebClient();
             foreach (KeyValuePair<string, string> p in request.RequestHeaders)
@@ -119,9 +117,9 @@ namespace QuestAppVersionSwitcher
             {
                 c.DownloadData(request.Url.ToString());
             }
-            */
             return base.ShouldInterceptRequest(view, request);
         }
+    */
 
         public Dictionary<string, string> GetHeaders(IDictionary<string, IList<string>> h)
         {
@@ -135,12 +133,14 @@ namespace QuestAppVersionSwitcher
             }
             return headers;
         }
-
+        /*
         public override bool ShouldOverrideUrlLoading(WebView view, string url)
         {
-            view.LoadUrl(url, headers);
+            return base.ShouldOverrideUrlLoading(view, url);
+            //view.LoadUrl(url, headers);
             return true;
         }
+        */
 	}
 
     public class AndroidDevice
