@@ -26,7 +26,7 @@
     function UpdatePopUps() {
         fetch("http://localhost:" + qavsPort + "/api/mods/operations").then(res => {
             res.json().then(operations => {
-                operations = operations.filter(x => !x.isDone);
+                operations = operations.filter(x => !x.isDone && !x.isError);
                 var queuedMods = operations.filter(x => x.type == QAVSQueuedModInstall);
                 var installingMods = operations.filter(x => x.type == QAVSModInstall);
                 var downloadingMods = operations.filter(x => x.type == QAVSModDownload);
