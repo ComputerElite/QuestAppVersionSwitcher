@@ -145,6 +145,8 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.currentOperation = "Done";
             QAVSWebserver.patchStatus.backupName = backupName;
             QAVSWebserver.BroadcastPatchingStatus();
+
+            QAVSWebserver.GetBackupInfo(backupDir, true);
         }
 
         // Uses https://github.com/Lauriethefish/QuestUnstrippedUnity to download an appropriate unstripped libunity.so for beat saber if there is one

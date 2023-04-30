@@ -91,6 +91,14 @@
     <h3>Do not exit QuestAppVersionSwitcher!</h3>
     <div id="progress"></div>
 </div>
+<div class="content hidden" id="entitlementfailed">
+    <h1>Entitlement check failed!</h1>
+    <p>
+        The meta account you are currently signed in with does not own Beat Saber.
+        <br>Please log out and sign back in with the account that has purchased Beat Saber.
+    </p>
+    <button onclick="Logout()">Log out</button>
+</div>
 <div class="content hidden" id="downloaddone">
     <h1>Download is done!</h1>
     <p>
@@ -242,6 +250,10 @@
                             </div>
                             ${downloads}
                             </div>`
+                        if(d.entitlementError) {
+                            OpenTab("entitlementfailed")
+                            clearInterval(downloadInterval)
+                        }
                         if(d.done) DownloadDone()
                     }
                     if (gdms == "") gdms = "<h2>No game downloads running</h2>"
@@ -254,6 +266,15 @@
     function Login() {
         localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true`
         location = "https://auth.meta.com/"
+    }
+    
+    function Logout() {
+        fetch("/api/logout", {
+            method: "POST"
+        }).then(res => {
+            // open logout page for webview
+            localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true`
+        })
     }
     
     function Downgrade() {

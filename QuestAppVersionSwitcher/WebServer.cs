@@ -622,7 +622,7 @@ namespace QuestAppVersionSwitcher
                     request.SendString(GenericResponse.GetResponse("No type id specified", false), "application/json", 400);
                     return true;
                 }
-                string filename = request.queryString.Get("filename");
+                string filename = HttpServer.DecodeUrlString(request.queryString.Get("filename"));
                 if (filename == null)
                 {
                     request.SendString(GenericResponse.GetResponse("No filename specified", false), "application/json", 400);
@@ -757,7 +757,7 @@ namespace QuestAppVersionSwitcher
                     Logger.Log(Path.GetFileName(app));
                     foreach (string backup in Directory.GetDirectories(app))
                     {
-                        Logger.Log("├── " + Path.GetFileName(app));
+                        Logger.Log("├── " + Path.GetFileName(backup));
                         foreach (string file in Directory.GetFiles(backup))
                         {
                             Logger.Log("|  ├── " + Path.GetFileName(file));

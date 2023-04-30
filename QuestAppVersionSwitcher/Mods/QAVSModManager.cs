@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using ComputerUtils.Android.FileManaging;
+using ComputerUtils.Android.Webserver;
 using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Exception = System.Exception;
@@ -186,6 +187,7 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static void InstallMod(string path, string fileName, string cosmeticsType = "")
         {
+            fileName = HttpServer.DecodeUrlString(fileName);
             if(!SupportsFormat(Path.GetExtension(fileName)) || cosmeticsType != "")
             {
                 File.Move(path, Path.GetDirectoryName(path) + Path.DirectorySeparatorChar + fileName);

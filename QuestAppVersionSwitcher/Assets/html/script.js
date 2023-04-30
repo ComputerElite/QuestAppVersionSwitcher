@@ -494,6 +494,7 @@ function CheckStartParams() {
     var restorenow = params.get("restorenow")
     var backup = params.get("backup")
     var tab = params.get("tab")
+    var logout = params.get("logout")
     afterRestore = params.get("afterrestore")
     afterDownload = params.get("afterdownload")
 
@@ -526,7 +527,9 @@ function CheckStartParams() {
         window.open(loc, "_self")
         return
     }
-    
+    if(logout) {
+        Logout()
+    }
     if(tab) {
         OpenTab(tab)
     }
@@ -1223,6 +1226,10 @@ document.getElementById("downloadStartingClosePopup").onclick = () => {
 }
 
 document.getElementById("logout").onclick = () => {
+    Logout()
+}
+
+function Logout() {
     fetch("/api/logout", {
         method: "POST"
     }).then(res => {

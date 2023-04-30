@@ -36,6 +36,7 @@ namespace QuestAppVersionSwitcher
         public Thread updateThread = null;
         public bool canceled { get; set; } = false;
         public bool error { get; set; } = false;
+        public bool entitlementError { get; set; } = false;
         public bool done { get; set; } = false;
         public int maxConcurrentDownloads { get; set; } = 1;
         public int maxConcurrentConnections { get; set; } = 10;
@@ -45,6 +46,39 @@ namespace QuestAppVersionSwitcher
             request = r;
         }
 
+        public bool HasEntitlementFor(string id)
+        {
+            try
+            {
+                Logger.Log("Requesting entitlements");
+                ViewerData<OculusUserWrapper> user = GraphQLClient.GetActiveEntitelments();
+                if(user == null || user.data == null || user.data.viewer == null || user.data.viewer.user == null || user.data.viewer.user.active_entitlements == null ||user.data.viewer.user.active_entitlements.nodes == null)
+                {
+                    throw new Exception("Fetching of active entitlements failed");
+                }
+                List<Entitlement> userEntitlements = user.data.viewer.user.active_entitlements.nodes;
+
+                if (userEntitlements.Count <= 0)
+                {
+                    Logger.Log("User has 0 entitlements, In doubt: return true");
+                    return true;
+                }
+                foreach(Entitlement entitlement in userEntitlements)
+                {
+                    if(entitlement.item.id == id)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception e)
+            {
+                Logger.Log("In doubt: return true: " + e);
+                return true;
+            }
+        }
+
         public void StartDownload()
         {
             id = DateTime.Now.Ticks.ToString();
@@ -52,6 +86,15 @@ namespace QuestAppVersionSwitcher
             gameName = request.app;
             packageName = request.packageName;
             status = "Preparing download for " + gameName + " " + version;
+            
+            // Check entitlements
+            if(!HasEntitlementFor(request.parentId))
+            {
+                Logger.Log("User has no entitlement for " + request.parentId);
+                entitlementError = true;
+                status = "The meta account you are currently signed in with does not own Beat Saber.\nPlease log out and sign back in with the account that has purchased this title via the tools & options tab.";
+                return;
+            }
             
             try
             {
