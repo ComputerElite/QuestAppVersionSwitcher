@@ -92,7 +92,7 @@ namespace QuestAppVersionSwitcher
             {
                 Logger.Log("User has no entitlement for " + request.parentId);
                 entitlementError = true;
-                status = "The meta account you are currently signed in with does not own Beat Saber.\nPlease log out and sign back in with the account that has purchased this title via the tools & options tab.";
+                status = "The meta account you are currently signed in with does not own " + gameName + ".\nPlease log out and sign back in with the account that has purchased this title via the tools & options tab.";
                 return;
             }
             
