@@ -50,10 +50,28 @@ namespace QuestAppVersionSwitcher
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "GET";
                 request.AllowAutoRedirect = true;
-        
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                long fileSize = response.ContentLength;
-                response.Close();
+                long fileSize = 0;
+                try
+                {
+                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                    fileSize = response.ContentLength;
+                    response.Close();
+                } catch (Exception e)
+                {
+                    Logger.Log("Error while GET request: " + e);
+                    error = true;
+                    OnDownloadError?.Invoke();
+                    return;
+                }
+
+                if (fileSize <= 0)
+                {
+                    
+                    Logger.Log("File size is " + fileSize + ". Thus we cannot download the file");
+                    error = true;
+                    OnDownloadError?.Invoke();
+                    return;
+                }
                 totalBytes = fileSize;
         
                 Logger.Log("File size: " + fileSize);
@@ -174,8 +192,6 @@ namespace QuestAppVersionSwitcher
                     error = true;
                     OnDownloadError.Invoke();
                 }
-        
-                
             }
 
             public void Cancel()

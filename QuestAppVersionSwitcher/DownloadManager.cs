@@ -16,7 +16,6 @@ namespace QuestAppVersionSwitcher
 {
     public class DownloadManager : DownloadProgress
     {
-        
         public delegate void DownloadFinished(DownloadManager manager);
         public event DownloadFinished DownloadFinishedEvent;
         public event DownloadFinished DownloadErrorEvent;

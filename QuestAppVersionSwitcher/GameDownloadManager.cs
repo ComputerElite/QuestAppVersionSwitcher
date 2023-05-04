@@ -52,7 +52,7 @@ namespace QuestAppVersionSwitcher
             {
                 Logger.Log("Requesting entitlements");
                 ViewerData<OculusUserWrapper> user = GraphQLClient.GetActiveEntitelments();
-                if(user == null || user.data == null || user.data.viewer == null || user.data.viewer.user == null || user.data.viewer.user.active_entitlements == null ||user.data.viewer.user.active_entitlements.nodes == null)
+                if(user == null || user.data == null || user.data.viewer == null || user.data.viewer.user == null || user.data.viewer.user.active_entitlements == null || user.data.viewer.user.active_entitlements.nodes == null)
                 {
                     throw new Exception("Fetching of active entitlements failed");
                 }

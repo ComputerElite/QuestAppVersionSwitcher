@@ -512,7 +512,10 @@ namespace QuestAppVersionSwitcher
                     patchStatus.doneOperations = 1;
                     patchStatus.progress = .1;
                     BroadcastPatchingStatus();
-                    PatchingManager.PatchAPK(apkArchive, appLocation, request.queryString.Get("force") != null);
+                    GeneralPurposeWorker.ExecuteWork(() =>
+                    {
+                        PatchingManager.PatchAPK(apkArchive, appLocation, request.queryString.Get("force") != null);
+                    });
                 }
                 catch (Exception e)
                 {
