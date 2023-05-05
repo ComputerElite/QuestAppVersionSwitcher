@@ -36,7 +36,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.1
 
     - name: Restore dependencies
-      working-directory: 'QAVS'
+      working-directory: 'QAVS/QuestAppVersionSwitcher'
       run: nuget restore
 
     - name: Build
