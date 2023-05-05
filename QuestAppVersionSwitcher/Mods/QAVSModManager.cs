@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ComputerUtils.Android;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Webserver;
 using Java.Lang;
@@ -357,11 +358,15 @@ namespace QuestAppVersionSwitcher.Mods
 
         public static void DeleteAllMods()
         {
-            FileManager.RecreateDirectoryIfExisting(modManager.ModsExtractPath);
-            FolderPermission.DeleteDirectoryContent(modManager.ModsPath);
-            FolderPermission.DeleteDirectoryContent(modManager.LibsPath);
-            File.Delete(modManager.ConfigPath);
-            modManager.Reset();
+            GeneralPurposeWorker.ExecuteWork(() =>
+            {
+                Logger.Log("Haha mods go brrrr, yeeeeeeeeeeeeeeeeeeeeeeeeeeet. We doin this on a background thread, hell yeah.");
+                FileManager.RecreateDirectoryIfExisting(modManager.ModsExtractPath);
+                FolderPermission.DeleteDirectoryContent(modManager.ModsPath);
+                FolderPermission.DeleteDirectoryContent(modManager.LibsPath);
+                File.Delete(modManager.ConfigPath);
+                modManager.Reset();
+            });
         }
     }
 }

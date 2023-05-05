@@ -1028,7 +1028,8 @@ namespace QuestAppVersionSwitcher
 
                 Logger.Log("Installing apk of backup " + backupname + " of " + package);
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
-                serverRequest.SendString(GenericResponse.GetResponse("Started apk install", true), "application/json");
+                serverRequest.SendString(GenericResponse.GetResponse("Started apk install. Deleting existing mods in parallel", true), "application/json");
+                QAVSModManager.DeleteAllMods();
                 return true;
             });
             server.AddRoute("GET", "/api/backupinfo", serverRequest =>

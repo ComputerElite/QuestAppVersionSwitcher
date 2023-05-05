@@ -208,7 +208,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
                 }
 
                 result[entryName] = new PrePatchHash(digest, entry.LastWriteTime);
-                Logger.Log($"Added hash {digest} for {entryName}");
+                //Logger.Log($"Added hash {digest} for {entryName}");
 
                 // Skip the newline after each entry.
                 await manifestReader.ReadLineAsync();
@@ -502,12 +502,12 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
                prePatchHashes.TryGetValue(entry.FullName, out var prePatchHash) &&
                entry.LastWriteTime == prePatchHash.LastModified)
             {
-                Logger.Log("Using existing hash for " + entry.FullName);
+                //Logger.Log("Using existing hash for " + entry.FullName);
                 hash = prePatchHash.Hash;
             }
             else
             {
-                Logger.Log("Hashing " + entry.FullName);
+                //Logger.Log("Hashing " + entry.FullName);
                 await using Stream sourceStream = entry.Open();
                 hash = Convert.ToBase64String(Sha.ComputeHash(sourceStream));
             }
