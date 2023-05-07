@@ -14,10 +14,11 @@ import PageLayout from '../Layouts/PageLayout';
 import RunButton from '../components/Buttons/RunButton';
 import { PlusIcon, RestoreIcon } from '../assets/Icons';
 import toast from 'solid-toast';
+import CreateBackupModal from '../modals/CreateBackupModal';
 
 
 export default function BackupPage() {
-
+    const [createBackupOpen, setCreateBackupOpen] = createSignal(false);
 
     // Select first backup if there are any backups and remove selection if there are no backups
     createEffect(on(backupList, (backup) => {
@@ -75,7 +76,7 @@ export default function BackupPage() {
                     justifyContent: "space-between",
                     marginBottom: 2,
                 }}>
-                    <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { }} hideTextOnMobile />
+                    <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { setCreateBackupOpen(true) }} hideTextOnMobile />
                     <Box sx={{
                         display: "flex",
                         gap: 2,
@@ -123,6 +124,7 @@ export default function BackupPage() {
                     </For>
                 </List>
             </div>
+            <CreateBackupModal open={createBackupOpen()} onClose={() => setCreateBackupOpen(false)} />
         </PageLayout>
 
     )

@@ -3,7 +3,7 @@ import { showChangeGameModal } from "../modals/ChangeGameModal";
 import Checkbox from "@suid/material/Checkbox"
 import PageLayout from "../Layouts/PageLayout";
 import RunButton from "../components/Buttons/RunButton";
-import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded";
+
 import { DeleteIcon, FirePatch } from "../assets/Icons";
 import { InternalPatchingOptions, appInfo, config, currentApplication, moddingStatus, mutatePatchingOptions, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { For, Show, children, createEffect, createSignal, splitProps } from "solid-js";
@@ -20,6 +20,7 @@ import { BackendEvents, PatchingProgressData } from "../state/eventBus";
 import { onCleanup } from "solid-js";
 import { LinearProgress } from "@suid/material"
 import { refetchBackups } from "../state/backups";
+import PatchingModal from "../modals/PatchingModal";
 
 export default function PatchingPage() {
   let [isPatchingModalOpen, setIsPatchingModalOpen] = createSignal(false);
@@ -202,100 +203,6 @@ export default function PatchingPage() {
 }
 
 
-function PatchingModal(props: { open: boolean, onClose?: () => void, onPatchFinished?: () => void }) {
-
-  const [progress, setProgress] = createSignal(0);
-
-  const [log, setLog] = createSignal<PatchingProgressData[]>([]);
-
-  let logElement:  HTMLPreElement | undefined;
-
-  // Update log when a new event is received
-  function onPatchProgress(e: CustomEvent) {
-    let data = e.detail as PatchingProgressData;
-    console.log(data);
-    console.log(currentApplication);
-
-    // find previous operation
-    let prevOperation = log().find((l) => l.currentOperation === data.currentOperation);
-
-    if (prevOperation) {
-      // if the operation is the same, replace it
-      setLog((old) => old.map((l) => {
-        if (l.currentOperation === data.currentOperation) {
-          return data;
-        }
-        return l;
-      }))
-    } else {
-      // if the operation is not the same, add it
-      setLog((old) => [...old, data]);
-    }
-
-    logElement?.scrollTo(0, logElement.scrollHeight);
-
-    setProgress(data.progress*100);
-
-    if (data.done) {
-      props.onPatchFinished?.();
-      toast.success("Game patched successfully");
-    }
-    
-  }
-
-  createEffect(async () => {
-    try {
-      let result = await patchCurrentApp();
-      if (!result) {
-        toast.error("Failed to patch the game");
-        return;
-      }
-      await refetchModdingStatus();
-    } catch (e) {
-      console.error(e)
-      toast.error("Failed to patch game");
-    }
-
-    // @ts-ignore
-    BackendEvents.addEventListener("patch-progress", onPatchProgress);
-  })
-
-  onCleanup(() => {
-    // @ts-ignore
-    BackendEvents.removeEventListener("patch-progress", onPatchProgress);
-  })
-
-
-  return <CustomModal title={"Patching modal"} open={props.open} onClose={props.onClose} 
-    buttons={<>
-      <RunButton text="Patch" icon={<PlayArrowRounded />} variant='success' onClick={() => { 
-        
-       }} />
-    </>} >
-    <Box sx={{ width: "100%" }}>
-      <LinearProgress variant="determinate" value={progress()} />
-    </Box>
-    <pre ref={logElement} style={{
-      background: "black",
-      color: "white",
-      padding: "10px",
-      "border-radius": "0px",
-      "min-width": "400px",
-      "max-width": "100vw",
-      height: "300px",
-      "overflow-y": "auto",
-      "font-size": "12px",
-    }}>
-      <For each={log()}>
-        {(line) => <LogLine line={line} />}
-      </For>
-    </pre>
-  </CustomModal>
-}
-
-function LogLine({line}: { line: PatchingProgressData}) {
-  return <div>({line.doneOperations-1}/{line.totalOperations}) {line.currentOperation}{line.done?"OK":"..."} </div>
-}
 
 
 /// STYLES

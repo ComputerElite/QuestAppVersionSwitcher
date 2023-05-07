@@ -13,6 +13,7 @@ import { PlusIcon, UploadRounded } from "../../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
 import CloseRounded from "@suid/icons-material/CloseRounded";
+import DownloadRounded from "@suid/icons-material/DownloadRounded";
 import { FiInstagram, FiRefreshCcw, FiTrash } from "solid-icons/fi";
 import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCurrentApp } from "../../api/android";
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../../store";
@@ -217,7 +218,7 @@ export default function GetBeatSabersModsPage() {
                         alignItems: "center",
                     }}>
                         <RunButton text='Run the app' variant="success" hideTextOnMobile icon={<PlayArrowRounded />} onClick={onGameStart} />
-                        <RunButton text='Install core mods' variant="info" hideTextOnMobile icon={<FiInstagram />} onClick={installCoreMods} />
+                        <RunButton text='Install core mods' variant="info" hideTextOnMobile icon={<DownloadRounded />} onClick={installCoreMods} />
                     </Box>
                     <Box sx={{
                         display: "flex",
