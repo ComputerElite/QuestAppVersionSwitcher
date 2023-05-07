@@ -13,7 +13,7 @@ import { PlusIcon, UploadRounded } from "../../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
 import CloseRounded from "@suid/icons-material/CloseRounded";
-import { FiInstagram, FiRefreshCcw } from "solid-icons/fi";
+import { FiInstagram, FiRefreshCcw, FiTrash } from "solid-icons/fi";
 import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCurrentApp } from "../../api/android";
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../../store";
 import { showChangeGameModal } from "../../modals/ChangeGameModal";
@@ -22,8 +22,9 @@ import { proxyFetch } from "../../api/app";
 import { ModDropper } from "../../components/ModDropper";
 import { ModEntry, ModRawEntry, ModVersion, ParseModVersions } from "./GetBeatSaberUtils";
 import { createStore } from "solid-js/store";
-import { FaSolidDownload } from "solid-icons/fa";
+import { FaSolidDownload, FaSolidGear } from "solid-icons/fa";
 import { gt } from "semver";
+import { showConfirmModal } from "../../modals/ConfirmModal";
 
 
 const [isModdableVersion, setIsModdableVersion] = createSignal(false);
@@ -67,7 +68,6 @@ async function refetchModListForVersion() {
             setIsModdableVersion(false);
             return;
         }
-
         coreMods = json[version];
     }
 
@@ -93,6 +93,12 @@ async function refetchModListForVersion() {
         coreMods: coreMods
     });
     console.log(modIndex)
+}
+
+
+async function checkCoreModsUpdates() {
+    
+
 }
 
 async function installCoreMods() {
@@ -219,27 +225,16 @@ export default function GetBeatSabersModsPage() {
                         alignItems: "center",
                     }}>
                         <RunButton icon={<FiRefreshCcw />} onClick={reloadMods} />
-                        <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
+                        <RunButton variant="error" text='Delete all' icon={<FiTrash />} onClick={() => { }} style={"width: 80px"} />
                     </Box>
                 </Box>
 
-                {/* <h2>Cores</h2>
-                <List sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 1,
-                }}>
-                    <Index each={modIndex?.coreMods.mods} fallback={<div class="emptyText">No mods</div>}>
-                        {(mod) => (
-                            <CoreModCard mod={mod()} />
-                        )}
-                    </Index>
-                </List> */}
                 <h2>Mods</h2>
                 <List sx={{
-                    display: "flex",
                     flexDirection: "column",
                     gap: 1,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
                 }}>
                     <For each={modIndex?.mods} fallback={<div>Emptiness..</div>}  >
                         {(mod) => (
@@ -277,7 +272,7 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             latestVersion: ModVersion | undefined,
             hasUpdate: boolean,
         } = {};
-        
+
         let existingMod = modsList()?.find(x => x.Id == mod.id);
         if (existingMod) {
             status.isEnabled = existingMod.IsInstalled;
@@ -285,20 +280,23 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             status.existingMod = existingMod;
         }
 
-        let latestVersion = (mod && mod.versions && mod.versions.length > 0)? mod.versions[0]: undefined;
+        // Mods list is presorted
+        let latestVersion = (mod && mod.versions && mod.versions.length > 0) ? mod.versions[0] : undefined;
 
         // Check if there is an update to the mod
         if (latestVersion && existingMod) {
-            if (gt(latestVersion.version,existingMod.VersionString)) {
+            if (gt(latestVersion.version, existingMod.VersionString)) {
                 status.hasUpdate = true;
+                console.log("has update", mod.name);
             } else {
                 status.hasUpdate = false;
             }
+
         } else {
             status.hasUpdate = false;
         }
 
-        
+
         return status;
 
     });
@@ -308,7 +306,9 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             display: "flex",
             width: "100%",
             backgroundColor: "#111827",
-            borderRadius: "6px"
+            borderRadius: "6px",
+            flexDirection: "column",
+            alignItems: "left",
         }}>
             <Box
                 sx={{
@@ -317,8 +317,9 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             >
                 <Box sx={{
                     display: "flex",
-                    alignItems: "center",
+                    alignItems: "left",
                     flexWrap: "wrap",
+                    flexDirection: "column",
                 }}>
                     <Typography variant="h6" sx={{
                         fontFamily: 'Roboto',
@@ -328,8 +329,6 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
                         lineHeight: '19px',
                         color: '#FFFFFF',
                         marginRight: 1,
-
-
                     }}  >{mod.name}</Typography>
                     <Typography variant="caption" sx={{
 
@@ -340,6 +339,7 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
                         lineHeight: '12px',
                     }} class="text-accent"  >v{mod.versions[0].version} {mod.author}</Typography>
                 </Box>
+
                 <Typography sx={{
                     fontFamily: 'Roboto',
                     fontStyle: 'normal',
@@ -352,22 +352,46 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             </Box>
             <Box sx={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
+                mt: 1,
                 justifyContent: "space-between",
+                gap: 1,
             }}>
+                <Box sx={{
+                    flexGrow: 1,
+                    display: "flex",
+
+                }}>
+                    <Show when={!modStatus().isInstalled}>
+                        <RunButton fullWidth text="Install" variant="success" icon={<FaSolidDownload />} onClick={
+                            () => InstallModFromUrl(mod.versions[0].download)
+                        } />
+                    </Show>
+                    <Show when={modStatus().hasUpdate}>
+                        <RunButton fullWidth text="Update" variant="info" icon={<FaSolidDownload />} onClick={
+                            () => InstallModFromUrl(mod.versions[0].download)
+                        } />
+                    </Show>
+                    <Show when={modStatus().isInstalled && !modStatus().hasUpdate}>
+                        <RunButton fullWidth text="Installed" disabled />
+                    </Show>
+                </Box>
+
+                <RunButton onClick={async () => {
+                    showConfirmModal({
+                        title: "This is a placeholder",
+                        message: "This is a placeholder",
+                        cancelText: "Cancel",
+                        okText: "Ok",
+                    })
+                }} icon={<FaSolidGear />} />
+
                 <Show when={modStatus().isInstalled}>
-                    <RunButton onClick={async () => {
+                    <RunButton variant="error" onClick={async () => {
                         let existingMod = modStatus()!.existingMod as ILibrary;
                         DeleteModClick(existingMod);
-                    }} icon={<CloseRounded />}/>
+                    }} icon={<FiTrash />} />
                 </Show>
-
-                <Show when={!modStatus().isInstalled || modStatus().hasUpdate}>
-                    <RunButton icon={<FaSolidDownload />} onClick={
-                        () => InstallModFromUrl(mod.versions[0].download)
-                    } />
-                </Show>
-
             </Box>
         </ListItem>
     )

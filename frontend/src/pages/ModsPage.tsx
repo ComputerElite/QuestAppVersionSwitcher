@@ -260,11 +260,8 @@ function ModCard({ mod }: { mod: IMod }) {
             lineHeight: '19px',
             color: '#FFFFFF',
             marginRight: 1,
-
-
           }}  >{mod.Name}</Typography>
           <Typography variant="caption" sx={{
-
             fontFamily: 'Roboto',
             fontStyle: 'normal',
             fontWeight: 400,

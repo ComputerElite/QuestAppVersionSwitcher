@@ -15,10 +15,6 @@ let gameLinks: {
         {
             name: "Integrated Mod Manager",
             url: "/bsmods"
-        },
-        {
-            name: "BeatSaver",
-            url: "https://beatsaver.com"
         }
     ],
 }

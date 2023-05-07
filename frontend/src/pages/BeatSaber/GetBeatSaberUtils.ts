@@ -1,3 +1,5 @@
+import { gt } from 'semver';
+
 export interface ModRawEntry {
     name: string;
     description: string;
@@ -49,6 +51,14 @@ export function ParseModVersions (versions: Array<ModRawEntry>): Array<ModEntry>
             });
         }
     });
+
+    // Sort the versions
+    mods.forEach((mod) => {
+        mod.versions.sort((a, b) => {
+            return gt(a.version, b.version) ? -1 : 1;
+        });
+    });
+
     return mods;
 }
 

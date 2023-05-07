@@ -10,10 +10,11 @@ type RunButtonProps = JSX.HTMLAttributes<HTMLButtonElement> & {
     disabled?: boolean;
     type?: 'button' | 'submit' | 'reset';
     hideTextOnMobile?: boolean;
+    fullWidth?: boolean;
 }
 
 const RunButton: Component<RunButtonProps> = (props) => {
-    let [local, other] = splitProps(props, ['children', 'icon', 'text', 'variant', 'hideTextOnMobile'])
+    let [local, other] = splitProps(props, ['children', 'icon', 'text', 'variant', 'hideTextOnMobile', 'fullWidth'])
 
     return (
         <button class={style.button} classList={{
@@ -23,7 +24,8 @@ const RunButton: Component<RunButtonProps> = (props) => {
             [style.info]: local.variant === 'info',
             [style.textOnly]: !local.icon,
             [style.iconOnly]: !local.text,
-            [style.hideTextOnMobile]: local.hideTextOnMobile
+            [style.hideTextOnMobile]: local.hideTextOnMobile,
+            [style.fullWidth]: local.fullWidth
         }} {...other}>
             <Show when={local.icon}>
                 <div class={style.icon}>
