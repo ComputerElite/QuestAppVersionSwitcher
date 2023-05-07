@@ -78,13 +78,13 @@ namespace QuestAppVersionSwitcher.Mods
         /// Installs the mod
         /// </summary>
         /// <returns>Task that will complete once the mod is installed</returns>
-        Task Install();
+        Task Install(int taskId);
 
         /// <summary>
         /// Uninstalls the mod
         /// </summary>
         /// <returns>Task that will complete once the mod is uninstalled</returns>
-        Task Uninstall();
+        Task Uninstall(int taskId);
 
         /// <summary>
         /// Opens the cover image for loading.

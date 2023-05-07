@@ -66,12 +66,12 @@ namespace QuestAppVersionSwitcher.Mods
             }).ToList();
         }
 
-        public Task Install()
+        public Task Install(int taskId)
         {
-            return Install(new List<string>());
+            return Install(new List<string>(), taskId);
         }
 
-        private async Task Install(List<string> installedInBranch)
+        private async Task Install(List<string> installedInBranch, int taskId)
         {
             if (IsInstalled)
             {
@@ -85,7 +85,7 @@ namespace QuestAppVersionSwitcher.Mods
 
             foreach (Dependency dependency in Manifest.Dependencies)
             {
-                await PrepareDependency(dependency, installedInBranch);
+                await PrepareDependency(dependency, installedInBranch, taskId);
             }
 
             string extractPath = _provider.GetExtractDirectory(Id);
@@ -146,10 +146,9 @@ namespace QuestAppVersionSwitcher.Mods
             IsInstalled = true;
             installedInBranch.Remove(Id);
             Logger.Log("Install method finished");
-            return;
         }
 
-        public async Task Uninstall()
+        public async Task Uninstall(int taskId)
         {
             if (!IsInstalled)
             {
@@ -220,7 +219,7 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 // Only disable the unused libraries, don't completely remove them
                 // This is to avoid redownloading dependencies if the mod is uninstalled then reinstalled without unloading
-                await _provider.CleanUnusedLibraries(true);
+                await _provider.CleanUnusedLibraries(true, taskId);
             }
         }
 
@@ -243,7 +242,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// </summary>
         /// <param name="dependency">The dependency to install</param>
         /// <param name="installedInBranch">The number of mods that are currently downloading down this branch of the install "tree", used to check for cyclic dependencies</param>
-        private async Task PrepareDependency(Dependency dependency, List<string> installedInBranch)
+        private async Task PrepareDependency(Dependency dependency, List<string> installedInBranch, int taskId)
         {
             Logger.Log($"Preparing dependency of {dependency.Id} version {dependency.VersionRange}");
             int existingIndex = installedInBranch.FindIndex(downloadedDep => downloadedDep == dependency.Id);
@@ -268,7 +267,7 @@ namespace QuestAppVersionSwitcher.Mods
                     if (!existing.IsInstalled)
                     {
                         Logger.Log($"Installing dependency {dependency.Id} . . .");
-                        await existing.Install(installedInBranch);
+                        await existing.Install(installedInBranch, taskId);
                     }
                     return;
                 }
@@ -288,7 +287,7 @@ namespace QuestAppVersionSwitcher.Mods
             }
             int operationId = QAVSModManager.operations;
             QAVSModManager.operations++;
-            QAVSModManager.AddRunningOperation(new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, operationId = operationId, modId = dependency.Id});
+            QAVSModManager.AddRunningOperation(new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, taskId = taskId, operationId = operationId, modId = dependency.Id});
             
             QPMod installedDependency;
             TempFile downloadFile = new TempFile();
@@ -304,23 +303,23 @@ namespace QuestAppVersionSwitcher.Mods
                 throw new InstallationException($"Failed to download dependency from URL {dependency.DownloadIfMissing}: {ex.Message}", ex);
             }
 
-            installedDependency = (QPMod)await _provider.LoadFromFile(downloadFile.Path);
+            installedDependency = (QPMod)await _provider.LoadFromFile(downloadFile.Path, taskId);
 
-            await installedDependency.Install(installedInBranch);
+            await installedDependency.Install(installedInBranch, taskId);
 
             Logger.Log("Installed Dependency");
 
             // Sanity checks that the download link actually pointed to the right mod
             if (dependency.Id != installedDependency.Id)
             {
-                await _provider.DeleteMod(installedDependency);
+                await _provider.DeleteMod(installedDependency, taskId);
                 QAVSModManager.MarkOperationAsDone(operationId);
                 throw new InstallationException($"Downloaded dependency had ID {installedDependency.Id}, whereas the dependency stated ID {dependency.Id}");
             }
 
             if (!dependency.VersionRange.IsSatisfied(installedDependency.Version))
             {
-                await _provider.DeleteMod(installedDependency);
+                await _provider.DeleteMod(installedDependency, taskId);
                 QAVSModManager.MarkOperationAsDone(operationId);
                 throw new InstallationException($"Downloaded dependency {installedDependency.Id} v{installedDependency.Version} was not within the version range stated in the dependency info ({dependency.VersionRange})");
             }

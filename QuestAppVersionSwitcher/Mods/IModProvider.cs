@@ -15,7 +15,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// </summary>
         /// <param name="modPath">Path of the mod file</param>
         /// <returns>The loaded mod info</returns>
-        Task<IMod> LoadFromFile(string modPath);
+        Task<IMod> LoadFromFile(string modPath, int taskId);
 
         /// <summary>
         /// Deletes the given mod from the quest and removes it from this provider.
@@ -23,7 +23,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// </summary>
         /// <param name="mod">Mod to delete</param>
         /// <returns>Task completing when the mod is deleted</returns>
-        Task DeleteMod(IMod mod);
+        Task DeleteMod(IMod mod, int taskId);
 
         /// <summary>
         /// Loads the mods from the quest.

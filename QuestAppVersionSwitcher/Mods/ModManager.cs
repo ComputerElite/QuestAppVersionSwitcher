@@ -89,21 +89,21 @@ namespace QuestAppVersionSwitcher.Mods
             _modProviders[extension] = provider;
         }
 
-        public async Task<IMod?> TryParseMod(string path)
+        public async Task<IMod?> TryParseMod(string path, int taskId)
         {
             string extension = NormalizeFileExtension(Path.GetExtension(path));
 
             if (_modProviders.TryGetValue(extension, out IModProvider? provider))
             {
-                return await provider.LoadFromFile(path);
+                return await provider.LoadFromFile(path, taskId);
             }
 
             return null;
         }
 
-        public async Task DeleteMod(IMod mod)
+        public async Task DeleteMod(IMod mod, int taskId)
         {
-            await mod.Provider.DeleteMod(mod);
+            await mod.Provider.DeleteMod(mod, taskId);
         }
 
         public void Reset()

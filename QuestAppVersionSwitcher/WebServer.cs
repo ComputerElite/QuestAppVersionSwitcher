@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Threading;
 using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.VarUtils;
@@ -19,35 +18,24 @@ using System.Text;
 using System.Linq;
 using Android.Webkit;
 using Xamarin.Essentials;
-using System.Net.Http;
-using Java.Net;
-using Java.Interop;
 using CookieManager = Android.Webkit.CookieManager;
 using Android.Content;
-using Android.App;
 using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using Android.Graphics;
 using Android.OS;
 using Android.Provider;
 using Socket = System.Net.Sockets.Socket;
-using Java.Lang;
 using Exception = System.Exception;
 using String = System.String;
 using Thread = System.Threading.Thread;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
-using Org.BouncyCastle.Math.EC.Endo;
-using Android.Widget;
 using Fleck;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Xamarin.Forms;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -186,6 +174,20 @@ namespace QuestAppVersionSwitcher
             GenericResponse r = new GenericResponse();
             r.msg = msg;
             r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
+
+    public class ModResponse : GenericResponse
+    {
+        public int taskId { get; set; } = -1;
+        
+        public static string GetResponse(string msg, bool success, int taskId)
+        {
+            ModResponse r = new ModResponse();
+            r.msg = msg;
+            r.success = success;
+            r.taskId = taskId;
             return JsonSerializer.Serialize(r);
         }
     }
@@ -424,8 +426,8 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/mods/installfromurl", request =>
             {
-                QAVSModManager.InstallModFromUrl(request.bodyString);
-                request.SendString(GenericResponse.GetResponse("Trying to install from " + request.bodyString, true), "application/json");
+                int id = QAVSModManager.InstallModFromUrl(request.bodyString);
+                request.SendString(ModResponse.GetResponse("Trying to install from " + request.bodyString, true, id), "application/json");
                 return true;
             });
             server.AddRoute("GET", "/api/mods/cover/", request =>
@@ -436,20 +438,20 @@ namespace QuestAppVersionSwitcher
             }, true, true, true, false, 0, true, 3600); // cache for 1 hours on client
             server.AddRoute("POST", "/api/mods/uninstall", request =>
             {
-                QAVSModManager.UninstallMod(request.queryString.Get("id"));
-                request.SendString(GenericResponse.GetResponse("Trying to uninstall", true), "application/json");
+                int id = QAVSModManager.UninstallMod(request.queryString.Get("id"));
+                request.SendString(ModResponse.GetResponse("Trying to uninstall", true, id), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/mods/enable", request =>
             {
-                QAVSModManager.EnableMod(request.queryString.Get("id"));
-                request.SendString(GenericResponse.GetResponse("Trying to enable", true), "application/json");
+                int id = QAVSModManager.EnableMod(request.queryString.Get("id"));
+                request.SendString(ModResponse.GetResponse("Trying to enable", true, id), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/mods/delete", request =>
             {
-                QAVSModManager.DeleteMod(request.queryString.Get("id"));
-                request.SendString(GenericResponse.GetResponse("Trying to delete", true), "application/json");
+                int id = QAVSModManager.DeleteMod(request.queryString.Get("id"));
+                request.SendString(ModResponse.GetResponse("Trying to delete", true, id), "application/json");
                 return true;
             }); 
             server.AddRoute("GET", "/api/patching/getmodstatus", request =>

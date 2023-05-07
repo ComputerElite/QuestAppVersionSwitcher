@@ -38,7 +38,7 @@ namespace QuestAppVersionSwitcher.Mods
             ModsById[mod.Id] = mod;
         }
 
-        public override async Task<IMod> LoadFromFile(string modPath)
+        public override async Task<IMod> LoadFromFile(string modPath, int taskId)
         {
             await using Stream modStream = File.OpenRead(modPath);
             await using QMod qmod = await QMod.ParseAsync(modStream);
@@ -66,7 +66,7 @@ namespace QuestAppVersionSwitcher.Mods
                     throw new InstallationException($"Version of existing {existingInstall.Id} ({existingInstall.Version}) is greater than installing version ({mod.Version}). Direct version downgrades are not permitted. This may be fixed by deleting all mods and libraries.");
                 }
                 // Uninstall the existing mod. May throw an exception if other mods depend on the older version
-                needImmediateInstall = await PrepareVersionChange(existingInstall, mod);
+                needImmediateInstall = await PrepareVersionChange(existingInstall, mod, taskId);
             }
 
             string pushPath = Path.Combine("/data/local/tmp/", $"{qmod.Id}.temp.modextract");
@@ -80,7 +80,7 @@ namespace QuestAppVersionSwitcher.Mods
 
             if (needImmediateInstall)
             {
-                await mod.Install();
+                await mod.Install(taskId);
             }
 
             Logger.Log("Import complete");
@@ -95,7 +95,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// <param name="currentlyInstalled">The installed version of the mod</param>
         /// <param name="newVersion">The version of the mod to be upgraded to</param>
         /// <returns>True if the mod had installed dependants, and thus needs to be immediately installed</returns>
-        private async Task<bool> PrepareVersionChange(QPMod currentlyInstalled, QPMod newVersion)
+        private async Task<bool> PrepareVersionChange(QPMod currentlyInstalled, QPMod newVersion, int taskId)
         {
             Debug.Assert(currentlyInstalled.Id == newVersion.Id);
             Logger.Log($"Attempting to upgrade {currentlyInstalled.Id} v{currentlyInstalled.Version} to {newVersion.Id} v{newVersion.Version}");
@@ -138,7 +138,7 @@ namespace QuestAppVersionSwitcher.Mods
             else
             {
                 Logger.Log($"Deleting old version of {newVersion.Id} to prepare for upgrade . . .");
-                await DeleteMod(currentlyInstalled);
+                await DeleteMod(currentlyInstalled, taskId);
                 return installedDependants;
             }
         }
@@ -155,14 +155,14 @@ namespace QuestAppVersionSwitcher.Mods
             }
         }
 
-        public override async Task DeleteMod(IMod genericMod)
+        public override async Task DeleteMod(IMod genericMod, int taskId)
         {
             QPMod mod = AssertQMod(genericMod);
 
             if (mod.IsInstalled)
             {
                 Logger.Log($"Uninstalling mod {mod.Id} to prepare for removal . . .");
-                await genericMod.Uninstall();
+                await genericMod.Uninstall(taskId);
             }
 
             Logger.Log($"Removing mod {mod.Id} . . .");
@@ -173,7 +173,7 @@ namespace QuestAppVersionSwitcher.Mods
 
             if (!mod.Manifest.IsLibrary)
             {
-                await CleanUnusedLibraries(false);
+                await CleanUnusedLibraries(false, taskId);
             }
         }
 
@@ -193,7 +193,7 @@ namespace QuestAppVersionSwitcher.Mods
         /// Uninstalls all libraries that are not depended on by another mod
         /// <param name="onlyDisable">Whether to only uninstall (disable) the libraries. If this is true, only mods that are enabled count as dependant mods as well</param>
         /// </summary>
-        internal async Task CleanUnusedLibraries(bool onlyDisable)
+        internal async Task CleanUnusedLibraries(bool onlyDisable, int taskId)
         {
             bool actionPerformed = true;
             while (actionPerformed) // Keep attempting to remove libraries until none get removed this iteration
@@ -208,12 +208,12 @@ namespace QuestAppVersionSwitcher.Mods
                     {
                         Logger.Log($"{mod.Id} is unused - " + (onlyDisable ? "uninstalling" : "unloading"));
                         actionPerformed = true;
-                        await mod.Uninstall();
+                        await mod.Uninstall(taskId);
                     }
                     if (!onlyDisable)
                     {
                         actionPerformed = true;
-                        await DeleteMod(mod);
+                        await DeleteMod(mod, taskId);
                     }
                 }
             }
