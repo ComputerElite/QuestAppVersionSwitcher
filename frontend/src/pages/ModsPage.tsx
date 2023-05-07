@@ -20,6 +20,8 @@ import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { getPatchedModdingStatus } from "../api/patching";
 import { proxyFetch } from "../api/app";
 import { ModDropper } from "../components/ModDropper";
+import { CustomModal } from "../modals/CustomModal";
+import GetMoreMods from "../modals/GetMoreMods";
 
 async function UploadModClick() {
 
@@ -69,6 +71,8 @@ async function checkModsCanBeInstalled() {
 let lastScrollPosition = 0;
 
 export default function ModsPage() {
+
+  let [showGetMoreMods, setShowGetMoreMods] = createSignal(false);
 
   // Remember last scroll position
   onMount(() => {
@@ -163,7 +167,10 @@ export default function ModsPage() {
               "text-align": "center",
               "color": "#D1D5DB",
               "margin-left": "10px",
-            }} class="text-accent" >
+              cursor: "pointer",
+            }} class="text-accent" onClick={()=>{ 
+              setShowGetMoreMods(true);
+            }}>
               Get more mods
             </span>
             <RunButton icon={<FiRefreshCcw />} onClick={reloadMods} />
@@ -194,9 +201,15 @@ export default function ModsPage() {
           </Index>
         </List>
       </div>
+
+
+      {/* Modals */}
+      <GetMoreMods onClose={()=>{ setShowGetMoreMods(false)}} open={showGetMoreMods()} />
     </PageLayout>
   )
 }
+
+
 
 async function ToggleModState(modId: string, newState: boolean) {
   await UpdateModState(modId, newState);

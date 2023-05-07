@@ -1,5 +1,5 @@
 import { For, Index, JSX, Show, batch, createEffect, createMemo, createResource, createSignal, mapArray, on, onCleanup, onMount } from "solid-js";
-import { DeleteMod, IMod, InstallModFromUrl, UpdateModState, UploadMod, getModsList } from "../../api/mods";
+import { DeleteMod, ILibrary, IMod, InstallModFromUrl, UpdateModState, UploadMod, getModsList } from "../../api/mods";
 import defaultImage from "@/assets/DefaultCover.png"
 import "./GetBeatSaberMods.scss";
 import { modsList, mutateMods, refetchMods } from "../../state/mods";
@@ -13,17 +13,17 @@ import { PlusIcon, UploadRounded } from "../../assets/Icons";
 import PlayArrowRounded from '@suid/icons-material/PlayArrowRounded';
 import { IconButton, List, ListItem, Switch, Typography } from "@suid/material";
 import CloseRounded from "@suid/icons-material/CloseRounded";
-import { FiRefreshCcw } from "solid-icons/fi";
+import { FiInstagram, FiRefreshCcw } from "solid-icons/fi";
 import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, launchCurrentApp } from "../../api/android";
 import { config, currentApplication, moddingStatus, patchingOptions, refetchModdingStatus, refetchSettings } from "../../store";
 import { showChangeGameModal } from "../../modals/ChangeGameModal";
 import { getPatchedModdingStatus } from "../../api/patching";
 import { proxyFetch } from "../../api/app";
 import { ModDropper } from "../../components/ModDropper";
-import { ModEntry, ModRawEntry, ParseModVersions } from "./GetBeatSaberUtils";
+import { ModEntry, ModRawEntry, ModVersion, ParseModVersions } from "./GetBeatSaberUtils";
 import { createStore } from "solid-js/store";
 import { FaSolidDownload } from "solid-icons/fa";
-
+import { gt } from "semver";
 
 
 const [isModdableVersion, setIsModdableVersion] = createSignal(false);
@@ -84,11 +84,35 @@ async function refetchModListForVersion() {
         }
     }
 
-    setModIndex ({
+    // Sort mods alphabetically
+    mods = mods.sort((a, b) => CompareStringsAlphabetically(a.name, b.name));
+    coreMods.mods = coreMods.mods.sort((a: CoreModInfo, b: CoreModInfo) => CompareStringsAlphabetically(a.id, b.id));
+
+    setModIndex({
         mods,
         coreMods: coreMods
     });
     console.log(modIndex)
+}
+
+async function installCoreMods() {
+    let moddedStatus = moddingStatus();
+    if (moddedStatus == null) return;
+
+    if (moddedStatus.isInstalled == false) {
+        return toast.error("Game is not installed! Install it first before installing mods");
+    }
+
+    if (moddedStatus.isPatched == false) {
+        return toast.error("Game is not modded! Mod it first before installing mods");
+    }
+
+    if (moddedStatus.version == null) {
+        return toast.error("Game version is unknown! Try to reload QAVS, something is wrong");
+    }
+
+    await InstallModFromUrl(`https://oculusdb.rui2015.me/api/coremodsdownload/${moddedStatus.version}.qmod`);
+    toast.success("Install of core mods started! Check the status in the mods page");
 }
 
 async function checkModsCanBeInstalled() {
@@ -187,33 +211,19 @@ export default function GetBeatSabersModsPage() {
                         alignItems: "center",
                     }}>
                         <RunButton text='Run the app' variant="success" hideTextOnMobile icon={<PlayArrowRounded />} onClick={onGameStart} />
-
+                        <RunButton text='Install core mods' variant="info" hideTextOnMobile icon={<FiInstagram />} onClick={installCoreMods} />
                     </Box>
                     <Box sx={{
                         display: "flex",
                         gap: 2,
                         alignItems: "center",
                     }}>
-                        <span style={{
-                            "font-family": "Roboto",
-                            "font-style": "normal",
-                            "font-weight": "400",
-                            "font-size": "12px",
-                            "line-height": "14px",
-                            "display": "flex",
-                            "align-items": "center",
-                            "text-align": "center",
-                            "color": "#D1D5DB",
-                            "margin-left": "10px",
-                        }} class="text-accent" >
-                            Get more mods
-                        </span>
                         <RunButton icon={<FiRefreshCcw />} onClick={reloadMods} />
-                        {/* <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} /> */}
+                        <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
                     </Box>
                 </Box>
 
-                <h2>Cores</h2>
+                {/* <h2>Cores</h2>
                 <List sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -224,7 +234,7 @@ export default function GetBeatSabersModsPage() {
                             <CoreModCard mod={mod()} />
                         )}
                     </Index>
-                </List>
+                </List> */}
                 <h2>Mods</h2>
                 <List sx={{
                     display: "flex",
@@ -237,7 +247,7 @@ export default function GetBeatSabersModsPage() {
                         )}
                     </For>
                 </List>
-                
+
             </div>
         </PageLayout>
     )
@@ -258,6 +268,41 @@ async function DeleteModClick(mod: IMod) {
 }
 
 function ModCoverLessCard({ mod }: { mod: ModEntry }) {
+    let modStatus = createMemo(() => {
+        // @ts-ignore
+        let status: {
+            existingMod: ILibrary | null,
+            isInstalled: boolean,
+            isEnabled: boolean,
+            latestVersion: ModVersion | undefined,
+            hasUpdate: boolean,
+        } = {};
+        
+        let existingMod = modsList()?.find(x => x.Id == mod.id);
+        if (existingMod) {
+            status.isEnabled = existingMod.IsInstalled;
+            status.isInstalled = true;
+            status.existingMod = existingMod;
+        }
+
+        let latestVersion = (mod && mod.versions && mod.versions.length > 0)? mod.versions[0]: undefined;
+
+        // Check if there is an update to the mod
+        if (latestVersion && existingMod) {
+            if (gt(latestVersion.version,existingMod.VersionString)) {
+                status.hasUpdate = true;
+            } else {
+                status.hasUpdate = false;
+            }
+        } else {
+            status.hasUpdate = false;
+        }
+
+        
+        return status;
+
+    });
+
     return (
         <ListItem class="mod" sx={{
             display: "flex",
@@ -310,69 +355,19 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
                 flexDirection: "column",
                 justifyContent: "space-between",
             }}>
-                {/* <IconButton onClick={() => DeleteModClick(mod)}>
-                    <CloseRounded />
-                </IconButton> */}
-                <RunButton icon={<FaSolidDownload />} onClick={
-                    () => InstallModFromUrl(mod.versions[0].download)
-                } />
-            </Box>
-        </ListItem>
-    )
-}
+                <Show when={modStatus().isInstalled}>
+                    <RunButton onClick={async () => {
+                        let existingMod = modStatus()!.existingMod as ILibrary;
+                        DeleteModClick(existingMod);
+                    }} icon={<CloseRounded />}/>
+                </Show>
 
+                <Show when={!modStatus().isInstalled || modStatus().hasUpdate}>
+                    <RunButton icon={<FaSolidDownload />} onClick={
+                        () => InstallModFromUrl(mod.versions[0].download)
+                    } />
+                </Show>
 
-function CoreModCard({ mod }: { mod: CoreModInfo }) {
-    return (
-        <ListItem class="mod" sx={{
-            display: "flex",
-            width: "100%",
-            backgroundColor: "#111827",
-            borderRadius: "6px"
-        }}>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                }}
-            >
-                <Box sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                }}>
-                    <Typography variant="h6" sx={{
-                        fontFamily: 'Roboto',
-                        fontStyle: 'normal',
-                        fontWeight: 400,
-                        fontSize: '16px',
-                        lineHeight: '19px',
-                        color: '#FFFFFF',
-                        marginRight: 1,
-
-
-                    }}  >{mod.id}</Typography>
-                    <Typography variant="caption" sx={{
-
-                        fontFamily: 'Roboto',
-                        fontStyle: 'normal',
-                        fontWeight: 400,
-                        fontSize: '10px',
-                        lineHeight: '12px',
-                    }} class="text-accent"  >v{mod.version}</Typography>
-                </Box>
-
-            </Box>
-            <Box sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-            }}>
-                {/* <IconButton onClick={() => DeleteModClick(mod)}>
-                    <CloseRounded />
-                </IconButton> */}
-                <RunButton icon={<FaSolidDownload />} onClick={
-                    () => InstallModFromUrl(mod.downloadLink)
-                } />
             </Box>
         </ListItem>
     )

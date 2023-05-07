@@ -83,32 +83,34 @@ export const CustomModal = (props: ModalProps) => {
                         </IconButton>
                     </Show>
                 </Box>
-                {content()}
-
-
                 <Box sx={{
-                    px: 0,
-                    pb: 2,
-                    maxWidth: "500px",
-                    minWidth: "300px",
+                    px: local.offsetLess? 0: 3,
+                    pb: local.offsetLess? 0:2,
+                    pt: local.offsetLess? 0:0,
+                    overflowY: "auto",
                 }}>
 
-                    <Show when={local.buttons}>
-
+                    {content()}
+                </Box>
+                <Show when={local.buttons}>
+                    <Box sx={{
+                        // px: 0,
+                        pb: 2,
+                        maxWidth: "500px",
+                        // minWidth: "300px",
+                    }}>
                         <Box sx={{
                             display: "flex",
                             justifyContent: "flex-end",
-                            mt: 2,
+                            // mt: 2,
                             gap: 1,
                             px: 3,
-                            py: 1,
-                            pr: 1,
-                            pb: 0
                         }}>
                             {buttons()}
                         </Box>
-                    </Show>
-                </Box>
+
+                    </Box>
+                </Show>
             </Box>
 
         </Modal>

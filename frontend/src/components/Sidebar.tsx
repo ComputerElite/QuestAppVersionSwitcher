@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router";
-import { For, Show } from "solid-js";
+import { For, Show, createMemo } from "solid-js";
 import styles from "./Sidebar.module.scss"
 import { config } from "../store";
 import { FiEdit2 } from 'solid-icons/fi'
@@ -26,13 +26,21 @@ let links = [
 ]
 
 export default function Sidebar() {
+    let appname = createMemo(() => {
+        let currentApp = config()?.currentAppName;
+        if (currentApp) return currentApp;
+        currentApp = config()?.currentApp;
+        if (currentApp) return currentApp;
+        return "Not Selected"
+    });
+
     return (
         <div class={styles.sidebar}>
             <div class={styles.header}>
                 <div class={styles.logo}>Quest App <br /> Version Switcher</div>
                 <div class={styles.currentApp}>
                     <div title="Managed" class="inline packageName">
-                        {(config()?.currentApp && GetGameName(config()!.currentApp)) ?? "some app"} <FiEdit2 />
+                        {appname()} <FiEdit2 />
                     </div>
                 </div>
             </div>

@@ -13,6 +13,7 @@ export async function getAppInfo(): Promise<getAppInfoResponse> {
 
 interface getConfigResponse {
     currentApp: string;
+    currentAppName?: string;
     serverPort: number;
     token: string;
     loginStep: number;
