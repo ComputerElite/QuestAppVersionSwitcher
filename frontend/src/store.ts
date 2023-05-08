@@ -4,6 +4,7 @@ import { getAppInfo, getConfig } from "./api/app";
 import { HandtrackingTypes, getPatchedModdingStatus, getPatchingOptions } from "./api/patching";
 import { getCosmeticsTypes } from "./api/cosmetics";
 import { createStore } from "solid-js/store";
+import { getDeviceInfo } from "./api/android";
 
 export const [initialized, setInitialized] = createSignal<boolean>(false)
 
@@ -17,6 +18,8 @@ export const [appInfo, { mutate: mutateAppInfo, refetch: refetchAppInfo }] = cre
 export const [moddingStatus, { mutate: mutateModdingStatus, refetch: refetchModdingStatus }] = createResource(getPatchedModdingStatus, { storage: createSignal });
 
 export const [cosmeticTypes, { mutate: mutateCosmeticTypes, refetch: refetchCosmeticTypes }] = createResource(getCosmeticsTypes, { storage: createSignal });
+
+export const [deviceInfo, { mutate: mutateDeviceInfo, refetch: refetchDeviceInfo }] = createResource(getDeviceInfo, { storage: createSignal });
 
 export const [patchingOptions, { mutate: mutatePatchingOptions, refetch: refetchPatchingOptions }] = createResource<InternalPatchingOptions>(
     // TODO: Check if we can remove the useless flag that enables handtracking
@@ -38,6 +41,7 @@ createEffect(on(config, async (config) => {
     setCurrentApplication(config?.currentApp ?? null)
     await refetchModdingStatus();
     await refetchPatchingOptions();
+    await refetchDeviceInfo();
 }))
 
 

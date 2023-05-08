@@ -53,3 +53,32 @@ export function GetWSFullURL(route?: string): string {
 
     return `ws://${window.location.hostname}:${GetWSPort()}${route ?? ""}`;
 }
+
+// Get android version name from sdk version
+export function GetAndroidVersionName(sdkVersion: number): string {
+    if (sdkVersion == 0) {
+        return "Unknown";
+    }
+    if (sdkVersion > 33) {
+        return ">13";
+    }
+    if (sdkVersion == 33) {
+        return "13";
+    }
+    if (sdkVersion == 32) {
+        return "12L";
+    }
+    if (sdkVersion == 31) {
+        return "12";
+    }
+    if (sdkVersion == 30) {
+        return "11";
+    }
+    if (sdkVersion == 29) {
+        return "10";
+    }
+    if (sdkVersion < 29) {
+        return "<10";
+    }
+    return "Unknown";
+}

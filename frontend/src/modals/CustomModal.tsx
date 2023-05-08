@@ -96,7 +96,6 @@ export const CustomModal = (props: ModalProps) => {
                     <Box sx={{
                         // px: 0,
                         pb: 2,
-                        maxWidth: "500px",
                         // minWidth: "300px",
                     }}>
                         <Box sx={{
