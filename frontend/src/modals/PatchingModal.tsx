@@ -416,7 +416,7 @@ function InstallStep(props: { open: boolean, setStage: (stage: IPatchingStage) =
             buttons={<>
                 {/* If success, allow to go to next step (Uninstalling) */}
                 <Show when={done() && !error() && isInstalled()}>
-                    <RunButton text="Next step" variant='success' onClick={() => { props.setStage(IPatchingStage.Installing) }} />
+                    <RunButton text="Next step" variant='success' onClick={() => { props.setStage(IPatchingStage.Permissions) }} />
                 </Show>
                 {/* If just started show the patch button */}
                 <Show when={!done() && !error() && !isInstalled()}>
