@@ -87,6 +87,11 @@ namespace QuestAppVersionSwitcher
             packageName = request.packageName;
             status = "Preparing download for " + gameName + " " + version;
             
+            // Set token for requests
+            GraphQLClient.retryTimes = 1;
+            GraphQLClient.log = false;
+            GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
+            
             // Check entitlements
             if(!HasEntitlementFor(request.parentId))
             {
@@ -99,9 +104,6 @@ namespace QuestAppVersionSwitcher
             try
             {
                 //Get OBBs via Oculus api
-                GraphQLClient.retryTimes = 1;
-                GraphQLClient.log = false;
-                GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
                 AndroidBinary b = GraphQLClient.GetBinaryDetails(request.binaryId).data.node;
                 if (b.obb_binary != null)
                 {
