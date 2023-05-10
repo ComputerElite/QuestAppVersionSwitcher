@@ -1,9 +1,4 @@
-﻿using Android;
-using Android.App;
-using Android.Content;
-using Android.Content.Res;
-using Android.Webkit;
-using AndroidX.Core.App;
+﻿using Android.Webkit;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Mods;
@@ -12,21 +7,10 @@ using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using Android.Content.PM;
-using Android.Media.Audiofx;
-using Android.OS;
-using Android.Provider;
 using AndroidX.Activity.Result;
-using Com.Xamarin.Formsviewgroup;
 using ComputerUtils.Android;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Xamarin.Essentials;
-using Environment = Android.OS.Environment;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using Object = Java.Lang.Object;
 
 namespace QuestAppVersionSwitcher.Core
 {
