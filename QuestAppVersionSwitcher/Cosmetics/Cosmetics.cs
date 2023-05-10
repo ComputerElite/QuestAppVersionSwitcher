@@ -195,7 +195,6 @@ namespace QuestAppVersionSwitcher
 			}
 			else
 			{
-				
 				Logger.Log("Copying Cosmetic " + currentPath + " to " + directory);
 				FileManager.CreateDirectoryIfNotExisting(directory);
 				File.Copy(currentPath, directory + Path.GetFileName(currentPath), true);
