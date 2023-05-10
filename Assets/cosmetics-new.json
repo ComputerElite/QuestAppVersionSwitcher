@@ -22,19 +22,19 @@
             {
                 "name": "Whackers",
                 "fileType": ".whacker",
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/whackers/",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Whackers/",
                 "requiresModded": true
             },
             {
                 "name": "Boxes",
                 "fileType": ".box",
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/boxes/",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Boxes/",
                 "requiresModded": true
             },
             {
                 "name": "Cyoobs",
                 "fileType": ".cyoob",
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/cyoobs/",
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Cyoobs/",
                 "requiresModded": true
             }
             ,
