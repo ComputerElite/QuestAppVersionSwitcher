@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace QuestAppVersionSwitcher
 {
@@ -340,7 +341,7 @@ namespace QuestAppVersionSwitcher
 
             // First we add permissions and features to the APK for modding
             List<string> addingPermissions = new List<string>();
-            List<string> addingFeatures = new List<string>();
+            List<UsesFeature> addingFeatures = new List<UsesFeature>();
             PatchingPermissions permissions = CoreService.coreVars.patchingPermissions;
             if (permissions.externalStorage)
             {
@@ -362,7 +363,7 @@ namespace QuestAppVersionSwitcher
                     "com.oculus.permission.HAND_TRACKING"
                 });
                 // Tell Android (and thus Oculus home) that this app supports hand tracking and we can launch the app with it
-                addingFeatures.Add("oculus.software.handtracking");
+                addingFeatures.Add(new UsesFeature {name = "oculus.software.handtracking", required = false});
             }
             addingPermissions.AddRange(permissions.otherPermissions);
 
@@ -379,16 +380,15 @@ namespace QuestAppVersionSwitcher
                 manifest.Children.Add(permElement);
             }
 
-            foreach (string feature in addingFeatures)
+            foreach (UsesFeature feature in addingFeatures)
             {
-                if (existingFeatures.Contains(feature)) { continue; } // Do not add existing features
+                if (existingFeatures.Contains(feature.name)) { continue; } // Do not add existing features
 
-                Logger.Log("adding feature " + feature);
+                Logger.Log("adding feature " + feature.name);
                 AxmlElement featureElement = new AxmlElement("uses-feature");
-                AddNameAttribute(featureElement, feature);
+                AddNameAttribute(featureElement, feature.name);
 
-                // TODO: User may want the feature to be required instead of suggested
-                featureElement.Attributes.Add(new AxmlAttribute("required", AndroidNamespaceUri, RequiredAttributeResourceId, false));
+                featureElement.Attributes.Add(new AxmlAttribute("required", AndroidNamespaceUri, RequiredAttributeResourceId, feature.required));
                 manifest.Children.Add(featureElement);
             }
 

@@ -375,7 +375,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             QAVSWebserver.patchStatus.currentOperation = "Aligning apk";
             QAVSWebserver.BroadcastPatchingStatus();
             Logger.Log("Aligning Apk");
-            if (!ApkAligner.AlignApk(path))
+            if (!await ApkAligner.AlignApk(path))
             {
                 Logger.Log("Aligning failed... Aborting", LoggingType.Warning);
                 return false;
@@ -388,12 +388,12 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             
             Logger.Log("Make APK Signature Scheme v2");
             FileStream fs = new FileStream(path, FileMode.Open);
-            using FileMemory memory = new FileMemory(fs);
+            await using FileMemory memory = new FileMemory(fs);
             TempFile t = new TempFile();
-            using FileStream tmp = new FileStream(t.Path, FileMode.Create);
-            using FileMemory outMemory = new FileMemory(tmp);
+            await using FileStream tmp = new FileStream(t.Path, FileMode.Create);
+            await using FileMemory outMemory = new FileMemory(tmp);
             memory.Position = memory.Length() - 22;
-            while(memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
+            while(await memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
             {
                 memory.Position -= 4 + 1;
             }
@@ -402,7 +402,8 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             EndOfCentralDirectory eocd;
             try
             {
-                 eocd = new EndOfCentralDirectory(memory);
+                 eocd = new EndOfCentralDirectory();
+                 await eocd.Populate(memory);
             }
             catch (Exception e)
             {
@@ -414,8 +415,8 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             var cd = eocd.OffsetOfCD;
             memory.Position = cd-16-8;
             
-            var d = memory.ReadULong();
-            var d2 = memory.ReadString(16);
+            var d = await memory.ReadULong();
+            var d2 = await memory.ReadString(16);
             var section1 = await GetSectionDigests(fs, 0, cd);
             var section3 = await GetSectionDigests(fs, cd, eocdPosition);
             var section4 = await GetSectionDigests(fs, eocdPosition, fs.Length);
@@ -444,7 +445,7 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
 
             signedData.Certificates.Add(cert.GetEncoded());
 
-            signedData.Write(memorySignedData);
+            await signedData.Write(memorySignedData);
             signer.SignedData = signedDataMs.ToArray();
             ISigner signerType = SignerUtilities.GetSigner("SHA256WithRSA");
             signerType.Init(true, privateKey);
@@ -455,18 +456,19 @@ llAY8xXVMiYeyHboXxDPOCH8y1TgEW0Nc2cnnCKOuji2waIwrVwR
             block.Signers.Add(signer);
 
             APKSigningBlock signingBlock = new APKSigningBlock();
-            signingBlock.Values.Add(block.ToIDValuePair());
+            signingBlock.Values.Add(await block.ToIDValuePair());
 
             fs.Position = 0;
-            outMemory.WriteBytes(memory.ReadBytes(cd));
-            signingBlock.Write(outMemory);
+            await outMemory.WriteBytes(await memory.ReadBytes(cd));
+            await signingBlock.Write(outMemory);
             eocd.OffsetOfCD = (int)tmp.Position;
-            outMemory.WriteBytes(memory.ReadBytes((int) (eocdPosition - cd)));
-            eocd.Write(outMemory);
+            await outMemory.WriteBytes(await memory.ReadBytes((int) (eocdPosition - cd)));
+            await eocd.Write(outMemory);
 
             fs.Close();
             tmp.Close();
             if(File.Exists(path)) File.Delete(path);
+            
             File.Move(t.Path, path);
             return true;
         }

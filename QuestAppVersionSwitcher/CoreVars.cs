@@ -65,7 +65,14 @@ namespace QuestAppVersionSwitcher.Core
         public bool handTracking { get; set; } = true;
         public bool debug { get; set; } = true;
         public List<string> otherPermissions { get; set; } = new List<string>();
+        public List<UsesFeature> otherFeatures { get; set; } = new List<UsesFeature>();
         public HandTrackingVersion handTrackingVersion { get; set; }
+    }
+
+    public class UsesFeature
+    {
+        public string name { get; set; } = "";
+        public bool required { get; set; } = true;
     }
 
     public enum HandTrackingVersion

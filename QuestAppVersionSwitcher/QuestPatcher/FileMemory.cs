@@ -37,86 +37,76 @@ namespace QuestPatcher.Core.Apk
             return Stream.Length;
         }
 
-        public void WriteByte(byte value)
+        public async Task WriteBytes(byte[] bytes)
         {
-            Stream.WriteByte(value);
+            await Stream.WriteAsync(bytes, 0, bytes.Length);
         }
 
-        public byte ReadBytes()
-        {
-            return (byte) Stream.ReadByte();
-        }
-
-        public void WriteBytes(byte[] bytes)
-        {
-            Stream.Write(bytes, 0, bytes.Length);
-        }
-
-        public byte[] ReadBytes(int count)
+        public async Task<byte[]> ReadBytes(int count)
         {
             byte[] bytes = new byte[count];
-            Stream.Read(bytes, 0, count);
+            int read = await Stream.ReadAsync(bytes, 0, count);
             return bytes;
         }
 
-        public short ReadShort()
+        public async Task<short> ReadShort()
         {
-            return BitConverter.ToInt16(ReadBytes(2), 0);
+            return BitConverter.ToInt16(await ReadBytes(2), 0);
         }
 
-        public void WriteShort(short value)
+        public async Task WriteShort(short value)
         {
-            WriteBytes(BitConverter.GetBytes(value));
+            await WriteBytes(BitConverter.GetBytes(value));
         }
 
-        public int ReadInt()
+        public async Task<int> ReadInt()
         {
-            return BitConverter.ToInt32(ReadBytes(4), 0);
+            return BitConverter.ToInt32(await ReadBytes(4), 0);
         }
 
-        public void WriteInt(int value)
+        public async Task WriteInt(int value)
         {
-            WriteBytes(BitConverter.GetBytes(value));
+            await WriteBytes(BitConverter.GetBytes(value));
         }
 
-        public uint ReadUInt()
+        public async Task<uint> ReadUInt()
         {
-            return BitConverter.ToUInt32(ReadBytes(4), 0);
+            return BitConverter.ToUInt32(await ReadBytes(4), 0);
         }
 
-        public void WriteUInt(uint value)
+        public async Task WriteUInt(uint value)
         {
-            WriteBytes(BitConverter.GetBytes(value));
+            await WriteBytes(BitConverter.GetBytes(value));
         }
 
-        public long ReadLong()
+        public async Task<long> ReadLong()
         {
-            return BitConverter.ToInt64(ReadBytes(8), 0);
+            return BitConverter.ToInt64(await ReadBytes(8), 0);
         }
 
-        public void WriteLong(long value)
+        public async Task WriteLong(long value)
         {
-            WriteBytes(BitConverter.GetBytes(value));
+            await WriteBytes(BitConverter.GetBytes(value));
         }
 
-        public ulong ReadULong()
+        public async Task<ulong> ReadULong()
         {
-            return BitConverter.ToUInt64(ReadBytes(8), 0);
+            return BitConverter.ToUInt64(await ReadBytes(8), 0);
         }
 
-        public void WriteULong(ulong value)
+        public async Task WriteULong(ulong value)
         {
-            WriteBytes(BitConverter.GetBytes(value));
+            await WriteBytes(BitConverter.GetBytes(value));
         }
 
-        public string ReadString(int count)
+        public async Task<string> ReadString(int count)
         {
-            return Encoding.UTF8.GetString(ReadBytes(count));
+            return Encoding.UTF8.GetString(await ReadBytes(count));
         }
 
-        public void WriteString(string value)
+        public async Task WriteString(string value)
         {
-            WriteBytes(Encoding.UTF8.GetBytes(value));
+            await WriteBytes(Encoding.UTF8.GetBytes(value));
         }
 
         public static int StringLength(string value)

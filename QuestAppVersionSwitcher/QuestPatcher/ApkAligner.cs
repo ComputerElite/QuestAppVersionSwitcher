@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher;
 using QuestAppVersionSwitcher.Mods;
@@ -16,15 +17,15 @@ namespace QuestPatcher.Core
     public class ApkAligner
     {
 
-        public static bool AlignApk(string path)
+        public static async Task<bool> AlignApk(string path)
         {
-            using FileStream fs = new FileStream(path, FileMode.Open);
-            using FileMemory memory = new FileMemory(fs);
+            await using FileStream fs = new FileStream(path, FileMode.Open);
+            await using FileMemory memory = new FileMemory(fs);
             TempFile t = new TempFile();
-            using FileStream tmp = new FileStream(t.Path, FileMode.Create);
-            using FileMemory outMemory = new FileMemory(tmp);
+            await using FileStream tmp = new FileStream(t.Path, FileMode.Create);
+            await using FileMemory outMemory = new FileMemory(tmp);
             memory.Position = memory.Length() - 22;
-            while(memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
+            while(await memory.ReadInt() != EndOfCentralDirectory.SIGNATURE)
             {
                 memory.Position -= 4 + 1;
             }
@@ -33,7 +34,8 @@ namespace QuestPatcher.Core
             EndOfCentralDirectory eocd;
             try
             {
-                eocd = new EndOfCentralDirectory(memory);
+                eocd = new EndOfCentralDirectory();
+                await eocd.Populate(memory);
             }
             catch (Exception e)
             {
@@ -45,16 +47,22 @@ namespace QuestPatcher.Core
             memory.Position = eocd.OffsetOfCD;
             for(int i = 0; i < eocd.NumberOfCDsOnDisk; i++)
             {
-                CentralDirectoryFileHeader cd = new CentralDirectoryFileHeader(memory);
+                CentralDirectoryFileHeader cd = new CentralDirectoryFileHeader();
+                await cd.Populate(memory);
                 var nextCD = memory.Position;
                 memory.Position = cd.Offset;
-                LocalFileHeader lfh = new LocalFileHeader(memory);
-                byte[] data = memory.ReadBytes(cd.CompressedSize);
+                LocalFileHeader lfh = new LocalFileHeader();
+                await lfh.ReadLocalFileHeader(memory);
+                byte[] data = await memory.ReadBytes(cd.CompressedSize);
                 DataDescriptor? dd = null;
                 try
                 {
-                    if((lfh.GeneralPurposeFlag & 0x08) != 0) 
-                        dd = new DataDescriptor(memory);
+                    if ((lfh.GeneralPurposeFlag & 0x08) != 0)
+                    {
+                        
+                        dd = new DataDescriptor();
+                        await dd.Populate(memory);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -73,22 +81,22 @@ namespace QuestPatcher.Core
                     }
                 }
                 cd.Offset = (int) outMemory.Position;
-                lfh.Write(outMemory);
-                outMemory.WriteBytes(data);
+                await lfh.Write(outMemory);
+                await outMemory.WriteBytes(data);
                 if(dd != null)
-                    dd.Write(outMemory);
+                    await dd.Write(outMemory);
                 cDs.Add(cd);
                 memory.Position = nextCD;
             }
             eocd.OffsetOfCD = (int) outMemory.Position;
             foreach(CentralDirectoryFileHeader cd in cDs)
             {
-                cd.Write(outMemory);
+                await cd.Write(outMemory);
             }
             eocd.NumberOfCDs = (short) cDs.Count;
             eocd.NumberOfCDsOnDisk = (short) cDs.Count;
             eocd.SizeOfCD = (int) (outMemory.Position - eocd.OffsetOfCD);
-            eocd.Write(outMemory);
+            await eocd.Write(outMemory);
             fs.Close();
             tmp.Close();
             if (File.Exists(path)) File.Delete(path);

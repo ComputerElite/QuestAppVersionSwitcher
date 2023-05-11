@@ -15,26 +15,26 @@ namespace QuestPatcher.Core.Apk
         public int CompressedSize { get; set; }
         public int UncompressedSize { get; set; }
 
-        public DataDescriptor(FileMemory memory)
+        public async Task Populate(FileMemory memory)
         {
-            int signature = memory.ReadInt();
+            int signature = await memory.ReadInt();
             if (signature != SIGNATURE)
             {
                 Logger.Log("Invalid DataDescriptor signature " + signature.ToString("X4") + ". While Aligning apk: It is likely that the game is pirated.");
                 throw new Exception("Invalid DataDescriptor signature " + signature.ToString("X4") +
                                     ". This error may occur when your game is pirated.");
             }
-            CRC32 = memory.ReadInt();
-            CompressedSize = memory.ReadInt();
-            UncompressedSize = memory.ReadInt();
+            CRC32 = await memory.ReadInt();
+            CompressedSize = await memory.ReadInt();
+            UncompressedSize = await memory.ReadInt();
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
-            memory.WriteInt(SIGNATURE);
-            memory.WriteInt(CRC32);
-            memory.WriteInt(CompressedSize);
-            memory.WriteInt(UncompressedSize);
+            await memory.WriteInt(SIGNATURE);
+            await memory.WriteInt(CRC32);
+            await memory.WriteInt(CompressedSize);
+            await memory.WriteInt(UncompressedSize);
         }
 
     }

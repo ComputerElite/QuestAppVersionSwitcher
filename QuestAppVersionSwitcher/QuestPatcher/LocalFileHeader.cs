@@ -22,40 +22,45 @@ namespace QuestPatcher.Core.Apk
         public string FileName { get; set; }
         public byte[] ExtraField { get; set; }
 
-        public LocalFileHeader(FileMemory memory)
+        /// <summary>
+        /// Reads the local file header from the given memory.
+        /// </summary>
+        /// <param name="memory"></param>
+        /// <exception cref="Exception"></exception>
+        public async Task ReadLocalFileHeader(FileMemory memory)
         {
-            int signature = memory.ReadInt();
+            int signature = await memory.ReadInt();
             if(signature != SIGNATURE)
                 throw new Exception("Invalid LocalFileHeader signature " + signature.ToString("X4"));
-            VersionNeeded = memory.ReadShort();
-            GeneralPurposeFlag = memory.ReadShort();
-            CompressionMethod = memory.ReadShort();
-            FileLastModificationTime = memory.ReadShort();
-            FileLastModificationDate = memory.ReadShort();
-            CRC32 = memory.ReadInt();
-            CompressedSize = memory.ReadInt();
-            UncompressedSize = memory.ReadInt();
-            var fileNameLength = memory.ReadShort();
-            var extraFieldLength = memory.ReadShort();
-            FileName = memory.ReadString(fileNameLength);
-            ExtraField = memory.ReadBytes(extraFieldLength);
+            VersionNeeded = await memory.ReadShort();
+            GeneralPurposeFlag = await memory.ReadShort();
+            CompressionMethod = await memory.ReadShort();
+            FileLastModificationTime = await memory.ReadShort();
+            FileLastModificationDate = await memory.ReadShort();
+            CRC32 = await memory.ReadInt();
+            CompressedSize = await memory.ReadInt();
+            UncompressedSize = await memory.ReadInt();
+            var fileNameLength = await memory.ReadShort();
+            var extraFieldLength = await memory.ReadShort();
+            FileName = await memory.ReadString(fileNameLength);
+            ExtraField = await memory.ReadBytes(extraFieldLength);
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
-            memory.WriteInt(SIGNATURE);
-            memory.WriteShort(VersionNeeded);
-            memory.WriteShort(GeneralPurposeFlag);
-            memory.WriteShort(CompressionMethod);
-            memory.WriteShort(FileLastModificationTime);
-            memory.WriteShort(FileLastModificationDate);
-            memory.WriteInt(CRC32);
-            memory.WriteInt(CompressedSize);
-            memory.WriteInt(UncompressedSize);
-            memory.WriteShort((short)FileMemory.StringLength(FileName));
-            memory.WriteShort((short)ExtraField.Length);
-            memory.WriteString(FileName);
-            memory.WriteBytes(ExtraField);
+            await memory.WriteInt(SIGNATURE);
+            await memory.WriteShort(VersionNeeded);
+            await memory.WriteShort(GeneralPurposeFlag);
+            await memory.WriteShort(CompressionMethod);
+            await memory.WriteShort(FileLastModificationTime);
+            await memory.WriteShort(FileLastModificationDate);
+            await memory.WriteInt(CRC32);
+            await memory.WriteInt(CompressedSize);
+            await memory.WriteInt(UncompressedSize);
+            await memory.WriteShort((short)FileMemory.StringLength(FileName));
+            await memory.WriteShort((short)ExtraField.Length);
+            await memory.WriteString(FileName);
+            await memory.WriteBytes(ExtraField);
         }
 
     }

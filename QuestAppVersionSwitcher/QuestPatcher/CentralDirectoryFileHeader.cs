@@ -26,54 +26,54 @@ namespace QuestPatcher.Core.Apk
         public byte[] ExtraField { get; set; }
         public string FileComment { get; set; }
 
-        public CentralDirectoryFileHeader(FileMemory memory)
+        public async Task Populate(FileMemory memory)
         {
-            int signature = memory.ReadInt();
+            int signature = await memory.ReadInt();
             if(signature != SIGNATURE)
                 throw new Exception("Invalid CentralDirectoryFileHeader signature " + signature.ToString("X4"));
-            VersionMadeBy = memory.ReadShort();
-            VersionNeeded = memory.ReadShort();
-            GeneralPurposeFlag = memory.ReadShort();
-            CompressionMethod = memory.ReadShort();
-            FileLastModificationTime = memory.ReadShort();
-            FileLastModificationDate = memory.ReadShort();
-            CRC32 = memory.ReadInt();
-            CompressedSize = memory.ReadInt();
-            UncompressedSize = memory.ReadInt();
-            var fileNameLength = memory.ReadShort();
-            var extraFieldLength = memory.ReadShort();
-            var fileCommentLength = memory.ReadShort();
-            DiskNumberFileStart = memory.ReadShort();
-            InternalFileAttributes = memory.ReadShort();
-            ExternalFileAttributes = memory.ReadInt();
-            Offset = memory.ReadInt();
-            FileName = memory.ReadString(fileNameLength);
-            ExtraField = memory.ReadBytes(extraFieldLength);
-            FileComment = memory.ReadString(fileCommentLength);
+            VersionMadeBy = await memory.ReadShort();
+            VersionNeeded = await memory.ReadShort();
+            GeneralPurposeFlag = await memory.ReadShort();
+            CompressionMethod = await memory.ReadShort();
+            FileLastModificationTime = await memory.ReadShort();
+            FileLastModificationDate = await memory.ReadShort();
+            CRC32 = await memory.ReadInt();
+            CompressedSize = await memory.ReadInt();
+            UncompressedSize = await memory.ReadInt();
+            var fileNameLength = await memory.ReadShort();
+            var extraFieldLength = await memory.ReadShort();
+            var fileCommentLength = await memory.ReadShort();
+            DiskNumberFileStart = await memory.ReadShort();
+            InternalFileAttributes = await memory.ReadShort();
+            ExternalFileAttributes = await memory.ReadInt();
+            Offset = await memory.ReadInt();
+            FileName = await memory.ReadString(fileNameLength);
+            ExtraField = await memory.ReadBytes(extraFieldLength);
+            FileComment = await memory.ReadString(fileCommentLength);
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
-            memory.WriteInt(SIGNATURE);
-            memory.WriteShort(VersionMadeBy);
-            memory.WriteShort(VersionNeeded);
-            memory.WriteShort(GeneralPurposeFlag);
-            memory.WriteShort(CompressionMethod);
-            memory.WriteShort(FileLastModificationTime);
-            memory.WriteShort(FileLastModificationDate);
-            memory.WriteInt(CRC32);
-            memory.WriteInt(CompressedSize);
-            memory.WriteInt(UncompressedSize);
-            memory.WriteShort((short)FileMemory.StringLength(FileName));
-            memory.WriteShort((short)ExtraField.Length);
-            memory.WriteShort((short) FileMemory.StringLength(FileComment));
-            memory.WriteShort(DiskNumberFileStart);
-            memory.WriteShort(InternalFileAttributes);
-            memory.WriteInt(ExternalFileAttributes);
-            memory.WriteInt(Offset);
-            memory.WriteString(FileName);
-            memory.WriteBytes(ExtraField);
-            memory.WriteString(FileComment);
+            await memory.WriteInt(SIGNATURE);
+            await memory.WriteShort(VersionMadeBy);
+            await memory.WriteShort(VersionNeeded);
+            await memory.WriteShort(GeneralPurposeFlag);
+            await memory.WriteShort(CompressionMethod);
+            await memory.WriteShort(FileLastModificationTime);
+            await memory.WriteShort(FileLastModificationDate);
+            await memory.WriteInt(CRC32);
+            await memory.WriteInt(CompressedSize);
+            await memory.WriteInt(UncompressedSize);
+            await memory.WriteShort((short)FileMemory.StringLength(FileName));
+            await memory.WriteShort((short)ExtraField.Length);
+            await memory.WriteShort((short) FileMemory.StringLength(FileComment));
+            await memory.WriteShort(DiskNumberFileStart);
+            await memory.WriteShort(InternalFileAttributes);
+            await memory.WriteInt(ExternalFileAttributes);
+            await memory.WriteInt(Offset);
+            await memory.WriteString(FileName);
+            await memory.WriteBytes(ExtraField);
+            await memory.WriteString(FileComment);
         }
     }
 }

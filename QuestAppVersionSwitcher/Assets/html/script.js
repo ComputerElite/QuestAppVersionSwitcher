@@ -333,6 +333,7 @@ const handTrackingVersion = document.getElementById("handtrackingversion")
 const debugCheckbox = document.getElementById("debug")
 const otherContainer = document.getElementById("other")
 var otherPermissions = []
+var otherFeatures = []
 
 function UploadMod() {
     var input = document.createElement('input');
@@ -429,6 +430,34 @@ function AddPermission() {
     document.getElementById("otherName").value = ""
     UpdatePermissions()
 }
+function AddSpecificFeature(name, required) {
+    otherFeatures.push({name: name, required: required})
+    UpdateFeatures()
+}
+
+function AddFeature() {
+    otherFeatures.push({name: document.getElementById("featureName").value, required: document.getElementById("requireFeature").checked})
+    document.getElementById("featureName").value = ""
+    UpdateFeatures()
+}
+
+function UpdateFeatures() {
+    var perms = ""
+    for(const p of otherFeatures){
+        perms += `
+        <div style="padding: 10px; margin-right: 20px; border-radius: 5px; border: 1px #242424 solid;">
+            ${p.name} ${p.required ? "(Required)" : "(Not required)"}
+            <div class="button" style="display: inline" onclick="RemoveFeature('${p.name}')">X</div>
+        </div>`
+    }
+    if(perms == "") perms = "No custom features added yet"
+    document.getElementById("otherFeatures").innerHTML = perms
+}
+
+function RemoveFeature(name) {
+    otherFeatures = otherFeatures.filter(a => a.name != name)
+    UpdateFeatures()
+}
 
 function UpdatePermissions() {
     var perms = ""
@@ -439,6 +468,7 @@ function UpdatePermissions() {
             <div class="button" style="display: inline" onclick="RemovePermission('${p}')">X</div>
         </div>`
     }
+    if(perms == "") perms = "No custom permissions added yet"
     otherContainer.innerHTML = perms
 }
 
@@ -453,6 +483,7 @@ function PatchGame() {
     patchInProgress = true
     var patchOptions = {
         otherPermissions: otherPermissions,
+        otherFeatures: otherFeatures,
         debug: debugCheckbox.checked,
         handTracking: handTrackingCheckbox.checked,
         handTrackingVersion: parseInt(handTrackingVersion.value),

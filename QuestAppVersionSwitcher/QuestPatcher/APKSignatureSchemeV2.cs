@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace QuestPatcher.Core.Apk
 {
@@ -28,12 +29,12 @@ namespace QuestPatcher.Core.Apk
                         return 4 + 4 + 4 + Data.Length;
                     }
 
-                    public void Write(FileMemory memory)
+                    public async Task Write(FileMemory memory)
                     {
-                        memory.WriteUInt((uint) Length() - 4);
-                        memory.WriteUInt(SignatureAlgorithmID);
-                        memory.WriteUInt((uint) Data.Length);
-                        memory.WriteBytes(Data);
+                        await memory.WriteUInt((uint) Length() - 4);
+                        await memory.WriteUInt(SignatureAlgorithmID);
+                        await memory.WriteUInt((uint) Data.Length);
+                        await memory.WriteBytes(Data);
                     }
                 }
 
@@ -63,17 +64,17 @@ namespace QuestPatcher.Core.Apk
                         return 4 + 4 + (Data?.Length ?? 4);
                     }
 
-                    public void Write(FileMemory memory)
+                    public async Task Write(FileMemory memory)
                     {
-                        memory.WriteUInt((uint) Length() - 4);
-                        memory.WriteUInt(ID);
+                        await memory.WriteUInt((uint) Length() - 4);
+                        await memory.WriteUInt(ID);
                         if(Data == null)
                         {
-                            memory.WriteInt(Value);
+                            await memory.WriteInt(Value);
                         }
                         else
                         {
-                            memory.WriteBytes(Data);
+                            await  memory.WriteBytes(Data);
                         }
                     }
                 }
@@ -94,19 +95,20 @@ namespace QuestPatcher.Core.Apk
                     return 4 + Digests.Sum(value => value.Length()) + 4 + Certificates.Count * 4 + Certificates.Sum(value => value.Length) + 4 + AdditionalAttributes.Sum(value => value.Length());
                 }
 
-                public void Write(FileMemory memory)
+                public async Task Write(FileMemory memory)
                 {
-                    memory.WriteUInt((uint) Digests.Sum(value => value.Length()));
+                    await memory.WriteUInt((uint) Digests.Sum(value => value.Length()));
                     Digests.ForEach(value => value.Write(memory));
 
-                    memory.WriteUInt((uint) (Certificates.Count * 4 + Certificates.Sum(value => value.Length)));
-                    Certificates.ForEach(value => {
-                            memory.WriteUInt((uint) value.Length);
-                            memory.WriteBytes(value);
-                        }
-                    );
+                    await memory.WriteUInt((uint) (Certificates.Count * 4 + Certificates.Sum(value => value.Length)));
 
-                    memory.WriteUInt((uint) AdditionalAttributes.Sum(value => value.Length()));
+                    foreach (byte[] c in Certificates)
+                    {
+                        await memory.WriteUInt((uint) c.Length);
+                        await memory.WriteBytes(c);
+                    }
+
+                    await memory.WriteUInt((uint) AdditionalAttributes.Sum(value => value.Length()));
                     AdditionalAttributes.ForEach(value => value.Write(memory));
                 }
             }
@@ -127,12 +129,12 @@ namespace QuestPatcher.Core.Apk
                     return 4 + 4 + 4 + Data.Length;
                 }
 
-                public void Write(FileMemory memory)
+                public async Task Write(FileMemory memory)
                 {
-                    memory.WriteUInt((uint) Length() - 4);
-                    memory.WriteUInt(SignatureAlgorithmID);
-                    memory.WriteUInt((uint) Data.Length);
-                    memory.WriteBytes(Data);
+                    await memory.WriteUInt((uint) Length() - 4);
+                    await memory.WriteUInt(SignatureAlgorithmID);
+                    await memory.WriteUInt((uint) Data.Length);
+                    await memory.WriteBytes(Data);
                 }
             }
 
@@ -151,30 +153,33 @@ namespace QuestPatcher.Core.Apk
                 return 4 + 4 + (SignedData?.Length ?? 0) + 4 + Signatures.Sum(value => value.Length()) + 4 + (PublicKey?.Length ?? 0);
             }
 
-            public void Write(FileMemory memory)
+            public async Task Write(FileMemory memory)
             {
-                memory.WriteUInt((uint) Length() - 4);
+                await memory.WriteUInt((uint) Length() - 4);
                 if(SignedData == null)
                 {
-                    memory.WriteUInt(0);
+                    await memory.WriteUInt(0);
                 }
                 else
                 {
-                    memory.WriteUInt((uint) SignedData.Length);
-                    memory.WriteBytes(SignedData);
+                    await memory.WriteUInt((uint) SignedData.Length);
+                    await memory.WriteBytes(SignedData);
                 }
 
-                memory.WriteUInt((uint) (Signatures.Sum(value => value.Length())));
-                Signatures.ForEach(value => value.Write(memory));
+                await memory.WriteUInt((uint) (Signatures.Sum(value => value.Length())));
+                foreach (BlockSignature s in Signatures)
+                {
+                    await s.Write(memory);
+                }
 
                 if(PublicKey == null)
                 {
-                    memory.WriteUInt(0);
+                    await memory.WriteUInt(0);
                 }
                 else
                 {
-                    memory.WriteUInt((uint) PublicKey.Length);
-                    memory.WriteBytes(PublicKey);
+                    await memory.WriteUInt((uint) PublicKey.Length);
+                    await memory.WriteBytes(PublicKey);
                 }
             }
         }
@@ -188,17 +193,20 @@ namespace QuestPatcher.Core.Apk
             Signers = new List<Signer>();
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
-            memory.WriteUInt((uint)Signers.Sum(value => value.Length()));
-            Signers.ForEach(value => value.Write(memory));
+            await memory.WriteUInt((uint)Signers.Sum(value => value.Length()));
+            foreach (Signer s in Signers)
+            {
+                await s.Write(memory);
+            }
         }
 
-        public APKSigningBlock.IDValuePair ToIDValuePair()
+        public async Task<APKSigningBlock.IDValuePair> ToIDValuePair()
         {
             using MemoryStream ms = new MemoryStream();
             using FileMemory memory = new FileMemory(ms);
-            Write(memory);
+            await Write(memory);
             return new APKSigningBlock.IDValuePair(ID, ms.ToArray());
         }
 

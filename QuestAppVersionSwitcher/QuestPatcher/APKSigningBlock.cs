@@ -34,16 +34,16 @@ namespace QuestPatcher.Core.Apk
                 return 8 + 4 + Data?.Length ?? 4;
             }
 
-            public void Write(FileMemory memory)
+            public async Task Write(FileMemory memory)
             {
-                memory.WriteULong((ulong) Length() - 8);
-                memory.WriteUInt(ID);
+                await memory.WriteULong((ulong) Length() - 8);
+                await memory.WriteUInt(ID);
                 if(Data == null)
                 {
-                    memory.WriteInt(Value);
+                    await memory.WriteInt(Value);
                 } else
                 {
-                    memory.WriteBytes(Data);
+                    await memory.WriteBytes(Data);
                 }
             }
 
@@ -58,13 +58,16 @@ namespace QuestPatcher.Core.Apk
             Values = new List<IDValuePair>();
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
             ulong size = (ulong) Values.Sum(values => values.Length()) + 8 + 16;
-            memory.WriteULong(size);
-            Values.ForEach(value => value.Write(memory));
-            memory.WriteULong(size);
-            memory.WriteString(MAGIC);
+            await memory.WriteULong(size);
+            foreach (IDValuePair value in Values)
+            {
+                await value.Write(memory);
+            }
+            await memory.WriteULong(size);
+            await memory.WriteString(MAGIC);
         }
 
     }

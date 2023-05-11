@@ -19,35 +19,35 @@ namespace QuestPatcher.Core.Apk
         public int OffsetOfCD { get; set; }
         public string Comment { get; set; }
 
-        public EndOfCentralDirectory(FileMemory memory)
+        public async Task Populate(FileMemory memory)
         {
-            int signature = memory.ReadInt();
+            int signature = await memory.ReadInt();
             if (signature != SIGNATURE)
             {
                 Logger.Log("Invalid EndOfCentralDirectory signature " + signature.ToString("X4") + ". APK may be corrupted", LoggingType.Error);
                 throw new Exception("Invalid EndOfCentralDirectory signature " + signature.ToString("X4") + ". APK may be corrupted");
             }
-            NumberOfDisk = memory.ReadShort();
-            CDStartDisk = memory.ReadShort();
-            NumberOfCDsOnDisk = memory.ReadShort();
-            NumberOfCDs = memory.ReadShort();
-            SizeOfCD = memory.ReadInt();
-            OffsetOfCD = memory.ReadInt();
-            var commentLength = memory.ReadShort();
-            Comment = memory.ReadString(commentLength);
+            NumberOfDisk = await memory.ReadShort();
+            CDStartDisk = await memory.ReadShort();
+            NumberOfCDsOnDisk = await memory.ReadShort();
+            NumberOfCDs = await memory.ReadShort();
+            SizeOfCD = await memory.ReadInt();
+            OffsetOfCD = await memory.ReadInt();
+            var commentLength = await memory.ReadShort();
+            Comment = await memory.ReadString(commentLength);
         }
 
-        public void Write(FileMemory memory)
+        public async Task Write(FileMemory memory)
         {
-            memory.WriteInt(SIGNATURE);
-            memory.WriteShort(NumberOfDisk);
-            memory.WriteShort(CDStartDisk);
-            memory.WriteShort(NumberOfCDsOnDisk);
-            memory.WriteShort(NumberOfCDs);
-            memory.WriteInt(SizeOfCD);
-            memory.WriteInt(OffsetOfCD);
-            memory.WriteShort((short)FileMemory.StringLength(Comment));
-            memory.WriteString(Comment);
+            await memory.WriteInt(SIGNATURE);
+            await memory.WriteShort(NumberOfDisk);
+            await memory.WriteShort(CDStartDisk);
+            await memory.WriteShort(NumberOfCDsOnDisk);
+            await memory.WriteShort(NumberOfCDs);
+            await memory.WriteInt(SizeOfCD);
+            await memory.WriteInt(OffsetOfCD);
+            await memory.WriteShort((short)FileMemory.StringLength(Comment));
+            await memory.WriteString(Comment);
         }
 
     }

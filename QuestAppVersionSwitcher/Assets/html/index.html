@@ -74,6 +74,26 @@
                     <br>
                     <div id="other">
                     </div>
+                    <br>
+                    <h4>Features</h4>
+                    <input type="text" id="featureName" placeholder="feature name">
+                    <br>
+                    <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="requireFeature" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Require feature
+                    </label>
+                    <br>
+                    <br>
+                    <div class="button" onclick="AddFeature()">Add Feature</div>
+                    <br>
+                    <div id="otherFeatures">
+                    </div>
+                    <br>
+                    <div class="button" onclick="AddSpecificFeature('com.oculus.feature.PASSTHROUGH', true)">Add Passthrough Feature</div>
                 </div>
                 
             </div>
