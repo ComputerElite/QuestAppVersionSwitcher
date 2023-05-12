@@ -94,7 +94,7 @@ export async function createBackup(appId: string, backupName: string, onlyAppDat
     params.append("backupname", backupName);
     params.append("onlyappdata", onlyAppData.toString());
 
-    let result = await fetch(`/api/backup?${params}`, { method: "GET" });
+    let result = await fetch(`/api/backup?${params}`, { method: "POST" });
 
     if (result.ok) {
         return "";

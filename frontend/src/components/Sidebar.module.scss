@@ -2,7 +2,7 @@ $sidebar-margin-top: 30px;
 
 .sidebar {
   background-color: var(--bg-color-secondary);
-  width: 200px;
+  width: 180px;
   position: sticky;
   top: $sidebar-margin-top;
   max-height: calc(100vh - #{$sidebar-margin-top});
@@ -24,7 +24,7 @@ $sidebar-margin-top: 30px;
     font-family: "Roboto";
     font-style: normal;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 21px;
 
     color: #f9fafb;
@@ -55,9 +55,7 @@ $sidebar-margin-top: 30px;
     }
   }
   .menuItem {
-    padding: 20px;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding: 9px 10px;
     display: flex;
     align-items: center;
     color: #ffffff;

@@ -5,6 +5,7 @@ import toast from "solid-toast";
 import { refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { refetchMods } from "./mods";
 import { GetWSFullURL } from "../util";
+import { refetchBackups } from "./backups";
 
 
 enum WebSocketStatus {
@@ -23,7 +24,7 @@ enum WebSocketStatus {
 let [tasks, setTasks] = createStore<ModTask[]>([]);
 let [socketStatus, setSocketStatus] = createSignal<WebSocketStatus>(WebSocketStatus.CONNECTING);
 
-type TaskType = "tasks-done" | "task-done" | "task-new" | "patch-progress";
+type TaskType = "tasks-done" | "task-done" | "task-new" | "patch-progress" | "backup-progress";
 
 class BackendEventsClass extends EventTarget {
     constructor() {
@@ -47,6 +48,11 @@ class BackendEventsClass extends EventTarget {
 
     emitPatchingProgress(task: PatchingProgressData) {
         const event = new CustomEvent('patch-progress', { detail: task });
+        this.dispatchEvent(event);
+    }
+
+    emitBackupProgress(task: BackupProgressData) {
+        const event = new CustomEvent('backup-progress', { detail: task });
         this.dispatchEvent(event);
     }
 
@@ -120,6 +126,18 @@ export interface PatchingProgressData {
     totalOperations: number;
 }
 
+export interface BackupProgressData {
+    backupName: string;
+    currentOperation: string;
+    done: boolean;
+    doneOperations: number;
+    error: boolean;
+    errorText: string;
+    progress: number;
+    progressString: string;
+    totalOperations: number;
+}
+
 // Websocket connection
 let ws: WebSocket | null = null;
 
@@ -159,7 +177,12 @@ export function InitWS() {
             } else if (data.route == "/api/patching/patchstatus") {
                 refetchModdingStatus();
                 BackendEvents.emitPatchingProgress(data.data);
+            } else if (data.route == "/api/backupstatus") {
+                refetchBackups();
+                BackendEvents.emitBackupProgress(data.data);
             }
+
+            
         }
         catch (error) {
             console.warn("Invalid WS Data", e.data);

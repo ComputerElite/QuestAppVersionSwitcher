@@ -620,7 +620,7 @@ function DoneStep(props: { open: boolean, setStage: (stage: IPatchingStage) => v
 
 
 // Styles
-const SmallText = styled(MuiTypography)({
+export const SmallText = styled(MuiTypography)({
     fontFamily: 'Roboto',
     fontStyle: 'normal',
     fontWeight: 400,
@@ -630,7 +630,7 @@ const SmallText = styled(MuiTypography)({
     marginBottom: '5px',
 });
 
-const MediumText = styled(MuiTypography)({
+export const MediumText = styled(MuiTypography)({
     fontFamily: 'Roboto',
     fontStyle: 'normal',
     fontWeight: 400,

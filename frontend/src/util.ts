@@ -82,3 +82,9 @@ export function GetAndroidVersionName(sdkVersion: number): string {
     }
     return "Unknown";
 }
+
+let VersionUnderscoreRegex = /(\_\d*)/g;
+export function RemoveVersionUnderscore(version: string): string {
+    // Remove the _ and the number to show in the ui
+    return version.replace(VersionUnderscoreRegex, "");
+}
