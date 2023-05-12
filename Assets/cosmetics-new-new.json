@@ -104,6 +104,12 @@
                 "fileTypes": [".json"],
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/HitScoreVisualizer/",
                 "requiresModded": true
+            },
+            {
+                "name": "Playlists",
+                "fileTypes": [".bplist"],
+                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/PlaylistManager/Playlists/",
+                "requiresModded": true
             }
         ]
     }
