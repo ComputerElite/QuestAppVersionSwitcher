@@ -51,6 +51,22 @@ const [modIndex, setModIndex] = createStore<ModsJsonState>({
     }
 });
 
+interface CoreModsRaw {
+    [key: string]: {
+        lastUpdated: string,
+        mods: Array<CoreModInfo>
+    }
+}
+
+export async function getCoreModsList(): Promise<CoreModsRaw>{
+
+    let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
+    let json: CoreModsRaw = JSON.parse(text);
+    
+    return json;
+}
+
+
 async function refetchModListForVersion() {
     let mods: ModEntry[] = []
     let coreMods: any;
@@ -62,8 +78,7 @@ async function refetchModListForVersion() {
     };
 
     {
-        let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
-        let json = JSON.parse(text);
+        let json = await getCoreModsList();
 
         if (json[version] == null) {
             setIsModdableVersion(false);

@@ -12,6 +12,47 @@ export function GetGameName(packageName: string) {
     return knownGameNames[packageName] ?? packageName;
 }
 
+const oculusLink = "https://auth.meta.com/"
+export function OpenOculusAuthLink() {
+    window.location.href = oculusLink;
+}
+
+export function ValidateToken(token: string): {isValid: boolean, message: string} {
+    if(token.includes("%")) {
+        return {
+            isValid: false,
+            message: "You got your token from the wrong place. Go to the payload tab. Don't get it from the url."
+        };
+    }
+    if(!token.startsWith("OC")) {
+        return {
+            isValid: false,
+            message: "Tokens must start with 'OC'. Please get a new one."
+        };
+    }
+    if(token.includes("|")) {
+        return {
+            isValid: false,
+            message: "You seem to have entered a token of an application. Please get YOUR token. Usually this can be done by using another request in the network tab."
+        };
+    }
+    if(token.includes(":")) {
+        return {
+            isValid: false,
+            message: "Don't copy anything before the OC."
+        };
+    }
+    if(/OC[0-9]{15}/g.test(token)) {
+        return {
+            isValid: false,
+            message: "Don't change your token. This will only cause issues. Check another request for the right token."
+        };
+    }
+    return {
+        isValid: true,
+        message: "Token seems to be valid.",
+    };
+}
 
 /**
  * Sleeps for a given amount of milliseconds

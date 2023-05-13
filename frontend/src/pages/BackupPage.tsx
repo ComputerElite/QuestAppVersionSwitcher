@@ -7,7 +7,7 @@ import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/mater
 import { IBackup, deleteBackup, restoreAppBackup } from '../api/backups';
 import { FaSolidWindowRestore } from 'solid-icons/fa';
 import { FiTrash } from 'solid-icons/fi'
-const [selectedBackup, setSelectedBackup] = createSignal<IBackup | null>(null);
+const [selectedBackup, setSelectedBackup] = createSignal<IBackup | undefined>(undefined);
 import { showConfirmModal } from '../modals/ConfirmModal';
 // import UploadRounded from '@suid/icons-material/UploadRounded';
 import PageLayout from '../Layouts/PageLayout';
@@ -15,15 +15,17 @@ import RunButton from '../components/Buttons/RunButton';
 import { PlusIcon, RestoreIcon } from '../assets/Icons';
 import toast from 'solid-toast';
 import CreateBackupModal from '../modals/CreateBackupModal';
+import RestoreBackupModal from '../modals/RestoreBackupModal';
 
 
 export default function BackupPage() {
     const [createBackupOpen, setCreateBackupOpen] = createSignal(false);
+    const [restoreBackupOpen, setRestoreBackupOpen] = createSignal(false);
 
     // Select first backup if there are any backups and remove selection if there are no backups
     createEffect(on(backupList, (backup) => {
         if (backup == null || backup.backups == null || backup.backups.length == 0) {
-            return setSelectedBackup(null);
+            return setSelectedBackup(undefined);
         }
         if (selectedBackup() == null) {
             setSelectedBackup(backup.backups[0]);
@@ -31,19 +33,8 @@ export default function BackupPage() {
     }))
 
     async function onRestoreClick(backup: IBackup) {
-        console.log("restore");
-        let confirm = await showConfirmModal({
-            title: "Restore backup",
-            message: `Are you sure you want to restore the backup "${backup.backupName}"?`,
-            okText: "Restore",
-            cancelText: "Cancel",
-        })
-
-        if (confirm) {
-            console.log("restore confirmed");
-            
-            restoreAppBackup(config()!.currentApp, backup.backupName);
-        };
+        setSelectedBackup(backup);
+        setRestoreBackupOpen(true);
     }
 
     async function onDeleteClick(backup: IBackup) {
@@ -77,11 +68,7 @@ export default function BackupPage() {
                     marginBottom: 2,
                 }}>
                     <RunButton text='Create a backup' icon={<PlusIcon />} onClick={() => { setCreateBackupOpen(true) }} hideTextOnMobile />
-                    <Box sx={{
-                        display: "flex",
-                        gap: 2,
-                        alignItems: "center",
-                    }}>
+                    <Box class="flex gap-3 items-center">
                         <span style={{
                             "font-family": "Roboto",
                             "font-style": "normal",
@@ -91,8 +78,6 @@ export default function BackupPage() {
                             "display": "flex",
                             "align-items": "center",
                             "text-align": "center",
-                            "background-clip": "text",
-                            // "text-fill-color": "transparent"
                         }} class="text-accent" >
                             Used: {backupList()?.backupsSizeString ?? "?"} / 64.00 GB
 
@@ -103,28 +88,21 @@ export default function BackupPage() {
 
                 </Box>
 
-
-                {/* <RunButton text='Backup' icon={<PlusIcon />} onClick={() => { }} />
-                    <RunButton text='Backup' icon={<UploadRounded />} disabled onClick={() => { }} />
-                    <RunButton text='Error' icon={<PlayArrowRounded />} variant='error' onClick={() => { }} />
-                    <RunButton text='Backup' icon={<PlayArrowRounded />} variant='info' onClick={() => { }} />
-                    <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton text='Backup' variant='success' icon={<FirePatch />} onClick={() => { }} />
-                    <RunButton text='Backup' icon={<PlayArrowRounded />} variant='success' onClick={() => { }} />
-                    <RunButton icon={<PlayArrowRounded />} variant='success' onClick={() => { }} /> */}
-
                 <List sx={{
                     width: '100%',
                     overflowX: 'auto',
                 }}>
                     <For each={backupList()?.backups}>
                         {(backup) => (
-                            <BackupItem backup={backup} onDeleteClick={onDeleteClick} onRestoreClick={onRestoreClick} />
+                            <BackupItem backup={backup} onDeleteClick={onDeleteClick} onRestoreClick={() => {
+                                onRestoreClick(backup);
+                            }} />
                         )}
                     </For>
                 </List>
             </div>
             <CreateBackupModal open={createBackupOpen()} onClose={() => setCreateBackupOpen(false)} />
+            <RestoreBackupModal open={restoreBackupOpen()} onClose={() => setSelectedBackup(undefined)} selectedBackup={selectedBackup()} />
         </PageLayout>
 
     )

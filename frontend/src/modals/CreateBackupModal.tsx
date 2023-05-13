@@ -10,8 +10,8 @@ import { config, moddingStatus } from "../store";
 import { RemoveVersionUnderscore } from "../util";
 import { BackupProgressData } from "../state/eventBus";
 import { BackendEvents } from "../state/eventBus";
-import { MediumText, SmallText } from "./PatchingModal";
 import { Setter } from "solid-js";
+import { MediumText, TitleText } from "../styles/TextStyles";
 
 enum Stage {
     Form,
@@ -108,6 +108,13 @@ function BackupCreationForm(props: {
             props.nextStage?.();
         }}
     >
+        <Box class="my-3 bg-slate-950 p-4 rounded-md">
+            <TitleText>Current app</TitleText>
+            <MediumText>App: {config()?.currentApp}</MediumText>
+            <MediumText>Version: {moddingStatus()?.version}</MediumText>
+            <MediumText>Modded: {moddingStatus()?.isPatched ? <span class="text-green-300">Yes</span> : <span class="text-red-600">No</span>}</MediumText>    
+            <MediumText>App name: {config()?.currentAppName}</MediumText>
+        </Box>
         <TextField name="name"
             helperText={invalidName() && "Name already exists"}
             error={invalidName()}
@@ -123,17 +130,18 @@ function BackupCreationForm(props: {
                 props.setBackupName?.(value.target.value)
             }} />
 
-        <FormControlLabel sx={{
-            pt: 1
-        }}
-
+        <FormControlLabel class="pt-3 pb-3"
             control={<Switch checked={onlyData()} onChange={(e, value) => {
                 console.log(value);
                 setOnlyData(value)
             }} />}
             label="Only backup app data"
         />
-        <RunButton text="Create backup" type="submit" />
+        
+
+        <Box sx={{ flexGrow: 1, display: "flex", justifyContent: "end"  }}>
+            <RunButton text="Create backup" variant="success" type="submit" />
+        </Box>
     </form>)
 }
 
@@ -230,23 +238,13 @@ function BackupProgressView(props: {
 
         </Show>
         <Show when={!done() || error()}>
-            <pre ref={logElement} style={{
-                background: "black",
-                color: "white",
-                padding: "10px",
-                "border-radius": "0px",
-                "min-width": "400px",
-                "max-width": "100vw",
-                height: "100px",
-                "overflow-y": "auto",
-                "font-size": "12px",
-            }}>
+            <pre ref={logElement} class="bg-black text-white p-2 rounded-none max-w-xs h-28 overflow-y-auto text-sm ">
                 <For each={log()}>
                     {(line) => <LogLine line={line} />}
                 </For>
             </pre>
 
-            <Box sx={{ width: "100%" }}>
+            <Box class="w-full">
                 <LinearProgress variant="determinate" value={progress()} />
             </Box>
         </Show>

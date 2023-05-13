@@ -30,6 +30,10 @@ interface downloadRequest {
     parentId: string;
     isObb: boolean;
     packageName: string;
+    obbList?: {
+        id: string;
+        name: string;
+    }[];
 }
 
 export async function downloadOculusGame(options: downloadRequest) {

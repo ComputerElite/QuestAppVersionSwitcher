@@ -84,7 +84,7 @@ export async function getAppList(includeBackups: boolean = true): Promise<IAppLi
  * @returns true if the token is valid
  * @throws Error if the token is invalid
  */
-export async function setOculusToken(token: string, password: string) {
+export async function setOculusToken(token: string, password: string): Promise<boolean> {
     let result = await fetch("/api/token", {
         method: "POST",
         body: JSON.stringify({
@@ -98,6 +98,8 @@ export async function setOculusToken(token: string, password: string) {
         let text = await result.text();
         throw new Error(text);
     }
+
+    return true;
 }
 
 /**

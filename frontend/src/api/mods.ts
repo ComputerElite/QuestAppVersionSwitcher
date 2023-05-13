@@ -98,6 +98,26 @@ export async function UpdateModState(id: string, enable: boolean) {
     await fetch(`/api/mods/${enable ? `enable` : `uninstall`}?id=${id}`, {method: "POST"});
 }
 
+/**
+ * Deletes all mods for current game
+ * @returns success
+ */
+export async function DeleteAllMods(): Promise<boolean> {
+    let response = await fetch(`/api/mods/deleteallmods`, {method: "POST"});
+    if (response.ok) {
+        let json: {
+            success: boolean;
+            msg: string;
+        } = await response.json();
+        if (!json.success) {
+            throw new Error(json.msg);
+        }
+        if (json.success) {
+            return true;
+        }
+    }
+    return false;
+}
 
 export async function InstallModFromUrl(url: string): Promise<boolean> {
     const response = await fetch(`/api/mods/installfromurl`, {

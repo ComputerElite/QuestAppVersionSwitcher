@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta"
 import "./ToolsPage.scss"
-import { changePort, exitApp } from "../api/app"
+import { changeManagedApp, changePort, exitApp, setOculusToken } from "../api/app"
 import { uninstallPackage, isPackageInstalled, launchCurrentApp, hasManageStorageAccess, grantManageStorageAccess, gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders } from "../api/android"
 import { showChangeGameModal } from "../modals/ChangeGameModal"
 import PageLayout from "../Layouts/PageLayout"
@@ -8,10 +8,17 @@ import { Box, TextField, Typography } from "@suid/material"
 import RunButton from "../components/Buttons/RunButton"
 import { DeleteIcon, UploadRounded } from "../assets/Icons"
 import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded"
-import { appInfo, config, refetchSettings } from "../store"
-import { IsOnQuest, Sleep } from "../util"
+import { appInfo, config, moddingStatus, refetchSettings } from "../store"
+import { IsOnQuest, OpenOculusAuthLink, Sleep, ValidateToken } from "../util"
 import toast from "solid-toast"
-import { createEffect, createSignal, on } from "solid-js"
+import { Show, createEffect, createSignal, on } from "solid-js"
+import { FaBrandsMeta, FaSolidCircleArrowLeft, FaSolidKey } from "solid-icons/fa"
+import { FiExternalLink, FiKey, FiRefreshCcw, FiTrash2 } from "solid-icons/fi"
+import { DeleteAllMods } from "../api/mods"
+import { showConfirmModal } from "../modals/ConfirmModal"
+import { IoExitOutline } from 'solid-icons/io'
+import { Link } from "@solidjs/router"
+
 
 export const OptionHeader = (props: { children: any }) => {
   return (
@@ -29,7 +36,7 @@ export const OptionHeader = (props: { children: any }) => {
 export default function ToolsPage() {
   // Local state
   const [port, setPort] = createSignal<number | null>(config()?.serverPort ?? null)
-
+  const [showTokenPrompt, setShowTokenPrompt] = createSignal(false)
 
   // React to port change in config
   createEffect(on(config, (config) => {
@@ -55,6 +62,19 @@ export default function ToolsPage() {
     }
 
     await uninstallPackage(currentGame);
+  }
+
+  async function removeAllModsClick() {
+    let sure = await showConfirmModal({
+      title: "Delete all mods?",
+      cancelText: "Cancel",
+      okText: "Delete",
+      message: "Are you sure you want to delete all mods? This action is irreversible!",
+    });
+    if (!sure) return;
+
+    await DeleteAllMods();
+    toast.success("All mods deleted!")
   }
 
   async function startGame() {
@@ -83,7 +103,7 @@ export default function ToolsPage() {
     if (await gotAccessToAppAndroidFolders(currentGame)) {
       return toast.error("Permissions are already granted!")
     }
-    
+
     await grantAccessToAppAndroidFolders(currentGame);
   }
 
@@ -137,7 +157,17 @@ export default function ToolsPage() {
             alignItems: "center",
           }}>
             <RunButton text='Run Game' variant="success" icon={<PlayArrowRounded />} onClick={startGame} />
-            <RunButton text='Uninstall game' icon={<DeleteIcon />} onClick={uninstallGame} />
+
+            <Show when={config()?.currentApp}>
+              <RunButton text='Reload mods' icon={<FiRefreshCcw />} onClick={async () => {
+                await changeManagedApp(config()?.currentApp ?? "");
+                await refetchSettings();
+                toast.success("Finished reloading mods!");
+              }} />
+              <RunButton text='Delete all mods' variant="error" icon={<FiTrash2 />} onClick={removeAllModsClick} />
+              <RunButton text='Uninstall game' disabled={!moddingStatus()?.isInstalled} variant="error" icon={<FiTrash2 />} onClick={uninstallGame} />
+            </Show>
+
           </Box>
 
 
@@ -160,8 +190,8 @@ export default function ToolsPage() {
             gap: 2,
             alignItems: "center",
           }}>
-            <RunButton text='Give permissions to game folder'  onClick={getPermissionsToGameFolderClick} />
-            <RunButton text='Allow manage storage permission'  onClick={allowManageStorageClick} />
+            <RunButton text='Give permissions to game folder' onClick={getPermissionsToGameFolderClick} />
+            <RunButton text='Allow manage storage permission' onClick={allowManageStorageClick} />
           </Box>
         </Box>
 
@@ -184,10 +214,89 @@ export default function ToolsPage() {
             alignItems: "center",
             marginTop: 1,
           }}>
-            <RunButton text='Login using email and password' disabled={!IsOnQuest()} />
-            <RunButton text='Login using a token' />
+            <RunButton icon={<FaBrandsMeta />} text='Login using meta account (quest only)' disabled={!IsOnQuest()} onClick={
+              () => OpenOculusAuthLink()
+            } />
+            <RunButton icon={<FaSolidKey />} text='Login using a token' onClick={() => setShowTokenPrompt(true)} />
+            <RunButton icon={<IoExitOutline />} text='Logout' />
           </Box>
+
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            let formData = new FormData(e.currentTarget as HTMLFormElement);
+            let token = formData.get("token") as string;
+            if (!token) return toast.error("Token is empty!");
+            if (token.length < 10) return toast.error("Token is too short!");
+            let tokenValid = ValidateToken(token);
+            if (tokenValid.isValid) {
+              try {
+                // TODO: add password support
+                await setOculusToken(token, "");
+                toast.success("Token set!");
+              } catch (e: any) {
+                toast.error(`Failed to set token! ${e?.message ?? ""}`);
+              }
+              
+            } else {
+              toast.error(`Token is invalid! ${tokenValid.message}`);
+            }
+            
+          }}>
+            <Box sx={{
+              display: "flex",
+              gap: 0,
+              alignItems: "center",
+              marginTop: 1,
+            }}>
+              <TextField
+                placeholder="Enter your token here"
+                type="password"
+                sx={{
+                  borderRadius: "222px",
+                  outline: "none",
+
+                  ".MuiInputBase-root": {
+                    borderRadius: "6px 0px 0px 6px",
+
+                    outline: "none",
+                    ".MuiOutlinedInput-notchedOutline": {
+                      "&:hover": {
+                        border: "1px solid #121827 !important",
+                        outline: "none",
+                      },
+                      border: "1px solid #121827 ",
+                      borderRight: "none",
+                      outline: "none",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                      border: "1px solid #121827",
+                      outline: "none",
+                    },
+                    " input:focus-visible": {
+                      border: "0px solid #121827",
+                      outline: "none",
+                    },
+                  },
+
+                }} size="small" variant="outlined" color="primary"
+                name="token"
+              />
+
+              <RunButton type="submit" icon={<FaSolidKey />} style={
+                {
+                  height: "40px",
+                  width: "100px",
+                  "border-radius": "0px 6px 6px 0px",
+                }
+              } text='Set token' />
+            </Box>
+            <Link class="text-sm text-accent underline" target={!IsOnQuest() ? "_blank" : ""} href="https://computerelite.github.io/tools/Oculus/ObtainToken.html" >
+              Guide to get your token
+            </Link>
+          </form>
+
         </Box>
+
 
         <Box sx={{ marginY: 3 }}>
           <OptionHeader>Server control</OptionHeader>
@@ -214,6 +323,7 @@ export default function ToolsPage() {
                   setPort(parseInt(e.currentTarget.value))
                 }
               } />
+
             <RunButton style={
               {
                 height: "40px",
@@ -223,7 +333,7 @@ export default function ToolsPage() {
             } text='Change port' variant="success" onClick={changePortClick} />
           </Box>
         </Box>
-
+            
       </div>
     </PageLayout>
 

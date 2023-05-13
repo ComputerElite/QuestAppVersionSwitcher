@@ -6,7 +6,7 @@ import { createEffect } from "solid-js";
 import { patchCurrentApp } from "../api/patching";
 import RunButton from "../components/Buttons/RunButton";
 import { CustomModal } from "./CustomModal";
-import { Box, LinearProgress, Typography as MuiTypography } from "@suid/material";
+import { Box, LinearProgress } from "@suid/material";
 import { For } from "solid-js";
 import PlayArrowRounded from "@suid/icons-material/PlayArrowRounded";
 import { createStore } from "solid-js/store";
@@ -21,6 +21,7 @@ import styled from "@suid/system/styled";
 import { FiTrash } from 'solid-icons/fi'
 import { FaSolidTrash } from "solid-icons/fa";
 import { FirePatch } from "../assets/Icons";
+import { MediumText, SmallText } from "../styles/TextStyles";
 
 enum IPatchingStage {
     Patching,
@@ -617,25 +618,3 @@ function DoneStep(props: { open: boolean, setStage: (stage: IPatchingStage) => v
         </CustomModal>
     )
 }
-
-
-// Styles
-export const SmallText = styled(MuiTypography)({
-    fontFamily: 'Roboto',
-    fontStyle: 'normal',
-    fontWeight: 400,
-    fontSize: '12px',
-    lineHeight: '16px',
-    color: '#FFFFFF',
-    marginBottom: '5px',
-});
-
-export const MediumText = styled(MuiTypography)({
-    fontFamily: 'Roboto',
-    fontStyle: 'normal',
-    fontWeight: 400,
-    fontSize: '14px',
-    lineHeight: '16px',
-    color: '#FFFFFF',
-    marginBottom: '5px',
-});

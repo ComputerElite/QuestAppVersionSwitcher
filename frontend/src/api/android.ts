@@ -100,8 +100,6 @@ export async function uninstallPackage(appId: string): Promise<boolean> {
         method: "POST"
     });
 
-
-
     if (result.ok) {
         let json: {
             success: boolean;
