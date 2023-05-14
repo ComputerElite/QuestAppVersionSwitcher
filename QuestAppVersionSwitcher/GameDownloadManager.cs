@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using ComputerUtils.Android.Encryption;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
+using ComputerUtils.Android.VarUtils;
 using Newtonsoft.Json;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
@@ -21,15 +23,69 @@ namespace QuestAppVersionSwitcher
         public string gameName { get; set; } = "";
         public long filesToDownload { get; set; } = 0;
         public long filesDownloaded { get; set; } = 0;
-        public double progress { get; set; }
-        public string progressString { get; set; }
+
+        public double progress
+        {
+            get
+            {
+                if(totalBytes == 0) return 0;
+                return downloadedBytes / (double)totalBytes;
+            }
+        }
+
+        public string progressString
+        {
+            get
+            {
+                return String.Format("{0:0.#}", progress * 100) + "%";
+            }
+        }
         public string id { get; set; } = "";
         public string status { get; set; } = "";
         public string textColor { get; set; } = "#FFFFFF";
         public string backupName { get; set; } = "";
+
+        public long totalBytes { get; set; } = 0;
+        public long downloadedBytes { get; set; } = 0;
+        public long eTASeconds { get; set; } = 0;
+        public long speed { get; set; } = 0;
+
+        public string speedString
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(speed, 1) + "/s";
+            }
+        }
+
+        public string eTAString
+        {
+            get
+            {
+                return SizeConverter.SecondsToBetterString(eTASeconds);
+            }
+        }
+
+        public string downloadedBytesString
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(downloadedBytes);
+            }
+        }
+        public string totalBytesString
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(totalBytes);
+            }
+        }
+
+        private long downloadedFilesTotalBytes = 0;
         
         public List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
         public List<ObbEntry> obbsToDo { get; set; } = new List<ObbEntry>();
+        public List<ObbEntry> allObbs { get; set; } = new List<ObbEntry>();
         [JsonIgnore]
         public DownloadRequest request = null;
         [JsonIgnore]
@@ -79,6 +135,8 @@ namespace QuestAppVersionSwitcher
             }
         }
 
+        private DownloadManager apkDownloadManager;
+
         public void StartDownload()
         {
             id = DateTime.Now.Ticks.ToString();
@@ -96,8 +154,7 @@ namespace QuestAppVersionSwitcher
             if(!HasEntitlementFor(request.parentId))
             {
                 Logger.Log("User has no entitlement for " + request.parentId);
-                entitlementError = true;
-                status = "The meta account you are currently signed in with does not own " + gameName + ".\nPlease log out and sign back in with the account that has purchased this title via the tools & options tab.";
+                SetEntitlementError();
                 return;
             }
             
@@ -110,7 +167,8 @@ namespace QuestAppVersionSwitcher
                     obbsToDo.Add(new ObbEntry
                     {
                         id = b.obb_binary.id,
-                        name = b.obb_binary.file_name
+                        name = b.obb_binary.file_name,
+                        sizeNumerical = b.obb_binary.sizeNumerical
                     });
                 }
                 foreach (AssetFile assetFile in b.asset_files.nodes)
@@ -119,7 +177,8 @@ namespace QuestAppVersionSwitcher
                     obbsToDo.Add(new ObbEntry
                     {
                         id = assetFile.id,
-                        name = assetFile.file_name
+                        name = assetFile.file_name,
+                        sizeNumerical = assetFile.sizeNumerical
                     });
                 }
             }
@@ -127,6 +186,8 @@ namespace QuestAppVersionSwitcher
             {
                 obbsToDo = request.obbList;
             }
+
+            allObbs = new List<ObbEntry>(obbsToDo);
             
             this.backupName = gameName + " " + version + " Downgraded";
             foreach (char r in QAVSWebserver.ReservedChars)
@@ -140,25 +201,32 @@ namespace QuestAppVersionSwitcher
             UpdateMaxConnections();
             
             
-            DownloadManager m = new DownloadManager();
-            m.connections = maxConcurrentConnections;
-            m.StartDownload(request.binaryId, request.password, request.version, request.app, request.parentId, false, request.packageName);
-            m.DownloadFinishedEvent += DownloadCompleted;
-            m.DownloadErrorEvent += DownloadError;
-            m.isCancelable = false;
-            downloadManagers.Add(m);
+            apkDownloadManager = new DownloadManager();
+            apkDownloadManager.connections = maxConcurrentConnections;
+            apkDownloadManager.StartDownload(request.binaryId, request.password, request.version, request.app, request.parentId, false, request.packageName);
+            apkDownloadManager.DownloadFinishedEvent += DownloadCompleted;
+            apkDownloadManager.NotFoundDownloadErrorEvent += NotFoundDownloadError;
+            apkDownloadManager.DownloadErrorEvent += DownloadError;
+            apkDownloadManager.isCancelable = false;
+            downloadManagers.Add(apkDownloadManager);
             updateThread = new Thread(() =>
             {
                 while (filesDownloaded < filesToDownload)
                 {
                     if (canceled) return;
                     UpdateManagersAndProgress();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 }
 
                 Done();
             });
             updateThread.Start();
+        }
+
+        private void SetEntitlementError()
+        {
+            entitlementError = true;
+            status = "The meta account you are currently signed in with does not own " + gameName + ".\nPlease log out and sign back in with the account that has purchased this title via the tools & options tab.";
         }
 
         public void Done()
@@ -172,12 +240,29 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.GetBackupInfo(backupDir, true); // Populate info.json correctly
         }
 
+        private long lastBytes = 0;
+        private List<long> lastBytesPerSec = new List<long>();
+        private DateTime lastUpdate = DateTime.Now;
+
         public void UpdateManagersAndProgress()
         {
-            progress = filesDownloaded / (double)filesToDownload;
-            progressString = (progress * 100).ToString("F") + "%";
-
             UpdateMaxConnections();
+            totalBytes = apkDownloadManager.total + allObbs.Select(x => x.sizeNumerical).Sum();
+            downloadedBytes = downloadedFilesTotalBytes + apkDownloadManager.done + downloadManagers.Where(x => x.isObb).Select(x => x.done).Sum();
+            
+            // Speed
+            double secondsPassed = (DateTime.Now - lastUpdate).TotalSeconds;
+            long bytesPerSec = (long)Math.Round((downloadedBytes - lastBytes) / secondsPassed);
+            lastBytesPerSec.Add(bytesPerSec);
+            if (lastBytesPerSec.Count > 15) lastBytesPerSec.RemoveAt(0);
+            lastBytes = downloadedBytes;
+            long avg = 0;
+            foreach (long l in lastBytesPerSec) avg += l;
+            avg /= lastBytesPerSec.Count;
+            lastUpdate = DateTime.Now;
+            if(avg != 0) eTASeconds = (totalBytes - downloadedBytes) / avg;
+            speed = bytesPerSec;
+            
             
             for (int i = 0; i < maxConcurrentDownloads - downloadManagers.Count; i++)
             {
@@ -185,6 +270,7 @@ namespace QuestAppVersionSwitcher
                 DownloadManager m = new DownloadManager();
                 m.connections = maxConcurrentConnections;
                 m.DownloadFinishedEvent += DownloadCompleted;
+                m.NotFoundDownloadErrorEvent += NotFoundDownloadError;
                 m.DownloadErrorEvent += DownloadError;
                 m.isCancelable = false;
                 m.StartDownload(obbsToDo[0].id, request.password, request.version, request.app, request.parentId, true, request.packageName, obbsToDo[0].name);
@@ -208,6 +294,13 @@ namespace QuestAppVersionSwitcher
             status = "An unknown error occurred during the download of " + gameName + " " + version + ". Please try again.";
             QAVSWebserver.BroadcastDownloads(true);
         }
+        
+        private void NotFoundDownloadError(DownloadManager manager)
+        {
+            Cancel();
+            SetEntitlementError();
+            QAVSWebserver.BroadcastDownloads(true);
+        }
 
         public void Cancel()
         {
@@ -225,6 +318,7 @@ namespace QuestAppVersionSwitcher
         public void DownloadCompleted(DownloadManager m)
         {
             filesDownloaded++;
+            downloadedFilesTotalBytes += m.total;
             downloadManagers.Remove(m);
             string backupDir = CoreService.coreVars.QAVSBackupDir + this.packageName + "/" + this.backupName + "/";
             if(m.isObb)

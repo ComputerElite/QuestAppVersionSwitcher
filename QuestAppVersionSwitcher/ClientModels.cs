@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ComputerUtils.Android.VarUtils;
 
 namespace QuestAppVersionSwitcher.ClientModels
 {
@@ -83,6 +84,15 @@ namespace QuestAppVersionSwitcher.ClientModels
     {
         public string id { get; set; } = "";
         public string name { get; set; } = "";
+        public long sizeNumerical { get; set; } = 0;
+
+        public string size
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(sizeNumerical);
+            }
+        }
     }
 
     public class DownloadProgress

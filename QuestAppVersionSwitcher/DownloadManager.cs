@@ -20,6 +20,7 @@ namespace QuestAppVersionSwitcher
         public event DownloadFinished DownloadFinishedEvent;
         public event DownloadFinished DownloadErrorEvent;
         public event DownloadFinished DownloadCanceled;
+        public event DownloadFinished NotFoundDownloadErrorEvent;
         [JsonIgnore]
         public string tmpPath = "";
         [JsonIgnore]
@@ -115,6 +116,15 @@ namespace QuestAppVersionSwitcher
             {
                 if (File.Exists(tmpPath)) File.Delete(tmpPath);
                 SetEmpty();
+                if (downloader.exception.ToString().Contains("404"))
+                {
+                    if(NotFoundDownloadErrorEvent != null) NotFoundDownloadErrorEvent.Invoke(this);
+                    this.backupName =
+                        "404 not found. The file you tried to download does not exist";
+                    this.textColor = "#EE0000";
+                    QAVSWebserver.BroadcastDownloads(true);
+                    return;
+                }
                 this.backupName =
                     "Unknown Error: Have you entered your token in the Tools & Options section? Doing this is needed. Otherwise you don't own the game you are trying to download.";
                 this.textColor = "#EE0000";

@@ -35,6 +35,7 @@ namespace QuestAppVersionSwitcher
             public Action OnDownloadComplete;
             public Action OnDownloadProgress;
             public Action OnDownloadError;
+            public Exception exception;
 
             public void DownloadFile(string url, string savePath, int numConnections)
             {
@@ -60,6 +61,7 @@ namespace QuestAppVersionSwitcher
                 {
                     Logger.Log("Error while GET request: " + e);
                     error = true;
+                    exception = e;
                     OnDownloadError?.Invoke();
                     return;
                 }
@@ -69,6 +71,7 @@ namespace QuestAppVersionSwitcher
                     
                     Logger.Log("File size is " + fileSize + ". Thus we cannot download the file");
                     error = true;
+                    exception = new Exception("File size is " + fileSize + ". Thus we cannot download the file");
                     OnDownloadError?.Invoke();
                     return;
                 }
@@ -190,6 +193,7 @@ namespace QuestAppVersionSwitcher
                     Logger.Log("Error while downloading file chunk " + chunkIndex + ": " + e);
                     Cancel();
                     error = true;
+                    exception = e;
                     OnDownloadError.Invoke();
                 }
             }

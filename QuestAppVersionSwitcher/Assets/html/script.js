@@ -725,7 +725,7 @@ function UpdateDownloads(json) {
         gdms += `<div style="display: flex; flex-direction: column; background-color: #1F1F1F; padding: 10px;"><div class="downloadContainer">
                  ${!d.done ? (d.canceled || d.error ? `` : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; font-size: 1.2em;" value="Cancel" onclick="StopGameDownload('${d.id}')">`) : `<input type="button" class="DownloadText" style="width: 200px; background-color: #333333; color: #00FF00; font-size: 1.2em;" value="Install Version" onclick="RestoreBackup('${d.backupName}', '${d.packageName}')">`}
                 <div class="DownloadText" style="color: ${d.textColor};">
-                    <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.filesDownloaded} / ${d.filesToDownload} files downloaded
+                    <b>${d.canceled ? "Cancelled " : ""}${d.status}</b><br>${d.progressString} ${d.downloadedBytesString} / ${d.totalBytesString} ${d.speedString} ETA ${d.eTAString}
                 </div>
             </div>
             ${downloads}
