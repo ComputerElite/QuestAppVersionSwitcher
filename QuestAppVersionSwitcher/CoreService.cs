@@ -11,11 +11,13 @@ using AndroidX.Activity.Result;
 using ComputerUtils.Android;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Object = Java.Lang.Object;
 
 namespace QuestAppVersionSwitcher.Core
 {
     public class CoreService
     {
+        public static MainActivity mainActivity;
         public static WebView browser = null;
         public static QAVSWebserver qAVSWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();

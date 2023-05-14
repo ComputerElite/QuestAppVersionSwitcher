@@ -856,6 +856,15 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(GenericResponse.GetResponse("uploaded and selected app in backup tab", true), "application/json");
                 return true;
             });
+            server.AddRoute("POST", "/api/android/installapkfromdisk", serverRequest => { 
+                Intent chooseFile = new Intent(Intent.ActionGetContent);
+                chooseFile.SetType("application/vnd.android.package-archive");
+                chooseFile = Intent.CreateChooser(chooseFile, "Choose an apk to install");
+                Logger.Log("Opening file picker for apk install");
+                CoreService.mainActivity.StartActivityForResult(chooseFile, MainActivity.pickFileCode);
+                serverRequest.SendString(GenericResponse.GetResponse("Opened file picker", true), "application/json");
+                return true;
+            });
 			server.AddRoute("GET", "/api/backups", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)
