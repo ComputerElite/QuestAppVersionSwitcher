@@ -44,23 +44,33 @@ export interface IOculusDBGameVersion {
 // BeatSaber: 2448060205267927
 export async function OculusDBGetGame(oculusId: string, test: boolean = false): Promise<{
     versions: Array<IOculusDBGameVersion>
+    applications: Array<IOculusDBApplication>
 }> {
     if (test) {
         return gamedata;
     }
 
-    let text = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/connected/${oculusId}`);
+    let text = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/connected/${oculusId}?onlydownloadable=true`);
     let json = JSON.parse(text);
     return json;
 }
 
 
 
-interface IOculusDBSearchResult {
+export interface IOculusDBApplication {
     __lastUpdated: string,
     __OculusDBType: string,
     hmd: number,
+    /**
+     * Name of the game, used for display
+     * @example Beat Saber
+     */
     appName: string,
+    /**
+     * Name of the game package, used for downloading
+     * @example com.beatgames.beatsaber
+     */
+    packageName: string,
     baseline_offer: {
         end_time: number,
         id: string,
@@ -175,12 +185,12 @@ interface IOculusDBSearchResult {
     website_url?: string,
 }
 
-export async function OculusDBSearchGame(gameId: string, test: boolean = false): Promise<IOculusDBSearchResult[]> {
+export async function OculusDBSearchGame(gameId: string, test: boolean = false): Promise<IOculusDBApplication[]> {
     if (test) {
         return searchData;
     }
 
     let text = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/search/${gameId}?headsets=MONTEREY,HOLLYWOOD,SEACLIFF`);
-    let json: IOculusDBSearchResult[] = JSON.parse(text);
+    let json: IOculusDBApplication[] = JSON.parse(text);
     return json;
 }

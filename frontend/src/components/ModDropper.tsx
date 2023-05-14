@@ -7,14 +7,13 @@ import { showChangeGameModal } from "../modals/ChangeGameModal";
 import { InstallModFromUrl, UploadMod } from "../api/mods";
 import style from "./ModDropper.module.scss";
 
-
 async function checkModsCanBeInstalled() {
     if (config()?.currentApp == null) {
         showChangeGameModal();
         toast.error("No game selected! Select a game first");
         return false;
     }
-
+    
     if (!(moddingStatus()?.isInstalled ?? false)) {
         return toast.error("Game is not installed! Install it first before installing mods");
     }

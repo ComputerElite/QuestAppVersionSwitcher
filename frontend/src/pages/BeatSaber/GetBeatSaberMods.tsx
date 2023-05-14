@@ -2,7 +2,7 @@ import { For, Index, JSX, Show, batch, createEffect, createMemo, createResource,
 import { DeleteMod, ILibrary, IMod, InstallModFromUrl, UpdateModState, UploadMod, getModsList } from "../../api/mods";
 import defaultImage from "@/assets/DefaultCover.png"
 import "./GetBeatSaberMods.scss";
-import { modsList, mutateMods, refetchMods } from "../../state/mods";
+import { BSCoreModInfo, BSCoreModsRaw, BSCoreModsVersionRaw, GetBeatsaberModdableVersions, beatSaberCores, getCoreModsList, modsList, mutateMods, refetchBeatSaberCores, refetchMods } from "../../state/mods";
 import { CompareStringsAlphabetically, Sleep } from "../../util";
 import toast from "solid-toast";
 import { Title } from "@solidjs/meta";
@@ -30,17 +30,9 @@ import { showConfirmModal } from "../../modals/ConfirmModal";
 
 const [isModdableVersion, setIsModdableVersion] = createSignal(false);
 
-interface CoreModInfo {
-    id: string,
-    version: string,
-    downloadLink: string
-}
-
 interface ModsJsonState {
     mods: ModEntry[],
-    coreMods: {
-        lastUpdated: string, mods: Array<CoreModInfo>
-    }
+    coreMods: BSCoreModsVersionRaw
 }
 
 const [modIndex, setModIndex] = createStore<ModsJsonState>({
@@ -50,21 +42,6 @@ const [modIndex, setModIndex] = createStore<ModsJsonState>({
         mods: []
     }
 });
-
-interface CoreModsRaw {
-    [key: string]: {
-        lastUpdated: string,
-        mods: Array<CoreModInfo>
-    }
-}
-
-export async function getCoreModsList(): Promise<CoreModsRaw>{
-
-    let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
-    let json: CoreModsRaw = JSON.parse(text);
-    
-    return json;
-}
 
 
 async function refetchModListForVersion() {
@@ -78,13 +55,18 @@ async function refetchModListForVersion() {
     };
 
     {
-        let json = await getCoreModsList();
+        let coreModsList = await getCoreModsList();
 
-        if (json[version] == null) {
+        if (!coreModsList) {
             setIsModdableVersion(false);
             return;
         }
-        coreMods = json[version];
+
+        if (coreModsList[version] == null) {
+            setIsModdableVersion(false);
+            return;
+        }
+        coreMods = coreModsList[version];
     }
 
 
@@ -102,7 +84,7 @@ async function refetchModListForVersion() {
 
     // Sort mods alphabetically
     mods = mods.sort((a, b) => CompareStringsAlphabetically(a.name, b.name));
-    coreMods.mods = coreMods.mods.sort((a: CoreModInfo, b: CoreModInfo) => CompareStringsAlphabetically(a.id, b.id));
+    coreMods.mods = coreMods.mods.sort((a: BSCoreModInfo, b: BSCoreModInfo) => CompareStringsAlphabetically(a.id, b.id));
 
     setModIndex({
         mods,
@@ -111,11 +93,6 @@ async function refetchModListForVersion() {
     console.log(modIndex)
 }
 
-
-async function checkCoreModsUpdates() {
-    
-
-}
 
 async function installCoreMods() {
     let moddedStatus = moddingStatus();

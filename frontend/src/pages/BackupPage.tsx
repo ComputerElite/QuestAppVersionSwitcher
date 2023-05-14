@@ -2,7 +2,7 @@ import { Title, Link, Meta } from '@solidjs/meta';
 import { config } from '../store';
 import { backupList, refetchBackups } from '../state/backups';
 import { showChangeGameModal } from '../modals/ChangeGameModal';
-import { For, createEffect, createSignal, on } from 'solid-js';
+import { For, createEffect, createSignal, on, onMount } from 'solid-js';
 import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/material';
 import { IBackup, deleteBackup, restoreAppBackup } from '../api/backups';
 import { FaSolidWindowRestore } from 'solid-icons/fa';
@@ -54,6 +54,10 @@ export default function BackupPage() {
         };
     }
 
+    onMount(() => {
+        refetchBackups();
+    });
+
     return (
         <PageLayout>
             <div class='contentItem'>
@@ -84,8 +88,6 @@ export default function BackupPage() {
                         </span>
                         <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
                     </Box>
-
-
                 </Box>
 
                 <List sx={{
@@ -102,7 +104,10 @@ export default function BackupPage() {
                 </List>
             </div>
             <CreateBackupModal open={createBackupOpen()} onClose={() => setCreateBackupOpen(false)} />
-            <RestoreBackupModal open={restoreBackupOpen()} onClose={() => setSelectedBackup(undefined)} selectedBackup={selectedBackup()} />
+            <RestoreBackupModal open={restoreBackupOpen()} onClose={() => {
+                setRestoreBackupOpen(false);
+                setSelectedBackup(undefined);
+            }} selectedBackup={selectedBackup()} />
         </PageLayout>
 
     )
@@ -165,9 +170,9 @@ function BackupItem(props: BackupItemProps) {
                         {props.backup.backupName}
                     </span>
                     <span style={{
-                         "font-size": '12px',
-                         "margin-left": "5px",
-                    }}  class="text-accent">
+                        "font-size": '12px',
+                        "margin-left": "5px",
+                    }} class="text-accent">
                         {removeUnderscoreVersion(props?.backup?.gameVersion)}
                     </span>
                 </div>

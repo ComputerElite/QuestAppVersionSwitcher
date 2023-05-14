@@ -1,30 +1,90 @@
 import { Signal, createResource } from "solid-js"
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import { IMod, getModsList } from "../api/mods"
+import { createDeepSignal } from "../util";
+import { proxyFetch } from "../api/app";
 
-
-// Reconclile
- function createDeepSignal<T>(value: T): Signal<T> {
-    const [store, setStore] = createStore({
-      value
-    });
-    return [
-      () => store.value,
-      (v: T) => {
-        // unwrap the value to compare it
-        const unwrapped = unwrap(store.value);
-
-        // if the value is a function, call it with the unwrapped value
-        typeof v === "function" && (v = v(unwrapped));
-        setStore("value", reconcile(v));
-        return store.value;
-      }
-    ] as Signal<T>;
-  }
 
 // Mods List (all mods and libs)
-export const [modsList, {refetch: refetchMods, mutate:mutateMods}] = createResource<Array<IMod>>(async () => {
+export const [modsList, { refetch: refetchMods, mutate: mutateMods }] = createResource<Array<IMod>>(async () => {
     let resp = await getModsList();
     return [...resp.libs, ...resp.mods];
-}, { storage: createDeepSignal});
+}, { storage: createDeepSignal });
 
+
+
+
+/**
+ * BeatSaber Specific Mods stuff
+ */
+
+/**
+ * Core mod info
+ */
+export interface BSCoreModInfo {
+    id: string,
+    version: string,
+    downloadLink: string
+}
+
+export interface BSCoreModsVersionRaw {
+    lastUpdated: string,
+    mods: Array<BSCoreModInfo>
+}
+
+export interface BSCoreModsRaw {
+    [key: string]: BSCoreModsVersionRaw
+}
+
+
+
+/**
+ * Core Mods list for Beat Saber
+ */
+export const [beatSaberCores, { refetch: refetchBeatSaberCores, mutate: mutateBeatSaberCores }] = createResource(async () => {
+    let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
+    let json: BSCoreModsRaw = JSON.parse(text);
+
+    return json;
+})
+
+
+let BeatSaberModdableList: Array<string> = [];
+
+
+/**
+ * Get a list of all the moddable versions of Beat Saber
+ * @returns 
+ */
+export async function GetBeatsaberModdableVersions() {
+    
+    if (BeatSaberModdableList.length > 0) {
+        return BeatSaberModdableList;
+    }
+
+    let items = beatSaberCores()
+    if (!items) {
+        try {
+            let cores = await refetchBeatSaberCores();
+            if (!cores) {
+                return [];
+            }
+            BeatSaberModdableList = Object.keys(cores);
+
+        } catch (e) {
+            console.error(e);
+        }
+    } else {
+        BeatSaberModdableList = Object.keys(items);
+    }
+    return BeatSaberModdableList;
+}
+
+export async function getCoreModsList() {
+    if (beatSaberCores.length == 0) {
+        let mods = await refetchBeatSaberCores();
+        return mods;
+    } else {
+        return beatSaberCores();
+    }
+}

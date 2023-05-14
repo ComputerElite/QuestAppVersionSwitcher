@@ -54,12 +54,13 @@ export const CustomModal = (props: ModalProps) => {
                     left: "50%",
                     transform: "translate(-50%, -50%)",
                     // width: 400,
-                    bgcolor: "#1F2937",
-                    boxShadow: "24px",
+                    bgcolor: "#111827",
                     flexDirection: "column",
                     maxHeight: "100vh",
                     overflowY: "auto",
                     borderRadius: "4px",
+                    // Shadow material
+                    boxShadow: "0px 4px 24px rgba(0, 0, 0, 0.5)"
                 }}
             >
                 <Box sx={{
@@ -76,7 +77,7 @@ export const CustomModal = (props: ModalProps) => {
                         {local.title}
                     </Typography>
                     <Show when={!local.hideCloseButton}>
-                        <IconButton onClick={local.onClose} sx={{
+                        <IconButton onClick={props.onClose} sx={{
                             zIndex: 2,
                             color: (theme) => theme.palette.grey[500],
                         }}>    <FiX />

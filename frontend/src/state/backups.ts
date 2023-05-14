@@ -2,25 +2,7 @@ import { Signal, createEffect, createResource, on } from "solid-js"
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import { getBackups, getBackupsResponse } from "../api/backups";
 import { config } from "../store";
-
-// Reconclile
-function createDeepSignal<T>(value: T): Signal<T> {
-    const [store, setStore] = createStore({
-        value
-    });
-    return [
-        () => store.value,
-        (v: T) => {
-            // unwrap the value to compare it
-            const unwrapped = unwrap(store.value);
-
-            // if the value is a function, call it with the unwrapped value
-            typeof v === "function" && (v = v(unwrapped));
-            setStore("value", reconcile(v));
-            return store.value;
-        }
-    ] as Signal<T>;
-}
+import { createDeepSignal } from "../util";
 
 // Mods List (all mods and libs)
 export const [backupList, { refetch: refetchBackups, mutate: mutateBackups }] = createResource<getBackupsResponse>(async () => {

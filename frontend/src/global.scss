@@ -54,3 +54,7 @@ a{
   background-clip: text;
   text-fill-color: transparent;
 }
+
+.bg-accent {
+  background: linear-gradient(90deg, var(--accent-color-stops));
+}

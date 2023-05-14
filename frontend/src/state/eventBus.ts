@@ -6,6 +6,7 @@ import { refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { refetchMods } from "./mods";
 import { GetWSFullURL } from "../util";
 import { refetchBackups } from "./backups";
+import { IAPIDownloadsResponse } from "../api/downloads";
 
 
 enum WebSocketStatus {
@@ -24,7 +25,7 @@ enum WebSocketStatus {
 let [tasks, setTasks] = createStore<ModTask[]>([]);
 let [socketStatus, setSocketStatus] = createSignal<WebSocketStatus>(WebSocketStatus.CONNECTING);
 
-type TaskType = "tasks-done" | "task-done" | "task-new" | "patch-progress" | "backup-progress";
+type TaskType = "tasks-done" | "task-done" | "task-new" | "patch-progress" | "backup-progress" | "download-progress";
 
 class BackendEventsClass extends EventTarget {
     constructor() {
@@ -53,6 +54,12 @@ class BackendEventsClass extends EventTarget {
 
     emitBackupProgress(task: BackupProgressData) {
         const event = new CustomEvent('backup-progress', { detail: task });
+        this.dispatchEvent(event);
+    }
+
+
+    emitDownloadProgress(task: IAPIDownloadsResponse) {
+        const event = new CustomEvent('download-progress', { detail: task });
         this.dispatchEvent(event);
     }
 
@@ -168,10 +175,8 @@ export function InitWS() {
         try {
             var data = JSON.parse(e.data);
             console.log("WS Data", data);
-            if (data.route == "/api/downloads") {
-                // refetch
-                // TODO: Implement this
-            } else if (data.route == "/api/mods/mods") {
+            
+            if (data.route == "/api/mods/mods") {
                 updateTasks(data.data.operations);
                 refetchMods();
             } else if (data.route == "/api/patching/patchstatus") {
@@ -180,6 +185,9 @@ export function InitWS() {
             } else if (data.route == "/api/backupstatus") {
                 refetchBackups();
                 BackendEvents.emitBackupProgress(data.data);
+            } else if (data.route == "/api/downloads") {
+                BackendEvents.emitDownloadProgress(data.data)
+                console.log("Download progress", data.data);
             }
 
             

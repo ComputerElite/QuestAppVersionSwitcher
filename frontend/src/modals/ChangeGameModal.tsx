@@ -9,30 +9,14 @@ import { refetchSettings } from "../store";
 import toast from "solid-toast";
 import { CustomModal } from "./CustomModal";
 import RunButton from "../components/Buttons/RunButton";
+import { createDeepSignal } from "../util";
 
 
 
 // Global to show ChangeGameModal
 const [isOpen, setIsOpen] = createSignal(false);
 
-export function createDeepSignal<T>(value: T): Signal<T> {
-  const [store, setStore] = createStore({
-    value
-  });
-  return [
-    () => store.value,
-    (v: T) => {
-      // unwrap the value to compare it
-      const unwrapped = unwrap(store.value);
 
-      // if the value is a function, call it with the unwrapped value
-      typeof v === "function" && (v = v(unwrapped));
-      setStore("value", reconcile(v));
-      return store.value;
-      debugger;
-    }
-  ] as Signal<T>;
-}
 
 // Mods List (all mods and libs)
 const [appList, { refetch: refetchApps, mutate: mutateApps }] = createResource<IAppListItem[]>(async () => {

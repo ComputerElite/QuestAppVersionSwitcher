@@ -1,3 +1,6 @@
+import { Signal } from "solid-js";
+import { createStore, reconcile, unwrap } from "solid-js/store";
+
 /**
  * Returns the name of a game given its package name
  */
@@ -7,6 +10,29 @@ let knownGameNames: {
     "com.beatgames.beatsaber": "Beat Saber",
 
 }
+
+/**
+ * Signal that can be used for reactive arrays
+ * @param value 
+ * @returns 
+ */
+export function createDeepSignal<T>(value: T): Signal<T> {
+    const [store, setStore] = createStore({
+      value
+    });
+    return [
+      () => store.value,
+      (v: T) => {
+        // unwrap the value to compare it
+        const unwrapped = unwrap(store.value);
+  
+        // if the value is a function, call it with the unwrapped value
+        typeof v === "function" && (v = v(unwrapped));
+        setStore("value", reconcile(v));
+        return store.value;
+      }
+    ] as Signal<T>;
+  }
 
 export function GetGameName(packageName: string) {
     return knownGameNames[packageName] ?? packageName;
@@ -128,4 +154,13 @@ let VersionUnderscoreRegex = /(\_\d*)/g;
 export function RemoveVersionUnderscore(version: string): string {
     // Remove the _ and the number to show in the ui
     return version.replace(VersionUnderscoreRegex, "");
+}
+
+// FormData to JSON
+export function FormDataToJSON(formData: FormData): object {
+    let object: any = {};
+    formData.forEach(function (value, key) {
+        object[key] = value;
+    });
+    return object;
 }
