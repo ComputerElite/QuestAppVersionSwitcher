@@ -255,7 +255,7 @@ async function DeleteModClick(mod: IMod) {
     toast.success(`Mod ${mod.Name} is deleted`)
 }
 
-function ModCoverLessCard({ mod }: { mod: ModEntry }) {
+function ModCoverLessCard(props: { mod: ModEntry }) {
     let modStatus = createMemo(() => {
         // @ts-ignore
         let status: {
@@ -266,7 +266,7 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             hasUpdate: boolean,
         } = {};
 
-        let existingMod = modsList()?.find(x => x.Id == mod.id);
+        let existingMod = modsList()?.find(x => x.Id == props.mod.id);
         if (existingMod) {
             status.isEnabled = existingMod.IsInstalled;
             status.isInstalled = true;
@@ -274,13 +274,13 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
         }
 
         // Mods list is presorted
-        let latestVersion = (mod && mod.versions && mod.versions.length > 0) ? mod.versions[0] : undefined;
+        let latestVersion = (props.mod && props.mod.versions && props.mod.versions.length > 0) ? props.mod.versions[0] : undefined;
 
         // Check if there is an update to the mod
         if (latestVersion && existingMod) {
             if (gt(latestVersion.version, existingMod.VersionString)) {
                 status.hasUpdate = true;
-                console.log("has update", mod.name);
+                console.log("has update", props.mod.name);
             } else {
                 status.hasUpdate = false;
             }
@@ -293,7 +293,6 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
         return status;
 
     });
-
     return (
         <ListItem class="mod" sx={{
             display: "flex",
@@ -302,90 +301,102 @@ function ModCoverLessCard({ mod }: { mod: ModEntry }) {
             borderRadius: "6px",
             flexDirection: "column",
             alignItems: "left",
+            padding: 0,
+            overflow: "hidden",
         }}>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                }}
-            >
-                <Box sx={{
-                    display: "flex",
-                    alignItems: "left",
-                    flexWrap: "wrap",
-                    flexDirection: "column",
-                }}>
-                    <Typography variant="h6" sx={{
-                        fontFamily: 'Roboto',
-                        fontStyle: 'normal',
-                        fontWeight: 400,
-                        fontSize: '16px',
-                        lineHeight: '19px',
-                        color: '#FFFFFF',
-                        marginRight: 1,
-                    }}  >{mod.name}</Typography>
-                    <Typography variant="caption" sx={{
+            {/* <div class="w-full">
+                <Show when={props.mod.cover}>
+                    <img class="aspect-video w-full object-cover" src={props.mod.cover!} alt={props.mod.name} />
+                </Show>
+                <Show when={!props.mod.cover}>
+                    <img class="aspect-video w-full object-cover" src={defaultImage} alt={props.mod.name} />
+                </Show>
+            </div> */}
+            <div class=" sm:p-3 lg:p-4">
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                    }}
+                >
+                    <Box sx={{
+                        display: "flex",
+                        alignItems: "left",
+                        flexWrap: "wrap",
+                        flexDirection: "column",
+                    }}>
+                        <Typography variant="h6" sx={{
+                            fontFamily: 'Roboto',
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            fontSize: '16px',
+                            lineHeight: '19px',
+                            color: '#FFFFFF',
+                            marginRight: 1,
+                        }}  >{props.mod.name}</Typography>
+                        <Typography variant="caption" sx={{
 
+                            fontFamily: 'Roboto',
+                            fontStyle: 'normal',
+                            fontWeight: 400,
+                            fontSize: '10px',
+                            lineHeight: '12px',
+                        }} class="text-accent"  >v{props.mod.versions[0].version} {props.mod.author}</Typography>
+                    </Box>
+
+                    <Typography sx={{
                         fontFamily: 'Roboto',
                         fontStyle: 'normal',
                         fontWeight: 400,
                         fontSize: '10px',
                         lineHeight: '12px',
-                    }} class="text-accent"  >v{mod.versions[0].version} {mod.author}</Typography>
+                        color: '#D1D5DB',
+                        marginTop: 1,
+                    }}>{props.mod.description}</Typography>
                 </Box>
-
-                <Typography sx={{
-                    fontFamily: 'Roboto',
-                    fontStyle: 'normal',
-                    fontWeight: 400,
-                    fontSize: '10px',
-                    lineHeight: '12px',
-                    color: '#D1D5DB',
-                    marginTop: 1,
-                }}>{mod.description}</Typography>
-            </Box>
-            <Box sx={{
-                display: "flex",
-                flexDirection: "row",
-                mt: 1,
-                justifyContent: "space-between",
-                gap: 1,
-            }}>
                 <Box sx={{
-                    flexGrow: 1,
                     display: "flex",
-
+                    flexDirection: "row",
+                    mt: 1,
+                    justifyContent: "space-between",
+                    gap: 1,
                 }}>
-                    <Show when={!modStatus().isInstalled}>
-                        <RunButton fullWidth text="Install" variant="success" icon={<FaSolidDownload />} onClick={
-                            () => InstallModFromUrl(mod.versions[0].download)
-                        } />
-                    </Show>
-                    <Show when={modStatus().hasUpdate}>
-                        <RunButton fullWidth text="Update" variant="info" icon={<FaSolidDownload />} onClick={
-                            () => InstallModFromUrl(mod.versions[0].download)
-                        } />
-                    </Show>
-                    <Show when={modStatus().isInstalled && !modStatus().hasUpdate}>
-                        <RunButton fullWidth text="Installed" disabled />
+                    <Box sx={{
+                        flexGrow: 1,
+                        display: "flex",
+
+                    }}>
+                        <Show when={!modStatus().isInstalled}>
+                            <RunButton fullWidth text="Install" variant="success" icon={<FaSolidDownload />} onClick={
+                                () => InstallModFromUrl(props.mod.versions[0].download)
+                            } />
+                        </Show>
+                        <Show when={modStatus().hasUpdate}>
+                            <RunButton fullWidth text="Update" variant="info" icon={<FaSolidDownload />} onClick={
+                                () => InstallModFromUrl(props.mod.versions[0].download)
+                            } />
+                        </Show>
+                        <Show when={modStatus().isInstalled && !modStatus().hasUpdate}>
+                            <RunButton fullWidth text="Installed" disabled />
+                        </Show>
+                    </Box>
+
+                    <RunButton onClick={async () => {
+                        showConfirmModal({
+                            title: "This is a placeholder",
+                            message: "This is a placeholder",
+                            cancelText: "Cancel",
+                            okText: "Ok",
+                        })
+                    }} icon={<FaSolidGear />} />
+
+                    <Show when={modStatus().isInstalled}>
+                        <RunButton variant="error" onClick={async () => {
+                            let existingMod = modStatus()!.existingMod as ILibrary;
+                            DeleteModClick(existingMod);
+                        }} icon={<FiTrash />} />
                     </Show>
                 </Box>
-
-                <RunButton onClick={async () => {
-                    showConfirmModal({
-                        title: "This is a placeholder",
-                        message: "This is a placeholder",
-                        cancelText: "Cancel",
-                        okText: "Ok",
-                    })
-                }} icon={<FaSolidGear />} />
-
-                <Show when={modStatus().isInstalled}>
-                    <RunButton variant="error" onClick={async () => {
-                        let existingMod = modStatus()!.existingMod as ILibrary;
-                        DeleteModClick(existingMod);
-                    }} icon={<FiTrash />} />
-                </Show>
-            </Box>
+            </div>
         </ListItem>
     )
 }

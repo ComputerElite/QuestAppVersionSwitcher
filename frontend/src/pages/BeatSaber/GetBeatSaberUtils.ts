@@ -8,6 +8,7 @@ export interface ModRawEntry {
     download: string;
     source: string;
     author: string;
+    cover?: string;
 }
 /**
  * This is the processed version of the mod entry
@@ -19,6 +20,7 @@ export interface ModEntry {
     versions: Array<ModVersion>;
     source: string;
     author: string;
+    cover?: string;
 }
 
 export interface ModVersion {
@@ -47,6 +49,7 @@ export function ParseModVersions (versions: Array<ModRawEntry>): Array<ModEntry>
                         download: version.download,
                     },
                 ],
+                cover: version.cover,
                 source: version.source,
             });
         }
