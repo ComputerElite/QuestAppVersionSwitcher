@@ -193,6 +193,8 @@ if(!IsOnQuest()) {
     document.getElementById("restoreBackup").classList.add("notActive")
     document.getElementById("onPcInfo").classList.remove("hidden")
     document.getElementById("uninstall").classList.add("notActive")
+    document.getElementById("login").classList.add("notActive")
+    document.getElementById("logout").classList.add("notActive")
     //document.getElementById("getModsButton").style.display = "none"
     
 } else {
@@ -693,6 +695,7 @@ function UpdateUI(closeLists = false) {
 }
 
 document.getElementById("login").onclick = () => {
+    if(!IsOnQuest()) return;
     OpenGetPasswordPopup()
     GotoStep(9)
 }
@@ -784,11 +787,13 @@ function ChangeApp(package) {
     config.currentApp = package
     fetch("/api/questappversionswitcher/changeapp", {
         method: "POST",
-        body: package
-    }).then(() => UpdateUI(true))
+        body: JSON.stringify({packageName: package})
+    }).then(() => {
+        UpdateUI(true)
+        UpdateCosmeticsTypes()
+        CheckFolderPermission()
+    })
     UpdateUI(true)
-    UpdateCosmeticsTypes()
-    CheckFolderPermission()
 }
 
 document.getElementById("exit").onclick = () => {
@@ -1257,10 +1262,15 @@ document.getElementById("downloadStartingClosePopup").onclick = () => {
 }
 
 document.getElementById("logout").onclick = () => {
+    if(!IsOnQuest()) return;
     Logout()
 }
 
 function Logout() {
+    if(!IsOnQuest()) {
+        alert("Cannot log out when on PC. Open QAVS in your quest")
+        return;
+    }
     fetch("/api/logout", {
         method: "POST"
     }).then(res => {

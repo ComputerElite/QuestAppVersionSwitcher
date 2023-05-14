@@ -134,6 +134,24 @@ namespace QuestAppVersionSwitcher
     public class AndroidDevice
     {
         public int sdkVersion { get; set; } = 0;
+        public long freeSpace { get; set; } = 0;
+
+        public string freeSpaceString
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(freeSpace);
+            }
+        }
+        public long totalSpace { get; set; } = 0;
+
+        public string totalSpaceString
+        {
+            get
+            {
+                return SizeConverter.ByteSizeToString(totalSpace);
+            }
+        }
     }
     
     public enum LoggedInStatus
@@ -655,7 +673,9 @@ namespace QuestAppVersionSwitcher
             {
                 serverRequest.SendString(JsonSerializer.Serialize(new AndroidDevice()
                 {
-                    sdkVersion = (int)Build.VERSION.SdkInt
+                    sdkVersion = (int)Build.VERSION.SdkInt,
+                    freeSpace = Environment.ExternalStorageDirectory.UsableSpace,
+                    totalSpace = Environment.ExternalStorageDirectory.TotalSpace,
                 }), "application/json");
                 return true;
             });
@@ -804,8 +824,9 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/questappversionswitcher/changeapp", serverRequest =>
             {
-                ChangeApp(serverRequest.bodyString);
-                serverRequest.SendString(GenericResponse.GetResponse("App changed to " + serverRequest.bodyString, true), "application/json");
+                ChangeAppRequest request = JsonSerializer.Deserialize<ChangeAppRequest>(serverRequest.bodyString);
+                ChangeApp(request.packageName, request.name);
+                serverRequest.SendString(GenericResponse.GetResponse("App changed to " + request.packageName, true), "application/json");
                 return true;
             });
             server.AddRoute("GET", "/api/questappversionswitcher/config", serverRequest =>
@@ -1364,11 +1385,11 @@ namespace QuestAppVersionSwitcher
             t.Start();
         }
 
-        private void ChangeApp(string packageName)
+        private void ChangeApp(string packageName, string name = "")
         {
             Logger.Log("Settings selected app to " + packageName);
             CoreService.coreVars.currentApp = packageName;
-            CoreService.coreVars.currentAppName = AndroidService.GetAppname(packageName);
+            CoreService.coreVars.currentAppName = name == "" ? AndroidService.GetAppname(packageName) : name;
             CoreService.coreVars.Save();
             QAVSModManager.Update();
         }
@@ -1488,6 +1509,12 @@ namespace QuestAppVersionSwitcher
         {
             return server.ips;
         }
+    }
+
+    public class ChangeAppRequest
+    {
+        public string packageName { get; set; } = "";
+        public string name { get; set; } = "";
     }
 
     public class BackupInfo
