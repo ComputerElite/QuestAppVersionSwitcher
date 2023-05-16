@@ -90,39 +90,69 @@ namespace QuestAppVersionSwitcher
                 {
                     // Handle response header injection by doing manual request with headers provided by request
                     // This is done because the webview doesn't allow you to modify response headers
-                    WebResourceResponse wrr = base.ShouldInterceptRequest(view, request);
-                    if (wrr == null)
+                    HttpWebRequest req = (HttpWebRequest) WebRequest.Create(url);
+                    req.Method = "GET";
+                    req.UserAgent = CoreService.ua;
+                    foreach (KeyValuePair<string,string> h in request.RequestHeaders)
                     {
-                        Logger.Log("Null shitty shit shit");
+                        Logger.Log(h.Key + ": " + h.Value);
+                        if(h.Key.ToLower() == "user-agent") continue;
+                        else if (h.Key.ToLower() == "accept") req.Accept = h.Value;
+                        else if(h.Key.ToLower() == "referer") req.Referer = h.Value;
+                        else req.Headers[h.Key] = h.Value;
                     }
-                    Logger.Log("Fuck");
-                    if(wrr.MimeType != "text/html") return wrr;
-                    // Update headers
-                    string toRemove = "require-trusted-types-for 'script';";
-                    Dictionary<string, string> headsOfMetaDevelopers = new Dictionary<string, string>();
-                    Logger.Log("Fuck foreach");
-                    foreach (KeyValuePair<string, string> h in wrr.ResponseHeaders)
-                    {
-                        string headerValue = h.Value;
-                        headerValue = headerValue.Replace(toRemove, "");
-                        if (h.Key.ToLower() == "content-security-policy")
-                        {
-                            headerValue = h.Value.Replace("auth.meta.com", "auth.meta.com http://localhost:" + CoreService.coreVars.serverPort);
-                        }
-
-                        headsOfMetaDevelopers.Add(h.Key, headerValue);
-                    }
-
-                    Logger.Log("Fuck headers");
-                    wrr.ResponseHeaders = headsOfMetaDevelopers;
-                    // Modify data to inject script
+                    Logger.Log("Getting response");
+                    HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+                    Logger.Log("Getting response stream");
+                    Stream s = resp.GetResponseStream();
                     MemoryStream ms = new MemoryStream();
-                    Logger.Log("Fuck copy");
-                    wrr.Data.CopyTo(ms);
-                    string html = Encoding.UTF8.GetString(ms.ToArray());
-                    html = html.Replace("</body>", "<script src='http://localhost:" + CoreService.coreVars.serverPort + "/inject.js'></script></body>");
-                    Logger.Log("Fuck data");
-                    wrr.Data = new MemoryStream(Encoding.UTF8.GetBytes(html));
+                    s.CopyTo(ms);
+                    byte[] data = ms.ToArray();
+                    ms.Close();
+                    s.Close();
+                    Logger.Log("Appending script tag");
+                    //string html = Encoding.UTF8.GetString(data);
+                    //html = html.Replace("</body>", "<script src=\"http://localhost:" + CoreService.coreVars.serverPort + "/inject.js\"></script></body>");
+                    //data = Encoding.UTF8.GetBytes(html);
+                    Logger.Log("Stream again");
+                    ms = new MemoryStream(data);
+                    
+                    Logger.Log("Settings headers");
+                    Dictionary<string, string> headers = new Dictionary<string, string>();
+                    string toRemove = "require-trusted-types-for 'script';";
+                    Logger.Log(resp.ContentType);
+                    Logger.Log(resp.ContentEncoding);
+                    Logger.Log(((int)resp.StatusCode).ToString());
+                    Logger.Log(resp.StatusDescription);
+                    foreach (string key in resp.Headers.Keys)
+                    {
+                        string headerValue = resp.Headers[key];
+                        //headerValue = headerValue.Replace(toRemove, "");
+                        if (key.ToLower() == "content-security-policy")
+                        {
+                            //headerValue = resp.Headers[key].Replace("auth.meta.com", "auth.meta.com http://localhost:" + CoreService.coreVars.serverPort);
+                        }
+                        headers.Add(key, headerValue);
+                    }
+                    Logger.Log("Creating wrr");
+                    string encoding = resp.ContentEncoding;
+                    if (encoding == "")
+                    {
+                        if (resp.ContentType.Contains("charset"))
+                        {
+                            encoding = resp.ContentType.Split(';').First(x => x.Contains("charset")).Split('=')[1].Replace("\"", "");
+                        }
+                        else encoding = "utf-8";
+                    }
+
+                    if (resp.ContentType.Split(';')[0] != "text/html")
+                    {
+                        // Handle request normally
+                        return base.ShouldInterceptRequest(view, request);
+                    }
+                    Logger.Log("Doing manual request for " + url);
+                    WebResourceResponse wrr = new WebResourceResponse(resp.ContentType.Split(';')[0], encoding, (int)resp.StatusCode, resp.StatusDescription, headers, ms);
+                    
                    
                     return wrr;
                 }
