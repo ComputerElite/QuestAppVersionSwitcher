@@ -56,14 +56,20 @@ namespace QuestAppVersionSwitcher
         public override void OnPageFinished(WebView view, string url)
         {
             CookieManager.Instance.Flush();
-            if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
+            if(!url.ToLower().Contains("localhost") && !url.ToLower().StartsWith("https://auth.meta.com") && !url.ToLower().Contains("http://127.0.0.1"))
             {
                 if (injectedJs == "")
                 {
                     // Load qavs_inject.js
                     injectedJs = new StreamReader(AndroidCore.assetManager.Open("html/qavs_inject.js")).ReadToEnd();
                 }
-                //view.EvaluateJavascript(injectedJs, null);
+                view.EvaluateJavascript(injectedJs.Replace("{0}", CoreService.coreVars.serverPort.ToString()), null);
+            }
+
+            if (url.ToLower().StartsWith("https://auth.meta.com/settings/account/"))
+            {
+                // redirect to oculus page
+                view.LoadUrl("https://oculus.com/experiences/quest");
             }
         }
 
@@ -83,82 +89,6 @@ namespace QuestAppVersionSwitcher
 
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
-            string url = request.Url.ToString();
-            if ((url.StartsWith("https://auth.meta.com/") || url.StartsWith("https://meta.com/") || url.StartsWith("https://facebook.com/") || url.StartsWith("https://oculus.com/") || url.StartsWith("https://auth.oculus.com/")))
-            {
-                if (request.Method == "GET")
-                {
-                    // Handle response header injection by doing manual request with headers provided by request
-                    // This is done because the webview doesn't allow you to modify response headers
-                    HttpWebRequest req = (HttpWebRequest) WebRequest.Create(url);
-                    req.Method = "GET";
-                    req.UserAgent = CoreService.ua;
-                    foreach (KeyValuePair<string,string> h in request.RequestHeaders)
-                    {
-                        Logger.Log(h.Key + ": " + h.Value);
-                        if(h.Key.ToLower() == "user-agent") continue;
-                        else if (h.Key.ToLower() == "accept") req.Accept = h.Value;
-                        else if(h.Key.ToLower() == "referer") req.Referer = h.Value;
-                        else req.Headers[h.Key] = h.Value;
-                    }
-                    Logger.Log("Getting response");
-                    HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
-                    Logger.Log("Getting response stream");
-                    Stream s = resp.GetResponseStream();
-                    MemoryStream ms = new MemoryStream();
-                    s.CopyTo(ms);
-                    byte[] data = ms.ToArray();
-                    ms.Close();
-                    s.Close();
-                    Logger.Log("Appending script tag");
-                    //string html = Encoding.UTF8.GetString(data);
-                    //html = html.Replace("</body>", "<script src=\"http://localhost:" + CoreService.coreVars.serverPort + "/inject.js\"></script></body>");
-                    //data = Encoding.UTF8.GetBytes(html);
-                    Logger.Log("Stream again");
-                    ms = new MemoryStream(data);
-                    
-                    Logger.Log("Settings headers");
-                    Dictionary<string, string> headers = new Dictionary<string, string>();
-                    string toRemove = "require-trusted-types-for 'script';";
-                    Logger.Log(resp.ContentType);
-                    Logger.Log(resp.ContentEncoding);
-                    Logger.Log(((int)resp.StatusCode).ToString());
-                    Logger.Log(resp.StatusDescription);
-                    foreach (string key in resp.Headers.Keys)
-                    {
-                        string headerValue = resp.Headers[key];
-                        //headerValue = headerValue.Replace(toRemove, "");
-                        if (key.ToLower() == "content-security-policy")
-                        {
-                            //headerValue = resp.Headers[key].Replace("auth.meta.com", "auth.meta.com http://localhost:" + CoreService.coreVars.serverPort);
-                        }
-                        headers.Add(key, headerValue);
-                    }
-                    Logger.Log("Creating wrr");
-                    string encoding = resp.ContentEncoding;
-                    if (encoding == "")
-                    {
-                        if (resp.ContentType.Contains("charset"))
-                        {
-                            encoding = resp.ContentType.Split(';').First(x => x.Contains("charset")).Split('=')[1].Replace("\"", "");
-                        }
-                        else encoding = "utf-8";
-                    }
-
-                    if (resp.ContentType.Split(';')[0] != "text/html")
-                    {
-                        // Handle request normally
-                        return base.ShouldInterceptRequest(view, request);
-                    }
-                    Logger.Log("Doing manual request for " + url);
-                    WebResourceResponse wrr = new WebResourceResponse(resp.ContentType.Split(';')[0], encoding, (int)resp.StatusCode, resp.StatusDescription, headers, ms);
-                    
-                   
-                    return wrr;
-                }
-            }
-
-            
             return base.ShouldInterceptRequest(view, request);
 
             foreach (KeyValuePair<string, string> p in headers)
