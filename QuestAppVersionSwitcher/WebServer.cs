@@ -49,6 +49,8 @@ namespace QuestAppVersionSwitcher
     {
         public string injectJsJs = "var tag = document.createElement('script');tag.src = 'http://localhost:" +
                                    CoreService.coreVars.serverPort + "/inject.js';document.head.appendChild(tag)";
+
+        public string injectedJs = "";
         
         // Grab token
         public override void OnPageFinished(WebView view, string url)
@@ -56,7 +58,12 @@ namespace QuestAppVersionSwitcher
             CookieManager.Instance.Flush();
             if(!url.ToLower().Contains("localhost") && !url.ToLower().Contains("http://127.0.0.1"))
             {
-                view.EvaluateJavascript(injectJsJs, null);
+                if (injectedJs == "")
+                {
+                    // Load qavs_inject.js
+                    injectedJs = new StreamReader(AndroidCore.assetManager.Open("html/qavs_inject.js")).ReadToEnd();
+                }
+                //view.EvaluateJavascript(injectedJs, null);
             }
         }
 
@@ -71,11 +78,89 @@ namespace QuestAppVersionSwitcher
             ["sec-fetch-user"] = "?1",
             ["cross-origin-opener-policy"] = "unsafe-none"
         };
+        
+        
 
-        /*
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
+            string url = request.Url.ToString();
+            if ((url.StartsWith("https://auth.meta.com/") || url.StartsWith("https://meta.com/") || url.StartsWith("https://facebook.com/") || url.StartsWith("https://oculus.com/") || url.StartsWith("https://auth.oculus.com/")))
+            {
+                if (request.Method == "GET")
+                {
+                    // Handle response header injection by doing manual request with headers provided by request
+                    // This is done because the webview doesn't allow you to modify response headers
+                    HttpWebRequest req = (HttpWebRequest) WebRequest.Create(url);
+                    req.Method = "GET";
+                    req.UserAgent = CoreService.ua;
+                    foreach (KeyValuePair<string,string> h in request.RequestHeaders)
+                    {
+                        Logger.Log(h.Key + ": " + h.Value);
+                        if(h.Key.ToLower() == "user-agent") continue;
+                        else if (h.Key.ToLower() == "accept") req.Accept = h.Value;
+                        else if(h.Key.ToLower() == "referer") req.Referer = h.Value;
+                        else req.Headers[h.Key] = h.Value;
+                    }
+                    Logger.Log("Getting response");
+                    HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
+                    Logger.Log("Getting response stream");
+                    Stream s = resp.GetResponseStream();
+                    MemoryStream ms = new MemoryStream();
+                    s.CopyTo(ms);
+                    byte[] data = ms.ToArray();
+                    ms.Close();
+                    s.Close();
+                    Logger.Log("Appending script tag");
+                    //string html = Encoding.UTF8.GetString(data);
+                    //html = html.Replace("</body>", "<script src=\"http://localhost:" + CoreService.coreVars.serverPort + "/inject.js\"></script></body>");
+                    //data = Encoding.UTF8.GetBytes(html);
+                    Logger.Log("Stream again");
+                    ms = new MemoryStream(data);
+                    
+                    Logger.Log("Settings headers");
+                    Dictionary<string, string> headers = new Dictionary<string, string>();
+                    string toRemove = "require-trusted-types-for 'script';";
+                    Logger.Log(resp.ContentType);
+                    Logger.Log(resp.ContentEncoding);
+                    Logger.Log(((int)resp.StatusCode).ToString());
+                    Logger.Log(resp.StatusDescription);
+                    foreach (string key in resp.Headers.Keys)
+                    {
+                        string headerValue = resp.Headers[key];
+                        //headerValue = headerValue.Replace(toRemove, "");
+                        if (key.ToLower() == "content-security-policy")
+                        {
+                            //headerValue = resp.Headers[key].Replace("auth.meta.com", "auth.meta.com http://localhost:" + CoreService.coreVars.serverPort);
+                        }
+                        headers.Add(key, headerValue);
+                    }
+                    Logger.Log("Creating wrr");
+                    string encoding = resp.ContentEncoding;
+                    if (encoding == "")
+                    {
+                        if (resp.ContentType.Contains("charset"))
+                        {
+                            encoding = resp.ContentType.Split(';').First(x => x.Contains("charset")).Split('=')[1].Replace("\"", "");
+                        }
+                        else encoding = "utf-8";
+                    }
+
+                    if (resp.ContentType.Split(';')[0] != "text/html")
+                    {
+                        // Handle request normally
+                        return base.ShouldInterceptRequest(view, request);
+                    }
+                    Logger.Log("Doing manual request for " + url);
+                    WebResourceResponse wrr = new WebResourceResponse(resp.ContentType.Split(';')[0], encoding, (int)resp.StatusCode, resp.StatusDescription, headers, ms);
+                    
+                   
+                    return wrr;
+                }
+            }
+
+            
             return base.ShouldInterceptRequest(view, request);
+
             foreach (KeyValuePair<string, string> p in headers)
             {
                 if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
@@ -91,23 +176,8 @@ namespace QuestAppVersionSwitcher
                 request.RequestHeaders["sec-fetch-mode"] = "cors";
                 request.RequestHeaders["sec-fetch-dest"] = "empty";
             }
-            // somehow user webclient to handle the request and then change the response headers. No idea how to get the request body from the webview
-            WebClient c = new WebClient();
-            foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-            {
-                c.Headers.Add(p.Key, p.Value);
-            }
-            byte[] responseData = new byte[0];
-            if(request.Method == "POST" || request.Method == "PUT" || request.Method == "PATCH")
-            {
-                c.UploadData(request.Url.ToString(), request.Method, request.);
-            } else
-            {
-                c.DownloadData(request.Url.ToString());
-            }
             return base.ShouldInterceptRequest(view, request);
         }
-    */
 
         public Dictionary<string, string> GetHeaders(IDictionary<string, IList<string>> h)
         {
@@ -121,14 +191,41 @@ namespace QuestAppVersionSwitcher
             }
             return headers;
         }
+        
         /*
-        public override bool ShouldOverrideUrlLoading(WebView view, string url)
+        public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
         {
-            return base.ShouldOverrideUrlLoading(view, url);
-            //view.LoadUrl(url, headers);
-            return true;
+            bool changed = false;
+            Logger.Log(request.Url.ToString());
+            if (request.RequestHeaders != null)
+            {
+                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
+                {
+                    Logger.Log("Header: " + p.Key + " - " + p.Value);
+                    request.RequestHeaders[p.Key] = p.Value.Replace("require-trusted-types-for 'script';", "");
+                }
+            }
+            if (request.RequestHeaders != null)
+            {
+                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
+                {
+                    if (p.Value.Contains(toRemove))
+                    {
+                        changed = true;
+                        request.RequestHeaders[p.Key] = p.Value.Replace(toRemove, "");
+                    }
+                }
+
+                if (changed)
+                    if (request.Url != null)
+                        view.LoadUrl(request.Url.ToString(), request.RequestHeaders);
+            }
+
+            return changed;
         }
         */
+        
+        
 	}
 
     public class AndroidDevice

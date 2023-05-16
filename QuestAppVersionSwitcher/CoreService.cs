@@ -22,6 +22,7 @@ namespace QuestAppVersionSwitcher.Core
         public static QAVSWebserver qAVSWebserver = new QAVSWebserver();
         public static CoreVars coreVars = new CoreVars();
         public static Version version = Assembly.GetExecutingAssembly().GetName().Version;
+        //public static string ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36";
         public static string ua = "Mozilla/5.0 (X11; Linux x86_64; Quest) AppleWebKit/537.36 (KHTML, like Gecko) OculusBrowser/23.2.0.4.49.401374055 SamsungBrowser/4.0 Chrome/104.0.5112.111 VR Safari/537.36";
         public static ActivityResultLauncher launcher;
         public static bool started = false;

@@ -1,3 +1,7 @@
+    const escapeHTMLPolicy = trustedTypes.createPolicy("myEscapePolicy", {
+        createHTML: (string) => string.replace(/>/g, "<"),
+    });
+
     var qavsInjectionDiv = document.createElement("div");
     document.body.appendChild(qavsInjectionDiv);
     const qavsPort = "{0}"
@@ -5,10 +9,31 @@
 // Create nav bar
     var qavsNavbar = document.createElement("div");
     qavsNavbar.style = "color: #EEEEEE; position: fixed; top: 10px; right: 10px; background-color: #414141; border-radius: 5px; padding: 5px; display: flex; z-index: 50000;";
-    qavsNavbar.innerHTML += `
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(-1)">Back</div>
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;" onclick="history.go(1)">Forward</div>
-<div style="border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;" onclick="location = 'http://127.0.0.1:${qavsPort}'">QuestAppVersionSwitcher</div>`;
+
+    var qavsBackButton = document.createElement("div");
+    qavsBackButton.style = "border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;"
+    qavsBackButton.onclick = () => {
+        history.go(-1)
+    }
+    qavsBackButton.innerHTML = escapeHTMLPolicy.createHTML("Back")
+    qavsNavbar.appendChild(qavsBackButton)
+    
+    var qavsForwardButton = document.createElement("div");
+    qavsForwardButton.style = "border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none; margin-right: 5px;"
+    qavsForwardButton.onclick = () => {
+        history.go(1)
+    }
+    qavsForwardButton.innerHTML = escapeHTMLPolicy.createHTML("Forward")
+    qavsNavbar.appendChild(qavsForwardButton)
+    
+    var qavsHomeButton = document.createElement("div");
+qavsHomeButton.style = "border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;"
+    qavsHomeButton.onclick = () => {
+        location = `http://127.0.0.1:${qavsPort}`
+    }
+    qavsHomeButton.innerHTML = escapeHTMLPolicy.createHTML("QuestAppVersionSwitcher")
+    qavsNavbar.appendChild(qavsHomeButton)
+    
     qavsInjectionDiv.appendChild(qavsNavbar)
 
 // Handle popups
@@ -45,7 +70,7 @@
                 } else {
                     html = "All done!"
                 }
-                qavsPopupContainer.innerHTML = html;
+                qavsPopupContainer.innerHTML = escapeHTMLPolicy.createHTML(html);
                 qavsPopupContainer.style.display = QAVSsomethingWasRunning ? "block" : "none";
             })
         })
@@ -115,7 +140,7 @@
             for(const e of document.getElementsByTagName("span")) {
                 if (e.innerHTML.toLowerCase().contains("log in") && e.innerHTML.toLowerCase().contains("email") && !e.innerHTML.toLowerCase().contains("span")) {
                     console.log(e.parentElement)
-                    e.innerHTML = "Log in with email (preferred method)"
+                    e.innerHTML = escapeHTMLPolicy.createHTML("Log in with email (preferred method)")
                     e.parentElement.parentElement.parentElement.parentElement.style.backgroundColor = "#1B2930"
                     e.style.color = "#F2F2F2"
                     
