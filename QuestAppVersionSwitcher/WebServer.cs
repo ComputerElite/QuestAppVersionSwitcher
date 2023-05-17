@@ -66,7 +66,7 @@ namespace QuestAppVersionSwitcher
                 view.EvaluateJavascript(injectedJs.Replace("{0}", CoreService.coreVars.serverPort.ToString()), null);
             }
 
-            if (url.ToLower().StartsWith("https://auth.meta.com/settings/account/"))
+            if (url.ToLower().StartsWith("https://auth.meta.com/settings"))
             {
                 // redirect to oculus page
                 view.LoadUrl("https://oculus.com/experiences/quest");
