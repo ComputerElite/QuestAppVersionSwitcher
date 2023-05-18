@@ -1,6 +1,13 @@
-    const escapeHTMLPolicy = trustedTypes.createPolicy("myEscapePolicy", {
-        createHTML: (string) => string.replace(/>/g, "<"),
-    });
+    var escapeHTMLPolicy;
+    if(typeof trustedTypes === "undefined") {
+        escapeHTMLPolicy = {
+            createHTML: (string) => string.replace(/>/g, "<"),
+        };
+    } else {
+        escapeHTMLPolicy = trustedTypes.createPolicy("myEscapePolicy", {
+            createHTML: (string) => string.replace(/>/g, "<"),
+        })
+    }
 
     var qavsInjectionDiv = document.createElement("div");
     document.body.appendChild(qavsInjectionDiv);
@@ -27,7 +34,7 @@
     qavsNavbar.appendChild(qavsForwardButton)
     
     var qavsHomeButton = document.createElement("div");
-qavsHomeButton.style = "border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;"
+    qavsHomeButton.style = "border-radius: 5px; font-size: 100%; background-color: #5B5B5B; width: fit-content; height: fit-content; padding: 5px; cursor: pointer; flex-shrink: 0; user-select: none;"
     qavsHomeButton.onclick = () => {
         location = `http://127.0.0.1:${qavsPort}`
     }
