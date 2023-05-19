@@ -19,6 +19,11 @@
     animation: linear loaderSquareSpin 3s infinite;
 }
 
+#reloadDowngradeIframe {
+    z-index: 0;
+    margin-left: 70px;
+}
+
 .loaderCircleHole {
     position: absolute;
     background-color: #414141;

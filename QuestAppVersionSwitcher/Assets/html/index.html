@@ -16,7 +16,8 @@
                 <div class="button" style="margin-top: 5px;" onclick="LaunchApp()">Launch Game</div>
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
-            <div class="menuItem" section="downgrade">Downgrade</div>
+            <div class="menuItem" section="downgrade">Downgrade
+                <div class="button" id="reloadDowngradeIframe" onclick="ReloadDowngradeIFrame()">Reload</div></div>
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
             <div class="menuItem" section="mods" id="modsButton">Installed Mods</div>
@@ -195,7 +196,7 @@
                     <div id="backupTextBox" class="textBox"></div>
                 </div>
             </div>
-            <div class="contentItem hidden" style="padding: 0px;" id="downgrade" style="padding: 0px;">
+            <div class="contentItem hidden" style="padding: 0px; position: relative" id="downgrade" style="padding: 0px;">
                 <b style="font-size: 4em;" id="downgradeLoginMsg">To downgrade you must first log in in the tools & options tab!</b>
                 <iframe id="downgradeframe" src=""></iframe>
             </div>
