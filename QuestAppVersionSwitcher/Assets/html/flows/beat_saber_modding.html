@@ -173,7 +173,7 @@
         console.log("Changing app to " + package)
         fetch("/api/questappversionswitcher/changeapp", {
             method: "POST",
-            body: package
+            body: JSON.stringify({packageName: package})
         })
     }
     
