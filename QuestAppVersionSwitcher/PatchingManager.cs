@@ -132,7 +132,9 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
             QAVSWebserver.BroadcastPatchingStatus();
-            PatchingStatus status = GetPatchingStatus();
+            ZipArchive a = ZipFile.OpenRead(appLocation);
+            PatchingStatus status = GetPatchingStatus(a);
+            a.Dispose();
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
@@ -147,7 +149,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.backupName = backupName;
             QAVSWebserver.BroadcastPatchingStatus();
 
-            QAVSWebserver.GetBackupInfo(backupDir, true);
+            BackupManager.GetBackupInfo(backupDir, true);
         }
 
         // Uses https://github.com/Lauriethefish/QuestUnstrippedUnity to download an appropriate unstripped libunity.so for beat saber if there is one
@@ -281,7 +283,18 @@ namespace QuestAppVersionSwitcher
                 };
             }
             ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
-            return GetPatchingStatus(apk);
+            PatchingStatus s =  GetPatchingStatus(apk);
+            apk.Dispose();
+            return s;
+        }
+        
+        public static PatchingStatus GetPatchingStatusOfBackup(string package, string backupName)
+        {
+            string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupName + "/";
+            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(backupDir + "app.apk"));
+            PatchingStatus s =  GetPatchingStatus(apk);
+            apk.Dispose();
+            return s;
         }
 
         public static PatchingStatus GetPatchingStatus(ZipArchive apk)

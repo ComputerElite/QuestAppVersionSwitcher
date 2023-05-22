@@ -28,12 +28,16 @@
         <div class="content">
             <div class="contentItem hidden" id="patching">
                 <div class="button" id="changeApp3">Change app</div>
-                <h3>Currently selected game: <div class="inline packageName">some game</div></h3>
+                <br>
+                <div>Currently selected game: <b class="inline packageName">some game</b></div>
+                <div id="selectedBackup"></div>
+                <br>
                 <div id="patchStatus">Loading...</div>
                 <div class="textbox" id="patchingTextBox"></div>
-
+                <br>
+                <br>
                 <div id="patchingOptions">
-                    <h2>Patching options</h2>
+                    <h3>Patching options</h3>
                     <label class="option">
                         <label class="switch normal">
                             <input id="externalstorage" type="checkbox" checked>
@@ -44,21 +48,11 @@
                     <br>
                     <label class="option">
                         <label class="switch normal">
-                            <input id="handtracking" type="checkbox" checked>
+                            <input id="mic" type="checkbox" checked>
                             <span class="slider round"></span>
                         </label>
-                        Add hand tracking permission
+                        Microphone permission
                     </label>
-                    <br>
-                    <label class="option">
-                        Hand tracking version
-                        <select id="handtrackingversion">
-                            <option value="3">V2</option>
-                            <option value="2">V1 high frequency</option>
-                            <option value="1">V1</option>
-                        </select>
-                    </label>
-                    <br>
                     <br>
                     <label class="option">
                         <label class="switch normal">
@@ -68,6 +62,24 @@
                         Add Debug option
                     </label>
                     <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="handtracking" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Add hand tracking permission
+                    </label>
+                    <br>
+                    <label class="option" style="margin-left: 10px;">
+                        <b>Hand tracking version</b>
+                        <select style="margin-left: 20px; width: auto" class="inline" id="handtrackingversion">
+                            <option value="3">V2</option>
+                            <option value="2">V1 high frequency</option>
+                            <option value="1">V1</option>
+                        </select>
+                    </label>
+                    <br>
+                    <h4>Custom Permissions</h4>
                     <br>
                     <input type="text" id="otherName" placeholder="permission name">
                     <br>
@@ -76,8 +88,10 @@
                     <br>
                     <div id="other">
                     </div>
-                    <br>
                     <h4>Features</h4>
+                    <div class="button" onclick="AddSpecificFeature('com.oculus.feature.PASSTHROUGH', true)">Add Passthrough Feature</div>
+                    <br>
+                    <br>
                     <input type="text" id="featureName" placeholder="feature name">
                     <br>
                     <br>
@@ -94,8 +108,6 @@
                     <br>
                     <div id="otherFeatures">
                     </div>
-                    <br>
-                    <div class="button" onclick="AddSpecificFeature('com.oculus.feature.PASSTHROUGH', true)">Add Passthrough Feature</div>
                 </div>
                 
             </div>

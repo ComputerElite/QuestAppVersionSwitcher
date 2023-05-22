@@ -289,12 +289,20 @@ function UpdateVersion(version) {
 var isGamePatched = false
 const patchingOptions = document.getElementById("patchingOptions")
 var patchingStatus = {}
+var backupToPatch = ""
+function ModBackup(backup) {
+    backupToPatch = backup
+    document.getElementById("selectedBackup").innerHTML = backup ? `Selected Backup: <b>${backup}</b><br><div class='button' onclick='ModBackup("")'>Unselect backup</div>` : ""
+    OpenTab("patching")
+    UpdatePatchingStatus()
+}
 function UpdatePatchingStatus() {
     if(patchInProgress) {
         return;
     }
     patchStatus.innerHTML = `Loading<br><br>${squareLoader}`
-    fetch("/api/patching/getmodstatus").then(res => {
+    var backupExtra = "?package=" + config.currentApp + "&backupName=" + backupToPatch
+    fetch("/api/patching/getmodstatus" + (backupToPatch ? backupExtra : "")).then(res => {
         res.json().then(res => {
             UpdateVersion(res.version)
             patchingStatus = res
@@ -485,6 +493,11 @@ var patchInProgress = false
 var lastApp = ""
 function PatchGame() {
     patchInProgress = true
+    var addMicPerm = document.getElementById("mic").checked
+    if(addMicPerm) {
+        otherPermissions = otherPermissions.filter(a => a != "android.permission.RECORD_AUDIO")
+        otherPermissions.push("android.permission.RECORD_AUDIO")
+    }
     var patchOptions = {
         otherPermissions: otherPermissions,
         otherFeatures: otherFeatures,
@@ -493,11 +506,12 @@ function PatchGame() {
         handTrackingVersion: parseInt(handTrackingVersion.value),
         externalStorage: externalStorageCheckbox.checked
     }
+    var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
     fetch(`/api/patching/patchoptions`, {
         method: "POST",
         body: JSON.stringify(patchOptions)
     }).then(res => {
-        fetch("/api/patching/patchapk", {
+        fetch("/api/patching/patchapk" + extra, {
             method: "POST"
         }).then(res => {
             res.json().then(j => {
@@ -530,6 +544,7 @@ function CheckStartParams() {
     var backup = params.get("backup")
     var tab = params.get("tab")
     var logout = params.get("logout")
+    var backuptopatchParam = params.get("backuptopatch")
     afterRestore = params.get("afterrestore")
     afterDownload = params.get("afterdownload")
 
@@ -571,6 +586,10 @@ function CheckStartParams() {
     
     if(restorenow) {
         RestoreBackup(backup, package)
+    }
+    
+    if(backuptopatchParam) {
+        ModBackup(backuptopatchParam)
     }
 
     if(params.get("restart")) {
@@ -637,6 +656,7 @@ function TokenUIUpdate() {
 }
 
 var firstConfigFetch = true;
+var backupsFetching = false
 function UpdateUI(closeLists = false) {
     UpdateShownCosmetics()
     fetch("/api/questappversionswitcher/config").then(res => res.json().then(res => {
@@ -653,22 +673,39 @@ function UpdateUI(closeLists = false) {
             lastApp = config.currentApp
         })
         if(config.currentApp) {
-            fetch("/api/backups?package=" + config.currentApp).then(res => res.json().then(res => {
-                document.getElementById("backupList").innerHTML = ""
-                document.getElementById("size").innerHTML = res.backupsSizeString
-                if (res.backups) {
-                    res.backups.forEach(backup => {
-                        document.getElementById("backupList").innerHTML += `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString})</div>`
-                    })
-                }
-                if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
-                Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
-                    i.onclick = function () {
-                        selectedBackup = i.getAttribute("value")
-                        UpdateUI()
+            if(!backupsFetching) {
+                backupsFetching = true
+                fetch("/api/backups?package=" + config.currentApp).then(res => res.json().then(res => {
+                    backupsFetching = false
+                    document.getElementById("backupList").innerHTML = ""
+                    document.getElementById("size").innerHTML = res.backupsSizeString
+                    if (res.backups) {
+                        res.backups.forEach(backup => {
+                            var extra = ""
+                            if(backup.containsApk) {
+                                if(backup.isPatchedApk) {
+                                    extra = `<div style="margin-left: auto; margin-right: 0;">Modded</div>`
+                                } else {
+                                    extra = `<div class="button" style="margin-left: auto; margin-right: 0;" onClick="ModBackup('${backup.backupName}')">Mod this version</div>`
+                                }
+                            } else if(backup.containsAppData) {
+                                extra = `<div style="margin-left: auto; margin-right: 0;">App data only</div>`
+                            }
+                            // Also show mod this version button if backup is not modded and has an apk
+                            document.getElementById("backupList").innerHTML +=
+                                `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString}) ${extra}</div>`
+                        })
                     }
-                })
-            }))
+                    if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`
+                    Array.prototype.forEach.call(document.getElementsByClassName("listItem"), i => {
+                        i.onclick = function () {
+                            selectedBackup = i.getAttribute("value")
+                            UpdateUI()
+                        }
+                    })
+                }))
+            }
+            UpdatePatchingStatus()
         } else {
             document.getElementById("backupList").innerHTML = `<div class="listItem" value="">Select an app via the change app button above</div>`
         }
@@ -695,7 +732,6 @@ function UpdateUI(closeLists = false) {
         document.getElementById("appListContainer").className = "listContainer hidden"
         document.getElementById("appList").innerHTML = ""
     }
-    UpdatePatchingStatus()
 }
 
 function InstallAPKFromDisk() {

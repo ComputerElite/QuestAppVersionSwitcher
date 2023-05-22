@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using ComputerUtils.Android.AndroidTools;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -30,7 +31,18 @@ namespace QuestAppVersionSwitcher.Core
         }
         [JsonIgnore]
         public string password { get; set; } = "";
+
+        public List<DownloadedApp> downloadedApps { get; set; } = new List<DownloadedApp>();
     }
+
+    public class DownloadedApp
+    {
+        public string apkSHA256 { get; set; } = "";
+        public string package { get; set; } = "";
+        public string version { get; set; } = "";
+        public string binaryId { get; set; } = "";
+    }
+
     public class CoreVars : StrippedConfig // aka config
     {
         public string token { get; set; } = "";
@@ -51,11 +63,21 @@ namespace QuestAppVersionSwitcher.Core
         public readonly string AndroidObbLocation = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb/";
         public static string fileDir = "";
         public static string oculusLoginUrl = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fsecure.oculus.com%2F";
-
+        public static ReaderWriterLock locker = new ReaderWriterLock();
+        
         public void Save()
         {
-            File.WriteAllText(QAVSConfigLocation, JsonSerializer.Serialize(this));
-            QAVSWebserver.BroadcastConfig();
+            try
+            {
+                // Aquire a writer lock to make sure no other thread is writing to the file
+                locker.AcquireWriterLock(10000); //You might wanna change timeout value 
+                File.WriteAllText(QAVSConfigLocation, JsonSerializer.Serialize(this));
+            }
+            finally
+            {
+                locker.ReleaseWriterLock();
+                QAVSWebserver.BroadcastConfig();
+            }
         }
     }
 

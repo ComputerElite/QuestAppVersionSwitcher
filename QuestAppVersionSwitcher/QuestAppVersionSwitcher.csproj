@@ -77,13 +77,18 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidDevice.cs" />
     <Compile Include="APKSigner.cs" />
+    <Compile Include="BackupManager.cs" />
     <Compile Include="ClientModels.cs" />
     <Compile Include="CoreService.cs" />
     <Compile Include="CoreVars.cs" />
     <Compile Include="Cosmetics\Cosmetics.cs" />
     <Compile Include="DownloadListener.cs" />
     <Compile Include="DownloadManager.cs" />
+    <Compile Include="QAVSReport.cs" />
+    <Compile Include="QAVSWebViewClient.cs" />
+    <Compile Include="WebserverResponses.cs" />
     <None Include="LICENSE-QuestPatcher" />
     <Compile Include="FastFileDownloader.cs" />
     <Compile Include="FolderPermission.cs" />

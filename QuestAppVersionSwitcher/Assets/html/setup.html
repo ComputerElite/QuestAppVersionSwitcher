@@ -21,7 +21,7 @@
         <br>
         <br>
         <br>
-        <button id="openQAVS" style="font-size: 1em;" onclick="OpenQAVS()"><i>Open QAVS main menu by default</i></button>
+        <button id="openQAVS" style="font-size: 1em;" onclick="OpenQAVS()"><i>Skip setup assistant</i></button>
         <br>
         <div>Developed by ComputerElite</div>
     </div>
@@ -38,7 +38,7 @@
     function OpenQAVS() {
         if(localStorage.openMainDefault) {
             localStorage.removeItem("openMainDefault")
-            document.getElementById("openQAVS").innerHTML = "Open QAVS main menu by default"
+            document.getElementById("openQAVS").innerHTML = "Skip setup assistant"
         } else {
             localStorage.openMainDefault = true
             location = "/"

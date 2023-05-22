@@ -46,22 +46,6 @@ namespace QuestAppVersionSwitcher.ClientModels
         public List<string> browserIPs { get; set; } = new List<string>();
     }
 
-    public enum BackupInfoVersion
-    {
-        V1,
-        V2,
-        V3,
-        V4
-    }
-
-    public class BackupList
-    {
-        public List<BackupInfo> backups { get; set; } = new List<BackupInfo>();
-        public string lastRestored { get; set; } = "";
-        public long backupsSize { get; set; } = 0;
-        public string backupsSizeString { get; set; } = "";
-    }
-
     public class TokenRequest
     {
         public string token { get; set; } = "";

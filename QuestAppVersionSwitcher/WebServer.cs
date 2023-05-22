@@ -45,243 +45,11 @@ using WebView = Android.Webkit.WebView;
 
 namespace QuestAppVersionSwitcher
 {
-    public class QAVSWebViewClient : WebViewClient
-    {
-        public string injectJsJs = "var tag = document.createElement('script');tag.src = 'http://localhost:" +
-                                   CoreService.coreVars.serverPort + "/inject.js';document.head.appendChild(tag)";
-
-        public string injectedJs = "";
-        
-        // Grab token
-        public override void OnPageFinished(WebView view, string url)
-        {
-            CookieManager.Instance.Flush();
-            if(!url.ToLower().Contains("localhost") && !url.ToLower().StartsWith("https://auth.meta.com") && !url.ToLower().Contains("http://127.0.0.1"))
-            {
-                if (injectedJs == "")
-                {
-                    // Load qavs_inject.js
-                    injectedJs = new StreamReader(AndroidCore.assetManager.Open("html/qavs_inject.js")).ReadToEnd();
-                }
-                view.EvaluateJavascript(injectedJs.Replace("{0}", CoreService.coreVars.serverPort.ToString()), null);
-            }
-
-            if (url.ToLower().StartsWith("https://auth.meta.com/settings"))
-            {
-                // redirect to oculus page
-                view.LoadUrl("https://oculus.com/experiences/quest");
-            }
-        }
-
-        public static Dictionary<string, string> headers = new Dictionary<string, string>
-        {
-            ["sec-fetch-mode"] = "navigate",
-            ["sec-fetch-site"] = "same-origin",
-            ["sec-fetch-dest"] = "document",
-            ["sec-ch-ua-platform"] = "\"Linux\"",
-            ["sec-ch-ua"] = "\" Not A; Brand\";v=\"99\", \"Chromium\";v=\"104\"",
-            ["sec-ch-ua-mobile"] = "?0",
-            ["sec-fetch-user"] = "?1",
-            ["cross-origin-opener-policy"] = "unsafe-none"
-        };
-        
-        
-
-        public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
-        {
-            return base.ShouldInterceptRequest(view, request);
-
-            foreach (KeyValuePair<string, string> p in headers)
-            {
-                if(!request.RequestHeaders.ContainsKey(p.Key)) request.RequestHeaders.Add(p.Key, p.Value);
-                else request.RequestHeaders[p.Key] = p.Value;
-            }
-            if (request.RequestHeaders.ContainsKey("document-policy")) request.RequestHeaders.Remove("document-policy");
-            if (request.RequestHeaders.ContainsKey("document-domain")) request.RequestHeaders.Remove("document-domain");
-            
-            string cookie = CookieManager.Instance.GetCookie(request.Url.ToString());
-            if (cookie != null) request.RequestHeaders["cookie"] = cookie;
-            if (request.Method == "POST")
-            {
-                request.RequestHeaders["sec-fetch-mode"] = "cors";
-                request.RequestHeaders["sec-fetch-dest"] = "empty";
-            }
-            return base.ShouldInterceptRequest(view, request);
-        }
-
-        public Dictionary<string, string> GetHeaders(IDictionary<string, IList<string>> h)
-        {
-            Dictionary<string, string> headers = new Dictionary<string, string>();
-            foreach (KeyValuePair<string, IList<string>> p in h)
-            {
-                if (p.Value.Count > 0)
-                {
-                    if(p.Key != null) headers.Add(p.Key.ToLower(), p.Value[0]);
-                }
-            }
-            return headers;
-        }
-        
-        /*
-        public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
-        {
-            bool changed = false;
-            Logger.Log(request.Url.ToString());
-            if (request.RequestHeaders != null)
-            {
-                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-                {
-                    Logger.Log("Header: " + p.Key + " - " + p.Value);
-                    request.RequestHeaders[p.Key] = p.Value.Replace("require-trusted-types-for 'script';", "");
-                }
-            }
-            if (request.RequestHeaders != null)
-            {
-                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-                {
-                    if (p.Value.Contains(toRemove))
-                    {
-                        changed = true;
-                        request.RequestHeaders[p.Key] = p.Value.Replace(toRemove, "");
-                    }
-                }
-
-                if (changed)
-                    if (request.Url != null)
-                        view.LoadUrl(request.Url.ToString(), request.RequestHeaders);
-            }
-
-            return changed;
-        }
-        */
-        
-        
-	}
-
-    public class AndroidDevice
-    {
-        public int sdkVersion { get; set; } = 0;
-        public long freeSpace { get; set; } = 0;
-
-        public string freeSpaceString
-        {
-            get
-            {
-                return SizeConverter.ByteSizeToString(freeSpace);
-            }
-        }
-        public long totalSpace { get; set; } = 0;
-
-        public string totalSpaceString
-        {
-            get
-            {
-                return SizeConverter.ByteSizeToString(totalSpace);
-            }
-        }
-    }
-    
     public enum LoggedInStatus
     {
         NotLoggedIn = 0,
         SessionInvalid = 1,
         LoggedIn = 2
-    }
-    
-    public class ProgressResponse : GenericResponse
-    {
-        public double progress { get; set; } = 0;
-
-        public string progressString
-        {
-            get
-            {
-                return (progress * 100).ToString("F1") + "%";
-            }
-        }
-        public static string GetResponse(string msg, bool success, double progress)
-        {
-            ProgressResponse r = new ProgressResponse();
-            r.msg = msg;
-            r.success = success;
-            r.progress = progress;
-            return JsonSerializer.Serialize(r);
-        }
-    }
-
-    public class GenericResponse
-    {
-        public string msg { get; set; } = "";
-        public bool success { get; set; } = true;
-
-        public static string GetResponse(string msg, bool success)
-        {
-            GenericResponse r = new GenericResponse();
-            r.msg = msg;
-            r.success = success;
-            return JsonSerializer.Serialize(r);
-        }
-    }
-
-    public class ModResponse : GenericResponse
-    {
-        public int taskId { get; set; } = -1;
-        
-        public static string GetResponse(string msg, bool success, int taskId)
-        {
-            ModResponse r = new ModResponse();
-            r.msg = msg;
-            r.success = success;
-            r.taskId = taskId;
-            return JsonSerializer.Serialize(r);
-        }
-    }
-    public class IsAppInstalled : GenericResponse
-    {
-        public bool isAppInstalled { get; set; } = false;
-        public static string GetResponse(string msg, bool isAppInstalled, bool success)
-        {
-            IsAppInstalled r = new IsAppInstalled();
-            r.msg = msg;
-            r.isAppInstalled = isAppInstalled;
-            r.success = success;
-            return JsonSerializer.Serialize(r);
-        }
-    }
-    public class GotAccess : GenericResponse
-    {
-        public bool gotAccess { get; set; } = false;
-        public static string GetResponse(string msg, bool gotAccess, bool success)
-        {
-            GotAccess r = new GotAccess();
-            r.msg = msg;
-            r.gotAccess = gotAccess;
-            r.success = success;
-            return JsonSerializer.Serialize(r);
-        }
-    }
-
-    public class BackupStatus
-    {
-        public bool done { get; set; } = false;
-        public bool error { get; set; } = false;
-        public string errorText { get; set; } = "";
-        public string currentOperation { get; set; } = "";
-        public int doneOperations { get; set; } = 0;
-        public int totalOperations { get; set; } = 0;
-        public double progress { get; set; } = 0;
-        public string progressString
-        {
-            get
-            {
-                return (int)Math.Round(progress * 100) + "%";
-            }
-        }
-    }
-
-    public class PatchStatus : BackupStatus
-    {
-        public string backupName { get; set; } = "";
     }
     
     public class QAVSWebserver
@@ -501,7 +269,18 @@ namespace QuestAppVersionSwitcher
             }); 
             server.AddRoute("GET", "/api/patching/getmodstatus", request =>
             {
-                PatchingStatus status = PatchingManager.GetPatchingStatus(request.queryString.Get("package"));
+                string package = request.queryString.Get("package");
+                string backup = request.queryString.Get("backup");
+                PatchingStatus status;
+                if (backup != null && backup != "")
+                {
+                    status = PatchingManager.GetPatchingStatusOfBackup(package, backup);
+                }
+                else
+                {
+                    // Check installed apk
+                    status = PatchingManager.GetPatchingStatus(package);
+                }
                 request.SendString(JsonSerializer.Serialize(status), "application/json");
                 return true;
             });
@@ -909,7 +688,7 @@ namespace QuestAppVersionSwitcher
                 if (Directory.Exists(backupDir))
                 {
 
-                    serverRequest.SendString(JsonSerializer.Serialize(GetBackups(package)), "application/json");
+                    serverRequest.SendString(JsonSerializer.Serialize(BackupManager.GetBackups(package)), "application/json");
                 }
                 else
                 {
@@ -1024,7 +803,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
 
-                GetBackupInfo(backupDir, true); // make sure backup metadata is up to date
+                BackupManager.GetBackupInfo(backupDir, true); // make sure backup metadata is up to date
 
                 backupStatus.done = true;
                 backupStatus.currentOperation = "Backup of " + package + " with the name " + backupname + " finished";
@@ -1114,7 +893,7 @@ namespace QuestAppVersionSwitcher
                 }
 
                 
-                serverRequest.SendString(JsonSerializer.Serialize(GetBackupInfo(backupDir)), "application/json");
+                serverRequest.SendString(JsonSerializer.Serialize(BackupManager.GetBackupInfo(backupDir)), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/grantaccess", serverRequest =>
@@ -1423,7 +1202,7 @@ namespace QuestAppVersionSwitcher
 
         private void ChangeApp(string packageName, string name = "")
         {
-            Logger.Log("Settings selected app to " + packageName);
+            Logger.Log("Setting selected app to " + packageName);
             CoreService.coreVars.currentApp = packageName;
             CoreService.coreVars.currentAppName = name == "" ? AndroidService.GetAppname(packageName) : name;
             CoreService.coreVars.Save();
@@ -1477,52 +1256,6 @@ namespace QuestAppVersionSwitcher
 			return version;
 		}
 
-        public static BackupInfo GetBackupInfo(string path, bool loadAnyway = false)
-        {
-            BackupInfo info = new BackupInfo();
-            string pathWithoutSlash = path.EndsWith(Path.DirectorySeparatorChar)
-                ? path.Substring(0, path.Length - 1)
-                : path;
-            if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
-            {
-                info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
-                if (info.BackupInfoVersion < BackupInfoVersion.V4) return GetBackupInfo(path, true);
-                return info;
-            }
-
-            info.backupName = Path.GetFileName(pathWithoutSlash);
-            info.containsAppData = Directory.Exists(pathWithoutSlash + "/" + Directory.GetParent(pathWithoutSlash).Name);
-            info.containsObbs = Directory.Exists(pathWithoutSlash + "/obb/" + Directory.GetParent(pathWithoutSlash).Name);
-            info.backupLocation = path;
-            info.backupSize = FileManager.GetDirSize(pathWithoutSlash);
-            info.backupSizeString = SizeConverter.ByteSizeToString(info.backupSize);
-            info.containsApk = File.Exists(pathWithoutSlash + "/app.apk");
-            if (info.containsApk)
-            {
-                ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk");
-                PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
-                info.gameVersion = s.version;
-                info.isPatchedApk = s.isPatched;
-                apk.Dispose();
-            }
-            File.WriteAllText(pathWithoutSlash + "/info.json", JsonSerializer.Serialize(info));
-            return info;
-        }
-
-		public BackupList GetBackups(string package)
-        {
-            string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/";
-            BackupList backups = new BackupList();
-            foreach (string d in Directory.GetDirectories(backupDir))
-            {
-                backups.backups.Add(GetBackupInfo(d));
-                backups.backupsSize += backups.backups.Last().backupSize;
-            }
-            if (File.Exists(backupDir + "lastRestored.txt")) backups.lastRestored = File.ReadAllText(backupDir + "lastRestored.txt");
-            backups.backupsSizeString = SizeConverter.ByteSizeToString(backups.backupsSize);
-            return backups;
-        }
-
         public bool IsNameFileNameSafe(string name)
         {
             foreach (char c in ReservedChars)
@@ -1546,52 +1279,4 @@ namespace QuestAppVersionSwitcher
             return server.ips;
         }
     }
-
-    public class ChangeAppRequest
-    {
-        public string packageName { get; set; } = "";
-        public string name { get; set; } = "";
-    }
-
-    public class BackupInfo
-    {
-        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V4;
-        public string backupName { get; set; } = "";
-        public string backupLocation { get; set; } = "";
-        public bool containsAppData { get; set; } = false;
-        public bool containsObbs { get; set; } = false;
-        public bool isPatchedApk { get; set; } = false;
-        public bool containsApk { get; set; } = false;
-        public string gameVersion { get; set; } = "unknown";
-        public long backupSize { get; set; } = 0;
-        public string backupSizeString { get; set; } = "";
-    }
-
-    public class MultiCastContent
-    {
-		public string QAVSVersion { get { return CoreService.version.ToString(); } }
-        public List<string> ips { get; set; }
-        public int port { get; set; }
-	}
-
-	public class QAVSReport
-	{
-        public int androidVersion { get; set; }
-		public string log { get; set; }
-		public string version { get; set; }
-		public DateTime reportTime { get; set; }
-		public string reportId { get; set; }
-		public bool userIsLoggedIn { get; set; }
-        public List<string> userEntitlements { get; set; } = new List<string>();
-		public long availableSpace { get; set; }
-        public PatchingStatus appStatus { get; set; }
-		public string availableSpaceString
-		{
-			get
-			{
-				return SizeConverter.ByteSizeToString(availableSpace);
-			}
-		}
-        public ModsAndLibs modsAndLibs { get; set; } = null;
-	}
 }

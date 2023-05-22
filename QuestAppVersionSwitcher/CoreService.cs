@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
+using Android.Views;
 using AndroidX.Activity.Result;
 using ComputerUtils.Android;
 using Newtonsoft.Json;
@@ -43,6 +44,7 @@ namespace QuestAppVersionSwitcher.Core
             browser.Settings.DatabasePath = "/data/data/" + browser.Context.PackageName + "/databases/";
             browser.Settings.LoadWithOverviewMode = true;
             browser.Settings.UseWideViewPort = true;
+            browser.OverScrollMode = OverScrollMode.Never;
             browser.Settings.AllowFileAccess = true;
             browser.Settings.MixedContentMode = MixedContentHandling.AlwaysAllow;
             browser.Settings.JavaScriptCanOpenWindowsAutomatically = true;
