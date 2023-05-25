@@ -295,6 +295,8 @@ function ModBackup(backup) {
     document.getElementById("selectedBackup").innerHTML = backup ? `Selected Backup: <b>${backup}</b><br><div class='button' onclick='ModBackup("")'>Unselect backup</div>` : ""
     OpenTab("patching")
     UpdatePatchingStatus()
+    // do again to make sure it didn't get overriden by an earlier update which took longer
+    setTimeout(UpdatePatchingStatus, 1000)
 }
 function UpdatePatchingStatus() {
     if(patchInProgress) {

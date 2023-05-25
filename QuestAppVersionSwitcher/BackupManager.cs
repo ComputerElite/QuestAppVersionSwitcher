@@ -44,6 +44,7 @@ namespace QuestAppVersionSwitcher
                 info.isPatchedApk = s.isPatched;
                 apk.Dispose();
                 // Calculate SHA 256 of apk file
+                /*
                 if (!calculating.Contains(pathWithoutSlash + "/app.apk"))
                 {
                     Logger.Log("Calculating SHA256 of apk file " + pathWithoutSlash + "/app.apk");
@@ -53,6 +54,7 @@ namespace QuestAppVersionSwitcher
                     fs.Dispose();
                     Logger.Log("Calculated SHA256 of apk file " + pathWithoutSlash + "/app.apk");
                 }
+                */
             }
             File.WriteAllText(pathWithoutSlash + "/info.json", JsonSerializer.Serialize(info));
             return info;
