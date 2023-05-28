@@ -9,7 +9,7 @@ export default defineConfig({
     proxy: {
       // string shorthand: http://localhost:5173/foo -> http://localhost:4567/foo
       '/api': {
-        target: 'http://localhost:50002/',
+        target: 'http://127.0.0.1:5002/',
       }
     },
   },

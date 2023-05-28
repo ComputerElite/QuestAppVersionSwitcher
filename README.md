@@ -44,3 +44,17 @@ msbuild /t:PackageForAndroid /t:SignAndroidPackage /p:Configuration=Release
 ```
 
 *The apk will be located at `QuestAppVersionSwitcher\bin\Debug\com.ComputerElite.questappversionswitcher-Signed.apk`*
+
+### Forward ports from android emulator to host machine
+
+Frontend development is done on the port 3000, for it we need to forward the port from the android emulator to the host machine.
+Run following commands in the terminal to forward needed ports:
+We are not using the ports 50002 and 50003 on the host machine because windows uses it sometimes and it fails to forward it.
+
+```bash
+# Forward web app port
+adb forward tcp:5002 tcp:50002
+
+# Forward websocket port (for the development version) 
+adb forward tcp:3001 tcp:50003
+```
