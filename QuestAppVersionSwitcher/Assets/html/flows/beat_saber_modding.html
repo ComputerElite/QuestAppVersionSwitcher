@@ -489,9 +489,6 @@
     
     function UpdateSupportedBeatSaberVersions() {
         return new Promise((resolve, reject) => {
-            SupportedBeatSaberVersions = ["1.0.0"]
-            resolve()
-            return
             fetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json").then(res => res.json().then(j => {
                 for(const [key, value] of Object.entries(j)) {
                     SupportedBeatSaberVersions.push(key);
