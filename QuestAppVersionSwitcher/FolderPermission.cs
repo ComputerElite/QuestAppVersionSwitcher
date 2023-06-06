@@ -79,7 +79,6 @@ namespace QuestAppVersionSwitcher
             }
             try
             {
-                Logger.Log("Copying " + from + " to " + to);
                 Stream file = GetOutputStream(to);
                 
                 if (file.CanWrite)
@@ -101,7 +100,6 @@ namespace QuestAppVersionSwitcher
         {
             try
             {
-                Logger.Log("Copying " + source.Name + " to " + to);
                 Stream file = System.IO.File.OpenWrite(to);
                 
                 if (file.CanWrite)
@@ -123,7 +121,6 @@ namespace QuestAppVersionSwitcher
         {
             try
             {
-                Logger.Log("Copying " + source + " to " + to);
                 Stream file = AndroidCore.context.ContentResolver.OpenOutputStream(to.Uri);
                 
                 if (file.CanWrite)
@@ -273,9 +270,7 @@ namespace QuestAppVersionSwitcher
 
         public static void InternalDirectoryCopy(string source, DocumentFile destDir)
         {
-            Logger.Log("Starting directory copy: string, DocumentFile");
             if (destDir == null) return;
-            Logger.Log(source + " -> " + destDir.Uri);
             
             // Delete all files and directories in destination directory
             foreach (DocumentFile f in destDir.ListFiles())
@@ -283,26 +278,21 @@ namespace QuestAppVersionSwitcher
                 f.Delete();
             }
             
-            Logger.Log("Cleared dest");
 
             DirectoryInfo dir = new DirectoryInfo(source);
-            Logger.Log("Got dir info");
 
             // Get the files in the directory and copy them to the new location.
             foreach (FileInfo file in dir.GetFiles())
             {
                 try
                 {
-                    Logger.Log("Copying " + file.Name);
                     Copy(file.FullName, destDir.CreateFile("application/octet-stream", file.Name));
                 }
                 catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e.ToString(), LoggingType.Error); }
             }
             
-            Logger.Log("Copied all files");
             foreach (DirectoryInfo subdir in dir.GetDirectories())
             {
-                Logger.Log("Continuing with subdir " + subdir.Name);
                 InternalDirectoryCopy(subdir.FullName, destDir.CreateDirectory(subdir.Name));
             }
         }

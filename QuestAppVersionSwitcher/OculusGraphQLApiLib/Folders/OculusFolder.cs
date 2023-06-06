@@ -19,6 +19,5 @@ namespace OculusGraphQLApiLib.Folders
         {
             return oculusFolder + Path.DirectorySeparatorChar + "Manifests" + Path.DirectorySeparatorChar + canonicalName + ".json";
         }
-        
     }
 }

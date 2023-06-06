@@ -66,11 +66,11 @@
                 var errors = operations.filter(x => x.type == QAVSError);
 
                 var html = `
-                ${downloadingMods.length > 0 ? `<b>${downloadingMods.length}</b> mod(s) downloading<br>` : ``}
-                ${queuedMods.length > 0 ? `<b>${queuedMods.length}</b> mod(s) queued for install<br>` : ``}
-                ${installingMods.length > 0 ? `<b>${installingMods.length}</b> mod(s) installing<br>` : ``}
-                ${downloadingDependencies.length > 0 ? `<b>${downloadingDependencies.length}</b> dependencies downloading<br>` : ``}
-                ${errors.length > 0 ? `<div style="color: #EE0000;"><b>${errors.length}</b> error(s), more info in <a href="http://127.0.0.1:${qavsPort}?tab=mods">installed mods tab</a></div><br>` : ``}
+                ${downloadingMods.length > 0 ? `${downloadingMods.length} mod(s) downloading\n` : ``}
+                ${queuedMods.length > 0 ? `${queuedMods.length} mod(s) queued for install\n` : ``}
+                ${installingMods.length > 0 ? `${installingMods.length} mod(s) installing\n` : ``}
+                ${downloadingDependencies.length > 0 ? `${downloadingDependencies.length} dependencies downloading\n` : ``}
+                ${errors.length > 0 ? `${errors.length}</b> error(s), more info in <a href="http://127.0.0.1:${qavsPort}?tab=mods">installed mods tab</a>` : ``}
             `;
                 if(html.trim()) {
                     QAVSsomethingWasRunning = true
@@ -110,7 +110,7 @@
     }
 
 // Modify sign in options on auth.meta.com
-    if(location.host.contains("auth.meta.com")) {
+    if(location.host.includes("auth.meta.com")) {
         console.log("auth.meta.com")
         if(location.href.startsWith("https://auth.meta.com/register/facebook/")) {
             // Registering with facebook shouldn't be happening on headset

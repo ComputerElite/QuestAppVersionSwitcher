@@ -303,7 +303,7 @@ function UpdatePatchingStatus() {
         return;
     }
     patchStatus.innerHTML = `Loading<br><br>${squareLoader}`
-    var backupExtra = "?package=" + config.currentApp + "&backupName=" + backupToPatch
+    var backupExtra = "?package=" + config.currentApp + "&backup=" + backupToPatch
     fetch("/api/patching/getmodstatus" + (backupToPatch ? backupExtra : "")).then(res => {
         res.json().then(res => {
             UpdateVersion(res.version)

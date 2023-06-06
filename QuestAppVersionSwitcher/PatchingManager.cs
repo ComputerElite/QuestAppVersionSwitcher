@@ -291,7 +291,7 @@ namespace QuestAppVersionSwitcher
         public static PatchingStatus GetPatchingStatusOfBackup(string package, string backupName)
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupName + "/";
-            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(backupDir + "app.apk"));
+            ZipArchive apk = ZipFile.OpenRead(backupDir + "app.apk");
             PatchingStatus s =  GetPatchingStatus(apk);
             apk.Dispose();
             return s;
