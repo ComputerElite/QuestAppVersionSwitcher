@@ -692,7 +692,7 @@ namespace QuestAppVersionSwitcher
                 }
                 else
                 {
-                    serverRequest.SendString("{}", "application/json");
+                    serverRequest.SendString(JsonSerializer.Serialize(new BackupList()), "application/json");
                 }
                 return true;
             });
