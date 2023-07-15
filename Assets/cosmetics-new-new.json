@@ -20,25 +20,6 @@
                 "requiresModded": true
             },
             {
-                "name": "Whackers",
-                "fileTypes": [".whacker"],
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Whackers/",
-                "requiresModded": true
-            },
-            {
-                "name": "Boxes",
-                "fileTypes": [".box"],
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Boxes/",
-                "requiresModded": true
-            },
-            {
-                "name": "Cyoobs",
-                "fileTypes": [".cyoob"],
-                "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/Qosmetics/Cyoobs/",
-                "requiresModded": true
-            }
-            ,
-            {
                 "name": "Hit Sounds",
                 "fileTypes": [".ogg", ".mp3", ".mp2", ".wav", ".aiff", ".aif"],
                 "directory": "/sdcard/ModData/com.beatgames.beatsaber/Mods/QuestSounds/HitSounds/",
