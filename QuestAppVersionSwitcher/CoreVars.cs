@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using ComputerUtils.Android.AndroidTools;
+using Java.Lang;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -99,9 +100,12 @@ namespace QuestAppVersionSwitcher.Core
 
     public enum HandTrackingVersion
     {
-        None,
+        Default,
+        [Deprecated]
         V1,
+        [Deprecated]
         V1HighFrequency,
-        V2
+        V2,
+        V2_1
     }
 }

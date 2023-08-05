@@ -367,7 +367,7 @@ namespace QuestAppVersionSwitcher
                 });
             }
 
-            if (permissions.handTrackingVersion != HandTrackingVersion.None)
+            if (permissions.handTracking)
             {
                 // For some reason these are separate permissions, but we need both of them
                 addingPermissions.AddRange(new[]
@@ -422,9 +422,11 @@ namespace QuestAppVersionSwitcher
 
             switch (permissions.handTrackingVersion)
             {
-                case HandTrackingVersion.None:
+                case HandTrackingVersion.Default:
+                    Logger.Log("Not specifying hand tracking version. Latest will be used.");
+                    break;
                 case HandTrackingVersion.V1:
-                    Logger.Log("No need for any extra hand tracking metadata (v1/no tracking)");
+                    Logger.Log("Hand tracking V1 is deprecated");
                     break;
                 case HandTrackingVersion.V1HighFrequency:
                     Logger.Log("Adding high-frequency V1 hand-tracking. . .");
@@ -438,6 +440,13 @@ namespace QuestAppVersionSwitcher
                     frequencyElement = new AxmlElement("meta-data");
                     AddNameAttribute(frequencyElement, "com.oculus.handtracking.version");
                     frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "V2.0"));
+                    appElement.Children.Add(frequencyElement);
+                    break;
+                case HandTrackingVersion.V2_1:
+                    Logger.Log("Adding V2.1 hand-tracking. . .");
+                    frequencyElement = new AxmlElement("meta-data");
+                    AddNameAttribute(frequencyElement, "com.oculus.handtracking.version");
+                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "V2.1"));
                     appElement.Children.Add(frequencyElement);
                     break;
             }

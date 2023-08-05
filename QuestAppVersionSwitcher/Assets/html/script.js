@@ -343,6 +343,7 @@ const operationsList = document.getElementById("operationsList")
 
 const externalStorageCheckbox = document.getElementById("externalstorage")
 const handTrackingCheckbox = document.getElementById("handtracking")
+const handTrackingVersion = document.getElementById("handtrackingversion")
 const debugCheckbox = document.getElementById("debug")
 const otherContainer = document.getElementById("other")
 var otherPermissions = []
@@ -504,7 +505,7 @@ function PatchGame() {
         otherFeatures: otherFeatures,
         debug: debugCheckbox.checked,
         handTracking: handTrackingCheckbox.checked,
-        handTrackingVersion: 3, // V2
+        handTrackingVersion: parseInt(handTrackingVersion.value),
         externalStorage: externalStorageCheckbox.checked
     }
     var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
