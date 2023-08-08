@@ -86,6 +86,7 @@
     <Compile Include="Cosmetics\Cosmetics.cs" />
     <Compile Include="DownloadListener.cs" />
     <Compile Include="DownloadManager.cs" />
+    <Compile Include="LaunchAppTask.cs" />
     <Compile Include="QAVSReport.cs" />
     <Compile Include="QAVSWebViewClient.cs" />
     <Compile Include="WebserverResponses.cs" />

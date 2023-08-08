@@ -35,6 +35,7 @@ using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
 using Fleck;
+using Java.Util;
 using Newtonsoft.Json;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
@@ -372,7 +373,7 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/api/questappversionswitcher/kill", request =>
             {
                 CookieManager.Instance.Flush();
-                Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
                 return true;
             });
             server.AddRoute("GET", "/api/questappversionswitcher/loggedinstatus", request =>
@@ -488,7 +489,10 @@ namespace QuestAppVersionSwitcher
 			server.AddRoute("POST", "/api/android/launch", serverRequest =>
             {
                 serverRequest.SendString(GenericResponse.GetResponse("Launching " + CoreService.coreVars.currentApp, true), "application/json");
+
                 AndroidService.LaunchApp(CoreService.coreVars.currentApp);
+                Timer t = new Timer();
+                t.Schedule(new LaunchAppTask(), 2000);
                 return true;
             });
 			server.AddRoute("GET", "/api/android/installedappsandbackups", serverRequest =>
