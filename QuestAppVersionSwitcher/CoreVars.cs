@@ -46,6 +46,8 @@ namespace QuestAppVersionSwitcher.Core
 
     public class CoreVars : StrippedConfig // aka config
     {
+        public string qavsVersion { get; set; } = "";
+        public List<string> accessFolders { get; set; } = new List<string>();
         public string token { get; set; } = "";
         public PatchingPermissions patchingPermissions = new PatchingPermissions();
 		public static Cosmetics cosmetics = new Cosmetics();

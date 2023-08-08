@@ -72,6 +72,12 @@ namespace QuestAppVersionSwitcher.Core
                 if (!File.Exists(coreVars.QAVSConfigLocation))
                     File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
                 coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
+                if (coreVars.qavsVersion != version.ToString())
+                {
+                    coreVars.accessFolders.Clear();
+                }
+                coreVars.qavsVersion = version.ToString();
+                coreVars.Save();
                 if (!File.Exists(coreVars.QAVSUIConfigLocation))
                     File.WriteAllText(coreVars.QAVSUIConfigLocation, "{}");
                 QAVSWebserver.uiConfig = JsonConvert.DeserializeObject(File.ReadAllText(coreVars.QAVSUIConfigLocation));
