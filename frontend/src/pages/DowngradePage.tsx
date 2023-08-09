@@ -300,7 +300,7 @@ function SwitchGameModal(props: { open: boolean, onClose: () => void }) {
       return;
     }
 
-    await changeManagedApp(game.packageName);
+    await changeManagedApp(game.packageName, game.appName);
 
     await refetchSettings();
     await refetchModdingStatus();

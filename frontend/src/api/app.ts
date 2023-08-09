@@ -107,13 +107,25 @@ export async function setOculusToken(token: string, password: string): Promise<b
 
 /**
  * Change current app to the given app id
- * @param appId
+ * @param appId id of the app to change to
+ * @param appName name of the app to change to for pretty display (optional) 
  * @returns true if the request was successful
  */
-export async function changeManagedApp(appId: string): Promise<boolean> {
+export async function changeManagedApp(appId: string, appName?: string): Promise<boolean> {
+    let data: {
+        packageName: string;
+        name?: string;
+    } = {
+        packageName: appId
+    };
+
+    if (appName) {
+        data["name"] = appName;
+    }
+
     let result = await fetch(`/api/questappversionswitcher/changeapp`, {
         method: "POST",
-        body: JSON.stringify({packageName: appId})
+        body: JSON.stringify(data)
     });
 
     if (result.status != 200) {
