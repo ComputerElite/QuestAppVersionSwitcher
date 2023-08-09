@@ -1,8 +1,8 @@
 import { createStore } from "solid-js/store";
 import { ModTask, QAVSModOperationType, getModOperations } from "../api/mods";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, on } from "solid-js";
 import toast from "solid-toast";
-import { refetchModdingStatus, refetchPatchingOptions } from "../store";
+import { config, refetchModdingStatus, refetchPatchingOptions } from "../store";
 import { refetchMods } from "./mods";
 import { GetWSFullURL } from "../util";
 import { refetchBackups } from "./backups";
@@ -148,26 +148,40 @@ export interface BackupProgressData {
 // Websocket connection
 let ws: WebSocket | null = null;
 
-export function InitWS() {
-    ws = new WebSocket(GetWSFullURL());
+export async function InitWS(port?: number, attempts: number = 0) {
+    // Close the old websocket
+    if (ws) {
+        ws.close();
+    }
+    ws = new WebSocket(GetWSFullURL(port));
     // connect to websocket one port higher than the server
     ws.onerror = function (error) {
         setSocketStatus(WebSocketStatus.ERROR);
         console.log("WebSocket Error: " + error + ". Reconnecting...");
+
+        if (attempts > 5) {
+            console.error("Failed to connect to websocket after 5 attempts");
+            return;
+        }
         // reconnect
-        ws = new WebSocket(GetWSFullURL());
+        InitWS(port, attempts + 1);
     }
 
     ws.onclose = function (e) {
         setSocketStatus(WebSocketStatus.DISCONNECTED);
         console.log("WebSocket closed. Reconnecting...");
         // reconnect
-        ws = new WebSocket(GetWSFullURL());
+        if (attempts > 5) {
+            console.error("Failed to connect to websocket after 5 attempts");
+            return;
+        }
+        InitWS(port, attempts + 1);
     }
 
     ws.onopen = function (e) {
         console.log("WebSocket connected");
         setSocketStatus(WebSocketStatus.CONNECTED);
+        attempts = 0;
     }
 
     ws.onmessage = function (e) {
@@ -262,3 +276,10 @@ createEffect(async () => {
         console.error(e);
     }   
 });
+
+createEffect(on(config, async (config, prevConfig) => {
+    // If the websocket port changes, we need to reconnect
+    if (prevConfig?.wsPort != config?.wsPort) {
+        InitWS(config?.wsPort);
+    }
+}))

@@ -53,8 +53,24 @@ We are not using the ports 50002 and 50003 on the host machine because windows u
 
 ```bash
 # Forward web app port
-adb forward tcp:5002 tcp:50002
+adb forward tcp:50002 tcp:50002
 
 # Forward websocket port (for the development version) 
-adb forward tcp:3001 tcp:50003
+adb forward tcp:50003 tcp:50003
 ```
+
+#### Help, my ports are not forwarding!
+
+You might have this port already in use or you might need to change the dynamic port range on windows.
+
+If you are having trouble forwarding ports and nothing is using them, try running the following commands as administrator and **reboot**:
+
+```bash
+netsh int ipv4 set dynamic tcp start=51152 num=14384
+netsh int ipv6 set dynamic tcp start=51152 num=14384
+```
+
+These commands will set the dynamic port range to 51152-65535. This should fix the issue.
+Windows uses ports 50002 and 50003 sometimes, for hyper-v and other stuff. This is why we need to change the dynamic port range to free the ports.
+
+[Relevant github issue](https://github.com/docker/for-win/issues/3171#issuecomment-554587817)

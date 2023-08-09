@@ -245,7 +245,7 @@ function DownloadButton(props: { version: IDisplayVersion, gameinfo?: IOculusDBA
 
 
   return (
-    <RunButton icon={<DownloadRounded />} text="Download" variant="success" onClick={() => {
+    <RunButton icon={<DownloadRounded />} text="Download" variant="success" onClick={async () => {
       toast.success("Downloading...");
 
       let ass = {
@@ -258,8 +258,12 @@ function DownloadButton(props: { version: IDisplayVersion, gameinfo?: IOculusDBA
         password: "",
         obbList: props.version.obbList
       };
-
-      downloadOculusGame(ass);
+      try {
+        await downloadOculusGame(ass);
+      } catch (e) {
+        toast.error((e as unknown as Error).message);
+      }
+      
     }} />
   )
 }

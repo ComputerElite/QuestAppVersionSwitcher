@@ -112,13 +112,13 @@ export function GetWSPort(): number {
 }
 
 // 
-export function GetWSFullURL(route?: string): string {
+export function GetWSFullURL(port?:number, route?: string, ): string {
     // if https, use wss
     if (window.location.protocol == "https:") {
-        return `wss://${window.location.hostname}:${GetWSPort()}${route ?? ""}`;
+        return `wss://${window.location.hostname}:${port ?? GetWSPort()}${route ?? ""}`;
     }
 
-    return `ws://${window.location.hostname}:${GetWSPort()}${route ?? ""}`;
+    return `ws://${window.location.hostname}:${port ?? GetWSPort()}${route ?? ""}`;
 }
 
 // Get android version name from sdk version

@@ -15,9 +15,12 @@ interface getConfigResponse {
     currentApp: string;
     currentAppName?: string;
     serverPort: number;
+    wsPort: number;
     token: string;
     loginStep: number;
     password: string;
+    passwordSet: boolean;
+    downloadedApps: string[];
 }
 
 export async function getConfig(): Promise<getConfigResponse> {
@@ -110,7 +113,7 @@ export async function setOculusToken(token: string, password: string): Promise<b
 export async function changeManagedApp(appId: string): Promise<boolean> {
     let result = await fetch(`/api/questappversionswitcher/changeapp`, {
         method: "POST",
-        body: appId
+        body: JSON.stringify({packageName: appId})
     });
 
     if (result.status != 200) {

@@ -34,7 +34,6 @@ const App: Component = () => {
     await refetchAppInfo();
     await refetchModdingStatus();
     await refetchCosmeticTypes();
-    await InitWS();
   })
 
   return (

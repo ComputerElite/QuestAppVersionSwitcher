@@ -6,6 +6,7 @@ import { getCosmeticsTypes } from "./api/cosmetics";
 import { createStore } from "solid-js/store";
 import { getDeviceInfo } from "./api/android";
 
+
 export const [initialized, setInitialized] = createSignal<boolean>(false)
 
 // CurrentApplication
@@ -32,12 +33,13 @@ export const [patchingOptions, { mutate: mutatePatchingOptions, refetch: refetch
             addExternalStorage: options.externalStorage,
             addDebug: options.debug,
             additionalPermissions: options.otherPermissions,
+            otherFeatures: options.otherFeatures,
         }
     }),
     { storage: createSignal });
 
 // Refetch modding status if the config changes
-createEffect(on(config, async (config) => {
+createEffect(on(config, async (config, prevConfig) => {
     setCurrentApplication(config?.currentApp ?? null)
     await refetchModdingStatus();
     await refetchPatchingOptions();
@@ -50,4 +52,5 @@ export interface InternalPatchingOptions {
     addExternalStorage: boolean;
     addDebug: boolean;
     additionalPermissions: string[];
+    otherFeatures: string[];
 }

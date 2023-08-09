@@ -168,8 +168,8 @@ export async function downloadOculusGame(options: downloadRequest) {
     });
 
     if (result.status == 403) {
-        let text = await result.text();
-        throw new Error(text)
+        let json = await result.json();
+        throw new Error(json.msg)
     }
 
     return await result.json();

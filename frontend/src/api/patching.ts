@@ -6,7 +6,7 @@ interface getPatchingModStatusResponse {
     canBePatched: boolean;
     version: string;
     versionCode: string;
-    moddedJson: {
+    moddedJson?: {
         patcherName: string;
         patcherVersion: string;
         modloaderName: string;
@@ -29,6 +29,7 @@ interface PatchingRequestPermissions {
     externalStorage: boolean;
     debug: boolean;
     otherPermissions: string[];
+    otherFeatures: string[];
 }
 
 
@@ -39,6 +40,7 @@ export async function setPatchingOptions(permissions: InternalPatchingOptions): 
         externalStorage: permissions.addExternalStorage,
         debug: permissions.addDebug,
         otherPermissions: permissions.additionalPermissions,
+        otherFeatures: permissions.otherFeatures,
     }
 
     let result = await fetch(`/api/patching/patchoptions`,

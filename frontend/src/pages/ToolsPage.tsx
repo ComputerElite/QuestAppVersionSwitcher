@@ -300,7 +300,6 @@ export default function ToolsPage() {
 
         <Box sx={{ marginY: 3 }}>
           <OptionHeader>Server control</OptionHeader>
-
           <Box sx={{
             display: "flex",
             gap: 0,

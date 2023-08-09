@@ -230,6 +230,10 @@ export async function launchCurrentApp(): Promise<boolean> {
 
 interface getDeviceInfoResponse {
     sdkVersion: number;
+    freeSpace: number;
+    freeSpaceString: string;
+    totalSpace: number;
+    totalSpaceString: string;
 }
 /**
  * Gets the device info
