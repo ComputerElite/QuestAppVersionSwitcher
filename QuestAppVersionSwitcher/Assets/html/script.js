@@ -531,7 +531,7 @@ function PatchGame() {
 
 UpdateUI()
 TokenUIUpdate()
-const oculusLink = "https://auth.meta.com/"
+const oculusLink = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fdeveloper.oculus.com%2Fmanage%2F"
 const params = new URLSearchParams(window.location.search)
 var afterRestore = ""
 var afterDownload = ""
@@ -1321,7 +1321,7 @@ function Logout() {
         method: "POST"
     }).then(res => {
         // open logout page for webview
-        location = `https://oculus.com/experiences/quest?logout=true`
+        location = `https://secure.oculus.com/logout/`
     })
 }
 

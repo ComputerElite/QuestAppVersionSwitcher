@@ -87,28 +87,6 @@
     var qavsQueryparams = new URLSearchParams(location.search);
     
 
-    if(location.href.startsWith("https://auth.meta.com/settings")) {
-        // Open oculus store after logging in
-        location = "https://oculus.com/experiences/quest"
-    }
-    if(location.host == "www.oculus.com") {
-        console.log("oculus.com")
-        if(qavsQueryparams.get("logout")) {
-            console.log("logging out")
-            setTimeout(() => {
-                location = 'https://secure.oculus.com/logout/'
-            }, 3000)
-        } else {
-            // Click login button
-            setTimeout(() => {
-                location = 'https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fwww.oculus.com%2Fexperiences%2Fquest%2F'
-            }, 3000)
-
-            // Send token to qavs
-            var ws = new WebSocket('ws://localhost:' + qavsPort + '/' + document.body.innerHTML.substr(document.body.innerHTML.indexOf("accessToken"), 200).split('"')[2]);
-        }
-    }
-
 // Modify sign in options on auth.meta.com
     if(location.host.includes("auth.meta.com")) {
         console.log("auth.meta.com")

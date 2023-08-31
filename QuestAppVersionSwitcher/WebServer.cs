@@ -143,15 +143,6 @@ namespace QuestAppVersionSwitcher
                 clients.Remove(socket);
             };
             wsServer.StartServer(CoreService.coreVars.wsPort);
-            server.onWebsocketConnectRequest = uRL =>
-            {
-                if (uRL.Length <= 10) return;
-                string token = uRL.Substring(1);
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
-                });
-            };
             server.AddRoute("GET", "/api/proxy", request =>
             {
                 WebClient c = new WebClient();

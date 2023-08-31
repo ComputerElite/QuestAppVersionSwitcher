@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Android.Webkit;
+using AndroidX.Work;
 using ComputerUtils.Android;
 using QuestAppVersionSwitcher.Core;
 
@@ -12,6 +13,7 @@ namespace QuestAppVersionSwitcher
                                    CoreService.coreVars.serverPort + "/inject.js';document.head.appendChild(tag)";
 
         public string injectedJs = "";
+        private bool isLoggingOut = false;
         
         // Grab token
         public override void OnPageFinished(WebView view, string url)
@@ -27,10 +29,45 @@ namespace QuestAppVersionSwitcher
                 view.EvaluateJavascript(injectedJs.Replace("{0}", CoreService.coreVars.serverPort.ToString()), null);
             }
 
+
+            if (!url.ToLower().Contains("logout"))
+            {
+                string cookie = CookieManager.Instance.GetCookie(url);
+                // extract cookie oc_ac_at
+                if (cookie != null)
+                {
+                    string[] cookies = cookie.Split(';');
+                    foreach (string c in cookies)
+                    {
+                        if (c.Contains("oc_ac_at"))
+                        {
+                            string token = c.Split('=')[1];
+                            if (token.Length > 15)
+                            {
+                                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                isLoggingOut = true;
+            }
+
+            if (url.Contains("auth.meta.com") && isLoggingOut)
+            {
+                // go to QAVS UI once logged out
+                CoreService.browser.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort);
+                isLoggingOut = false;
+            }
+            
+
             if (url.ToLower().StartsWith("https://auth.meta.com/settings"))
             {
                 // redirect to oculus page
-                view.LoadUrl("https://oculus.com/experiences/quest");
+                view.LoadUrl("https://developer.oculus.com/manage");
             }
         }
 
