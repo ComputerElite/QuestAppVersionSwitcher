@@ -50,6 +50,7 @@ namespace QuestAppVersionSwitcher
             FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());
             
+            
             CoreService.Start();
         }
 

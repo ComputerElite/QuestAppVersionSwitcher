@@ -45,14 +45,20 @@ namespace QuestAppVersionSwitcher
 
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
-            if(!Directory.Exists(dirInExtenalStorage)) return false;
+            if (!Directory.Exists(dirInExtenalStorage))
+            {
+                Logger.Log("QAVS doesn't have access to " + dirInExtenalStorage + "... The folder doesn't exist!");
+                return false;
+            }
+            Logger.Log("Checking access for " + dirInExtenalStorage);
             
-            // Remporary hack while I figure out how to get the permission status
-            return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
+            // Temporary hack while I figure out how to get the permission status
+            //return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
             string uri = RemapPathForApi300OrAbove(dirInExtenalStorage).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/");
             List<UriPermission> perms = AndroidCore.context.ContentResolver.PersistedUriPermissions.ToList();
             foreach (UriPermission p in perms)
             {
+                Logger.Log("QAVS has permision for " + p.Uri.ToString());
                 if (p.Uri.ToString() == uri) return true;
             }
             return false;
@@ -363,42 +369,21 @@ namespace QuestAppVersionSwitcher
     
     public class FolderPermissionCallback : Java.Lang.Object, IActivityResultCallback
     {
-        public void OnActivityResult(Result resultCode, Intent data)
-        {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
-            {
-                if (data.Data != null)
-                {
-                    Logger.Log(data.DataString);
-                    AndroidCore.context.ContentResolver.TakePersistableUriPermission(
-                        data.Data,
-                        ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
-                }
-            }
-            QAVSModManager.Update();
-            Logger.Log("Got result. ComputerElite should consider marking the folder here instead. Let him know!");
-
-            /*
-            Logger.Log("Got result. Marking folders as accessible: " + String.Join(", ", FolderPermission.queuedDirs.ToArray()));
-            CoreService.coreVars.accessFolders.AddRange(FolderPermission.queuedDirs);
-            CoreService.coreVars.Save();
-            */
-        }
         public void OnActivityResult(Object result)
         {
+            //Logger.Log("Got result 2. ComputerElite should consider marking the folder here instead. Let him know!");
             if (result is ActivityResult activityResult && Build.VERSION.SdkInt >= BuildVersionCodes.Q)
             {
+                //Logger.Log("Got result. ComputerElite should consider marking the folder here instead. Let him know!");
                 if (activityResult.Data.Data != null)
                 {
-                    Logger.Log(activityResult.Data.DataString);
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         activityResult.Data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
+                    Logger.Log(activityResult.Data.DataString);
                 }
             }
             QAVSModManager.Update();
-            
-            Logger.Log("Got result. ComputerElite should consider marking the folder here instead. Let him know!");
             /*
             CoreService.coreVars.accessFolders.AddRange(FolderPermission.queuedDirs);
             CoreService.coreVars.Save();

@@ -280,6 +280,11 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 Logger.Log($"Loading legacy mod in {Path.GetFileName(legacyFolder)}");
                 var modJsonPath = Path.Combine(legacyFolder, "mod.json");
+                if(!File.Exists(modJsonPath))
+                {
+                    Logger.Log("No mod.json found for in " + legacyFolder + ", skipping");
+                    continue;
+                }
 
                 await using var modJsonStream = File.OpenRead(modJsonPath);
                 var manifest = await QModManifest.ParseAsync(modJsonStream);
