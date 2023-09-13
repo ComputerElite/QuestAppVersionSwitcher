@@ -342,6 +342,7 @@ const ongoingCount = document.getElementById("ongoingCount")
 const operationsList = document.getElementById("operationsList")
 
 const externalStorageCheckbox = document.getElementById("externalstorage")
+const openXRCheckbox = document.getElementById("openxr")
 const handTrackingCheckbox = document.getElementById("handtracking")
 const handTrackingVersion = document.getElementById("handtrackingversion")
 const debugCheckbox = document.getElementById("debug")
@@ -506,7 +507,8 @@ function PatchGame() {
         debug: debugCheckbox.checked,
         handTracking: handTrackingCheckbox.checked,
         handTrackingVersion: parseInt(handTrackingVersion.value),
-        externalStorage: externalStorageCheckbox.checked
+        externalStorage: externalStorageCheckbox.checked,
+        openXR: openXRCheckbox.checked
     }
     var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
     fetch(`/api/patching/patchoptions`, {

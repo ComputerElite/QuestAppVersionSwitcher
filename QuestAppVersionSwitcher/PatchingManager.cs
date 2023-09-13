@@ -43,6 +43,7 @@ namespace QuestAppVersionSwitcher
         public const int DebuggableAttributeResourceId = 16842767;
         public const int LegacyStorageAttributeResourceId = 16844291;
         public const int ValueAttributeResourceId = 16842788;
+        private const int AuthoritiesAttributeResourceId = 16842776;
 
         // lib paths
         public static string libMain32Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain32.so";
@@ -377,6 +378,40 @@ namespace QuestAppVersionSwitcher
                 });
                 // Tell Android (and thus Oculus home) that this app supports hand tracking and we can launch the app with it
                 addingFeatures.Add(new UsesFeature {name = "oculus.software.handtracking", required = false});
+            }
+            if (permissions.openXR)
+            {
+                Logger.Log("Adding OpenXR permission . . .");
+
+                addingPermissions.AddRange(new[] {
+                    "org.khronos.openxr.permission.OPENXR",
+                    "org.khronos.openxr.permission.OPENXR_SYSTEM",
+                });
+
+                AxmlElement providerElement = new AxmlElement("provider") {
+                    Attributes = {new AxmlAttribute("authorities", AndroidNamespaceUri, AuthoritiesAttributeResourceId, "org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker")},
+                };
+                AxmlElement runtimeIntent = new AxmlElement("intent") {
+                    Children = {
+                        new AxmlElement("action") {
+                            Attributes = {new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId, "org.khronos.openxr.OpenXRRuntimeService")},
+                        },
+                    },
+                };
+                AxmlElement layerIntent = new AxmlElement("intent") {
+                    Children = {
+                        new AxmlElement("action") {
+                            Attributes = {new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId, "org.khronos.openxr.OpenXRApiLayerService")},
+                        },
+                    },
+                };
+                manifest.Children.Add(new AxmlElement("queries") {
+                    Children = {
+                        providerElement,
+                        runtimeIntent,
+                        layerIntent,
+                    },
+                });
             }
             addingPermissions.AddRange(permissions.otherPermissions);
 
