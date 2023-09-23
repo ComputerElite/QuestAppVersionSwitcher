@@ -39,7 +39,7 @@ namespace QuestAppVersionSwitcher
                     string[] cookies = cookie.Split(';');
                     foreach (string c in cookies)
                     {
-                        if (c.Contains("oc_ac_at"))
+                        if (c.Contains("oc_www_at"))
                         {
                             string token = c.Split('=')[1];
                             if (token.Length > 15)
