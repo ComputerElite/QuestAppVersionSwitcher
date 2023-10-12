@@ -100,7 +100,7 @@ namespace QuestAppVersionSwitcher
                     file.Close();
                     readStream.Close();
                 }
-                
+                SetFilePermissions(to);
             } catch (Exception e)
             {
                 Logger.Log(e.ToString());
@@ -133,7 +133,7 @@ namespace QuestAppVersionSwitcher
             try
             {
                 Stream file = AndroidCore.context.ContentResolver.OpenOutputStream(to.Uri);
-                
+
                 if (file.CanWrite)
                 {
                     Stream readStream = File.OpenRead(source);
@@ -279,17 +279,40 @@ namespace QuestAppVersionSwitcher
                 InternalDirectoryCopy(GetAccessToFile(sourceDirName), destDirName);
             } else if (destDirName.Contains(androidFolder) || destDirName.Contains(obbFolder))
             {
-                InternalDirectoryCopy(sourceDirName, GetAccessToFile(destDirName));
+                InternalDirectoryCopy(sourceDirName, GetAccessToFile(destDirName), destDirName);
             }
             else
             {
                 FileManager.DirectoryCopy(sourceDirName, destDirName, true);
+                SetFolderPermissionRecursive(destDirName);
             }
         }
 
-        public static void InternalDirectoryCopy(string source, DocumentFile destDir)
+        public static void SetFolderPermissionRecursive(string sourceDirName)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+            
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                SetFilePermissions(file.FullName);
+            }
+
+            // If copying subdirectories, copy them and their contents to new location.
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                SetFilePermissions(subdir.FullName);
+            }
+        }
+
+        public static void InternalDirectoryCopy(string source, DocumentFile destDir, string destDirString)
         {
             if (destDir == null) return;
+            if (!destDirString.EndsWith(Path.DirectorySeparatorChar)) destDirString += Path.DirectorySeparatorChar;
             
             // Delete all files and directories in destination directory
             foreach (DocumentFile f in destDir.ListFiles())
@@ -306,14 +329,23 @@ namespace QuestAppVersionSwitcher
                 try
                 {
                     Copy(file.FullName, destDir.CreateFile("application/octet-stream", file.Name));
+                    SetFilePermissions(destDirString + file.Name);
                 }
                 catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e.ToString(), LoggingType.Error); }
             }
             
             foreach (DirectoryInfo subdir in dir.GetDirectories())
             {
-                InternalDirectoryCopy(subdir.FullName, destDir.CreateDirectory(subdir.Name));
+                InternalDirectoryCopy(subdir.FullName, destDir.CreateDirectory(subdir.Name), destDirString+ subdir.Name + Path.DirectorySeparatorChar);
+                SetFilePermissions(destDirString+ subdir.Name + Path.DirectorySeparatorChar);
             }
+        }
+
+        public static void SetFilePermissions(string path)
+        {
+            Java.IO.File f = new Java.IO.File(path);
+            f.SetWritable(true, false);
+            f.SetReadable(true, false);
         }
 
         public static void InternalDirectoryCopy(DocumentFile dir, string destDirName)
@@ -321,6 +353,7 @@ namespace QuestAppVersionSwitcher
             Logger.Log("Starting directory copy: DocumentFile, string");
             if(Directory.Exists(destDirName)) Directory.Delete(destDirName, true);
             Directory.CreateDirectory(destDirName);
+            SetFilePermissions(destDirName);
             
             foreach (DocumentFile file in dir.ListFiles())
             {
@@ -337,6 +370,7 @@ namespace QuestAppVersionSwitcher
                         // Handle file
                         string tempPath = Path.Combine(destDirName, file.Name);
                         Copy(file, tempPath);
+                        SetFilePermissions(tempPath);
                     }
                 }
                 catch (Exception e) { Logger.Log("Error copying " + file.Name + ": " + e, LoggingType.Error); }

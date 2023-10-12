@@ -191,6 +191,7 @@ namespace QuestAppVersionSwitcher
 				FileManager.CreateDirectoryIfNotExisting(directory);
 				ZipFile.ExtractToDirectory(currentPath, directory + Path.GetFileNameWithoutExtension(currentPath), true);
 				Logger.Log("Extracted");
+				FolderPermission.SetFolderPermissionRecursive(directory + Path.GetFileNameWithoutExtension(currentPath));
 				if (deleteOriginalFile) File.Delete(currentPath);
 			}
 			else
@@ -198,6 +199,7 @@ namespace QuestAppVersionSwitcher
 				Logger.Log("Copying Cosmetic " + currentPath + " to " + directory);
 				FileManager.CreateDirectoryIfNotExisting(directory);
 				File.Copy(currentPath, directory + Path.GetFileName(currentPath), true);
+				FolderPermission.SetFilePermissions(directory + Path.GetFileName(currentPath));
 				Logger.Log("Copied");
 				if (deleteOriginalFile) File.Delete(currentPath);
 			}
