@@ -24,6 +24,7 @@ using QuestAppVersionSwitcher.Core;
 using QuestAppVersionSwitcher.Mods;
 using Xamarin.Forms.Internals;
 using File = System.IO.File;
+using Process = Java.Lang.Process;
 
 namespace QuestAppVersionSwitcher
 {
@@ -343,8 +344,37 @@ namespace QuestAppVersionSwitcher
             }
         }
 
+        public static void Execute(string cmd)
+        {
+            Process process = null;
+
+            try {
+                Logger.Log("Running " + cmd);
+                process = Runtime.GetRuntime().Exec(cmd);
+                if (process.WaitFor() == 0)
+                {
+                    Logger.Log("Success");
+                    Logger.Log(new StreamReader(process.InputStream).ReadToEnd(), LoggingType.Debug);
+                } else
+                {
+                    Logger.Log("Error");
+                    Logger.Log(new StreamReader(process.ErrorStream).ReadToEnd(), LoggingType.Debug);
+                }
+            } catch (Exception e) {
+                return;
+            } finally {
+                try {
+                    process.Destroy();
+                } catch (Exception e) {
+                }
+            }
+        }
+
         public static void SetFilePermissions(string path)
         {
+            Execute("whoami");
+            Execute("chmod 777 " + path);
+            /*
             Java.IO.File f = new Java.IO.File(path);
             List<PosixFilePermission> perms = new List<PosixFilePermission>();
             perms.Add(PosixFilePermission.OwnerRead);
@@ -359,6 +389,7 @@ namespace QuestAppVersionSwitcher
             Logger.Log("Applying permissions to " + path);
             // Results in access denied error
             Files.SetPosixFilePermissions(f.ToPath(), perms);
+            */
         }
 
         public static void InternalDirectoryCopy(DocumentFile dir, string destDirName)
