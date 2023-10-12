@@ -374,6 +374,7 @@ namespace QuestAppVersionSwitcher
 
         public static void SetFilePermissions(string path)
         {
+            return;
             Execute("whoami");
             Execute("chmod 777 " + path);
             /*
