@@ -227,9 +227,10 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q || !path.Contains("sdcard/Android"))
             {
                 FileManager.CreateDirectoryIfNotExisting(path);
+                SetFilePermissions(path);
                 return;
             }
             // Remove trailing slash because it causes problems
@@ -237,6 +238,7 @@ namespace QuestAppVersionSwitcher
             try
             {
                 GetAccessToFile(path);
+                SetFilePermissions(path);
             }
             catch (System.Exception e)
             {

@@ -137,6 +137,7 @@ namespace QuestAppVersionSwitcher.Mods
                         // If file is not in android folder use normal file copy
                         if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
                         File.Copy(k.Key, k.Value, true);
+                        FolderPermission.SetFilePermissions(k.Value);
                     }
                 } catch(Exception e)
                 {

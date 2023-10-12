@@ -25,8 +25,8 @@ namespace QuestAppVersionSwitcher.Mods
         }
         private static readonly List<IMod> EmptyModList = new List<IMod>();
 
-        public string ModsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/mods/";
-        public string LibsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/libs/";
+        public string ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/files/mods/";
+        public string LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/files/libs/";
 
         public string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
         public string ModsExtractPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/installedMods/";
@@ -123,7 +123,7 @@ namespace QuestAppVersionSwitcher.Mods
         {
             FolderPermission.CreateDirectoryIfNotExisting(ModsPath);
             FolderPermission.CreateDirectoryIfNotExisting(LibsPath);
-            FileManager.CreateDirectoryIfNotExisting(ModsExtractPath);
+            FolderPermission.CreateDirectoryIfNotExisting(ModsExtractPath);
         }
 
         public async Task LoadModsForCurrentApp()
