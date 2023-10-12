@@ -18,6 +18,8 @@ using ComputerUtils.Android.Logging;
 using Google.Android.Material.Dialog;
 using Java.IO;
 using Java.Lang;
+using Java.Nio.FileNio;
+using Java.Nio.FileNio.Attributes;
 using QuestAppVersionSwitcher.Core;
 using QuestAppVersionSwitcher.Mods;
 using Xamarin.Forms.Internals;
@@ -344,8 +346,19 @@ namespace QuestAppVersionSwitcher
         public static void SetFilePermissions(string path)
         {
             Java.IO.File f = new Java.IO.File(path);
-            f.SetWritable(true, false);
-            f.SetReadable(true, false);
+            List<PosixFilePermission> perms = new List<PosixFilePermission>();
+            perms.Add(PosixFilePermission.OwnerRead);
+            perms.Add(PosixFilePermission.OwnerWrite);
+            perms.Add(PosixFilePermission.OwnerExecute);
+            perms.Add(PosixFilePermission.GroupExecute);
+            perms.Add(PosixFilePermission.GroupRead);
+            perms.Add(PosixFilePermission.GroupWrite);
+            perms.Add(PosixFilePermission.OthersRead);
+            perms.Add(PosixFilePermission.OthersExecute);
+            perms.Add(PosixFilePermission.OthersWrite);
+            Logger.Log("Applying permissions to " + path);
+            // Results in access denied error
+            Files.SetPosixFilePermissions(f.ToPath(), perms);
         }
 
         public static void InternalDirectoryCopy(DocumentFile dir, string destDirName)
