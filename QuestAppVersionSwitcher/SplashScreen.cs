@@ -22,6 +22,7 @@ namespace QuestAppVersionSwitcher
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.splash);
+            this.RequestedOrientation = ScreenOrientation.Landscape;
             WebView webView = FindViewById<WebView>(Resource.Id.webView);
             webView.LoadUrl("file:///android_asset/html/splash.html");
             AndroidCore.context = this;

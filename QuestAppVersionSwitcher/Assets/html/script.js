@@ -887,6 +887,22 @@ document.getElementById("createBackup").onclick = () => {
         TextBoxError("backupTextBox", "A Backup is being created right now. Please wait until it has finished")
         return
     }
+    TextBoxText("backupTextBox", "Checking permission, one sec")
+    fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+        res.json().then(j => {
+            if (j.gotAccess) {
+                RealBackup()
+            } else {
+                CloseGetPasswordPopup();
+                OpenRestorePopup();
+                GotoStep("12")
+            }
+        })
+    })
+    
+}
+
+function RealBackup() {
     var onlyAppData = document.getElementById("appdata").checked
     backupInProgress = true
     TextBoxText("backupTextBox", "Please wait while the Backup is being created. This can take a few minutes")
