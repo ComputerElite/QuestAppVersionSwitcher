@@ -25,8 +25,11 @@ namespace QuestAppVersionSwitcher.Mods
         }
         private static readonly List<IMod> EmptyModList = new List<IMod>();
 
-        public string ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/files/mods/";
-        public string LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/files/libs/";
+        public string ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/early_mods/";
+        // ToDo: Implement late mod support
+        public string LateModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/mods/";
+
+        public string LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/libs/";
 
         public string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
         public string ModsExtractPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/installedMods/";

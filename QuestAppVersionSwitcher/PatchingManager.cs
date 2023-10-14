@@ -35,7 +35,8 @@ namespace QuestAppVersionSwitcher
         public const string TagPermission = "qavs.modded";
         public static readonly Uri AndroidNamespaceUri = new Uri("http://schemas.android.com/apk/res/android");
 
-        public static readonly string questLoaderVersion = "v1.2.3";
+        public static readonly string mainLoaderVersion = "v0.1.0-alpha";
+        public static readonly string scotland2Version = "v0.1.0-alpha";
 
         // Attribute resource IDs, used during manifest patching
         public const int NameAttributeResourceId = 16842755;
@@ -46,28 +47,27 @@ namespace QuestAppVersionSwitcher
         private const int AuthoritiesAttributeResourceId = 16842776;
 
         // lib paths
-        public static string libMain32Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain32.so";
-        public static string libMain64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain64.so";
-        public static string libModloader32Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmodloader32.so";
-        public static string libModloader64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmodloader64.so";
-        public static string questLoaderVersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "QuestLoaderVersion.txt";
+        public static string libMain64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain.so";
+        public static string libScotland2Path = CoreService.coreVars.QAVSPatchingFilesDir + "libsl2.so";
+        public static string mainLoaderVersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "mainLoaderVersion.txt";
+        public static string scotland2VersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "scotland2Version.txt";
 
         public static void DownloadDependencies()
         {
-            string currentVersion = File.Exists(questLoaderVersionLocation) ? File.ReadAllText(CoreService.coreVars.QAVSPatchingFilesDir + "QuestLoaderVersion.txt") : "";
-            DownloadFileIfMissing(currentVersion, libMain32Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmain32.so");
-            DownloadFileIfMissing(currentVersion, libMain64Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmain64.so");
-            DownloadFileIfMissing(currentVersion, libModloader32Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader32.so");
-            DownloadFileIfMissing(currentVersion, libModloader64Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader64.so");
-            File.WriteAllText(questLoaderVersionLocation, questLoaderVersion);
+            string currentVersion = File.Exists(mainLoaderVersionLocation) ? File.ReadAllText(mainLoaderVersionLocation) : "";
+            string currentSL2Version = File.Exists(scotland2VersionLocation) ? File.ReadAllText(scotland2VersionLocation) : "";
+            DownloadFileIfMissing(currentVersion, mainLoaderVersion, libMain64Path, "https://github.com/sc2ad/LibMainLoader/releases/download/" + mainLoaderVersion + "/libmain.so");
+            DownloadFileIfMissing(currentSL2Version, mainLoaderVersion, libScotland2Path, "https://github.com/sc2ad/scotland2/releases/download/" + scotland2Version + "/libsl2.so");
+            File.WriteAllText(mainLoaderVersionLocation, mainLoaderVersion);
+            File.WriteAllText(scotland2VersionLocation, scotland2Version);
             QAVSWebserver.patchStatus.doneOperations = 2;
             QAVSWebserver.patchStatus.progress = .1;
             QAVSWebserver.BroadcastPatchingStatus();
         }
 
-        public static void DownloadFileIfMissing(string currentQuestLoaderVersion, string filePath, string downloadLink)
+        public static void DownloadFileIfMissing(string currentVersion, string targetVersion, string filePath, string downloadLink)
         {
-            if (!File.Exists(filePath) || currentQuestLoaderVersion != questLoaderVersion)
+            if (!File.Exists(filePath) || currentVersion != targetVersion)
             {
                 string fileName = Path.GetFileName(filePath);
                 QAVSWebserver.patchStatus.currentOperation = "Downloading dependency " + fileName;
@@ -198,12 +198,14 @@ namespace QuestAppVersionSwitcher
                 apkArchive.CreateEntryFromFile(CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", libpath + "libunity.so");
                 moddedJson.modifiedFiles.Add(libpath + "libunity.so");
             }
-
+            
+            // Copy scotland2 to correct location
             QAVSWebserver.patchStatus.progress = .35;
-            QAVSWebserver.patchStatus.currentOperation = "Adding modloader";
+            QAVSWebserver.patchStatus.currentOperation = "Copying scotland2";
             QAVSWebserver.BroadcastPatchingStatus();
-            apkArchive.CreateEntryFromFile(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so");
-            moddedJson.modifiedFiles.Add(libpath + "libmodloader.so");
+            FileManager.CreateDirectoryIfNotExisting("/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader");
+            File.Copy(libScotland2Path, "/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader/libsl2.so", true);
+
 
             QAVSWebserver.patchStatus.progress = .45;
             QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
@@ -211,10 +213,12 @@ namespace QuestAppVersionSwitcher
             ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
             if (main != null) main.Delete();
             moddedJson.modifiedFiles.Add(libpath + "libmain.so");
-            apkArchive.CreateEntryFromFile(isApk64Bit ? libMain64Path : libMain32Path, libpath + "libmain.so");
+            apkArchive.CreateEntryFromFile(libMain64Path, libpath + "libmain.so");
 
-            moddedJson.modloaderName = "QuestLoader";
-            moddedJson.modloaderVersion = questLoaderVersion;
+            // Perhaps add this?
+            //moddedJson.libMainVersion = mainLoaderVersion;
+            moddedJson.modloaderName = "Scotland2";
+            moddedJson.modloaderVersion = scotland2Version;
         }
 
         public static Dictionary<string, ApkSigner.PrePatchHash>? AddLibsAndPatchGame(ZipArchive apkArchive)
