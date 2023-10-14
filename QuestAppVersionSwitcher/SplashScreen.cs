@@ -9,8 +9,10 @@ using Android.Webkit;
 using AndroidX.Activity.Result.Contract;
 using AndroidX.AppCompat.App;
 using ComputerUtils.Android;
+using Java.Util.Logging;
 using QuestAppVersionSwitcher.Core;
 using Xamarin.Essentials;
+using Handler = Android.OS.Handler;
 
 namespace QuestAppVersionSwitcher
 {
@@ -19,6 +21,7 @@ namespace QuestAppVersionSwitcher
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            ComputerUtils.Android.Logging.Logger.Log(this.GetType().Name);
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.splash);

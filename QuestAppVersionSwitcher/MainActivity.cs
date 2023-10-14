@@ -35,6 +35,7 @@ namespace QuestAppVersionSwitcher
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
+            this.RequestedOrientation = ScreenOrientation.Landscape;
             //Get webView WebView from Main Layout  
             webView = FindViewById<WebView>(Resource.Id.webView);
             CoreService.mainActivity = this;
