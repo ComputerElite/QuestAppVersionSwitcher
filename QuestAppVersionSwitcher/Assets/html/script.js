@@ -155,21 +155,6 @@ function BrowserGo(direction) {
 function OpenSite(url) {
     location = url
 }
-function CheckFolderPermission() {
-    if(!config.currentApp || params.get("noaccesscheck")) return;
-    fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
-        res.json().then(j => {
-            if (j.gotAccess) {
-                // Do nothing, we already got access to the folder
-            } else {
-                if(updateAvailable) return 
-                CloseGetPasswordPopup();
-                OpenRestorePopup();
-                GotoStep("12")
-            }
-        })
-    })
-}
 
 
 
@@ -667,7 +652,6 @@ function UpdateUI(closeLists = false) {
         config = res
         if(firstConfigFetch) {
             firstConfigFetch = false;
-            CheckFolderPermission();
             CheckStartParams()
         }
         Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
@@ -839,7 +823,6 @@ function ChangeApp(package) {
     }).then(() => {
         UpdateUI(true)
         UpdateCosmeticsTypes()
-        CheckFolderPermission()
     })
     UpdateUI(true)
 }
@@ -1255,7 +1238,6 @@ function CheckUpdate() {
 document.getElementById("cancelupdate").onclick = () => {
     CloseGetPasswordPopup()
     updateAvailable = false;
-    CheckFolderPermission()
 }
 
 document.getElementById("updateqavs").onclick = () => {
