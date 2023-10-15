@@ -21,7 +21,8 @@ namespace QuestAppVersionSwitcher
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            ComputerUtils.Android.Logging.Logger.Log(this.GetType().Name);
+            ComputerUtils.Android.Logging.Logger.displayLogInConsole = true;
+            ComputerUtils.Android.Logging.Logger.Log(Build.Device);
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.splash);

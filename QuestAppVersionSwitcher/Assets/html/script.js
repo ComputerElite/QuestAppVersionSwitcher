@@ -52,6 +52,21 @@ socket.onmessage = function (e) {
         UpdateMods()
     } else if(data.route == "/api/mods/modloader") {
         modloader = data.data.modloader
+        if(lastCheckedAccessForGame != config.currentApp) {
+            lastCheckedAccessForGame = config.currentApp
+            if(modloader == 0) { // we only need access to android dir for QuestLoader
+                fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+                    res.json().then(j => {
+                        if (!j.gotAccess) {
+                            // Open need acces prompt
+                            CloseGetPasswordPopup();
+                            OpenRestorePopup();
+                            GotoStep("12")
+                        }
+                    })
+                })
+            }
+        }
     }
 }
 
@@ -89,6 +104,8 @@ function UpdateModsManually() {
 }
 var modStatus = {}
 var modloader = "QuestLoader"
+
+var lastCheckedAccessForGame = ""
 function GetModLoaderName() {
     if(modloader == 0) return "QuestLoader"
     if(modloader == 1) return "Scotland2"
