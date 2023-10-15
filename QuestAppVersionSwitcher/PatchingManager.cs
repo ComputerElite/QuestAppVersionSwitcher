@@ -68,7 +68,7 @@ namespace QuestAppVersionSwitcher
             {
                 string currentMainLoaderScotlandVersion = File.Exists(mainLoaderScotlandVersionLocation) ? File.ReadAllText(mainLoaderScotlandVersionLocation) : "";
                 string currentSL2Version = File.Exists(scotland2VersionLocation) ? File.ReadAllText(scotland2VersionLocation) : "";
-                DownloadFileIfMissing(currentMainLoaderScotlandVersion, mainScotlandLoaderVersion, libMainScotlandPath, "https://github.com/sc2ad/LibMainLoader/releases/download/" + mainLoaderScotlandVersionLocation + "/libmain.so");
+                DownloadFileIfMissing(currentMainLoaderScotlandVersion, mainScotlandLoaderVersion, libMainScotlandPath, "https://github.com/sc2ad/LibMainLoader/releases/download/" + mainScotlandLoaderVersion + "/libmain.so");
                 DownloadFileIfMissing(currentSL2Version, scotland2Version, libScotland2Path, "https://github.com/sc2ad/scotland2/releases/download/" + scotland2Version + "/libsl2.so");
                 File.WriteAllText(mainLoaderScotlandVersionLocation, mainScotlandLoaderVersion);
                 File.WriteAllText(scotland2VersionLocation, scotland2Version);

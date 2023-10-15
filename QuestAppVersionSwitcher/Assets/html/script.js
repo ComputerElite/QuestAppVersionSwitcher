@@ -1064,24 +1064,32 @@ document.getElementById("install").onclick = () => {
 
 function AfterAPKInstall() {
     fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
-        res.json().then(j => {
-            if (j.gotAccess) {
+        res.json().then(a => {
                 fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
                     res.json().then(j => {
+                        // 4.1: grant access
+                        // 4.2: grant manage access
+                        // 4: restore app data
+                        // 5: done'd
                         if(j.isPatchedApk) {
-                            GotoStep("4.2")
+                            if(j.moddedJson && j.moddedJson.modloaderName == "QuestLoader") {
+                                GotoStep("4.1") // QuestLoader needs access to Android/data
+                            } else {
+                                GotoStep("4.2") // No need to ask for access
+                            }
                         } else {
                             if (j.containsAppData || j.containsObbs) {
-                                GotoStep(4)
+                                if(a.gotAccess) {
+                                    GotoStep(4)
+                                } else {
+                                    GotoStep("4.1")
+                                }
                             } else {
-                                GotoStep(5)
+                                
                             }
                         }
                     })
                 })
-            } else {
-                GotoStep("4.1")
-            }
         })
     })
 }

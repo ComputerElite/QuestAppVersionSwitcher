@@ -25,7 +25,7 @@ namespace QuestAppVersionSwitcher
             if (File.Exists(pathWithoutSlash + "/info.json") && !loadAnyway)
             {
                 info = JsonSerializer.Deserialize<BackupInfo>(File.ReadAllText(pathWithoutSlash + "/info.json"));
-                if (info.BackupInfoVersion < BackupInfoVersion.V5) return GetBackupInfo(path, true);
+                if (info.BackupInfoVersion < BackupInfoVersion.V6) return GetBackupInfo(path, true);
                 return info;
             }
 
@@ -42,6 +42,7 @@ namespace QuestAppVersionSwitcher
                 PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
                 info.gameVersion = s.version;
                 info.isPatchedApk = s.isPatched;
+                info.moddedJson = PatchingManager.GetModdedJson(apk);
                 apk.Dispose();
                 // Calculate SHA 256 of apk file
                 /*
@@ -83,7 +84,7 @@ namespace QuestAppVersionSwitcher
     
     public class BackupInfo
     {
-        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V5;
+        public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V6;
         public string backupName { get; set; } = "";
         public string backupLocation { get; set; } = "";
         public bool containsAppData { get; set; } = false;
@@ -94,6 +95,7 @@ namespace QuestAppVersionSwitcher
         public long backupSize { get; set; } = 0;
         public string backupSizeString { get; set; } = "";
         public string apkSHA256 { get; set; } = "";
+        public ModdedJson moddedJson { get; set; } = null;
 
         public bool isDownloadedFromOculus
         {
@@ -110,7 +112,8 @@ namespace QuestAppVersionSwitcher
         V2,
         V3,
         V4,
-        V5
+        V5,
+        V6
     }
 
     public class BackupList
