@@ -534,7 +534,7 @@ function PatchGame() {
         openXR: openXRCheckbox.checked,
         modloader: parseInt(document.getElementById("modloader").value)
     }
-    if(patchOptions.modloader == 1) {
+    if(patchOptions.modloader == 1 && document.getElementById("enableaudio").checked) {
         scotlandForever = new Audio("/scotlandforever.mp3")
         scotlandForever.addEventListener("canplaythrough", (event) => {
             /* the audio is now playable; play it if permissions allow */
