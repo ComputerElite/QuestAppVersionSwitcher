@@ -460,7 +460,6 @@ namespace QuestAppVersionSwitcher
             });
 
 			server.AddRouteFile("/", "html/index.html");
-            server.AddRouteFile("/scotlandforever.mp3", "html/scotlandforever.mp3");
 			server.AddRouteFile("/setup", "html/setup.html");
             server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
             server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
