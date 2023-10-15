@@ -5,6 +5,7 @@ namespace QuestAppVersionSwitcher
     public class AndroidDevice
     {
         public int sdkVersion { get; set; } = 0;
+        public string device { get; set; } = "";
         public long freeSpace { get; set; } = 0;
 
         public string freeSpaceString

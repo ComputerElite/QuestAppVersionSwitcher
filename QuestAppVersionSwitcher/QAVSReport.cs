@@ -14,6 +14,7 @@ namespace QuestAppVersionSwitcher
         public string version { get; set; }
         public DateTime reportTime { get; set; }
         public string reportId { get; set; }
+        public string device { get; set; }
         public bool userIsLoggedIn { get; set; }
         public List<string> userEntitlements { get; set; } = new List<string>();
         public long availableSpace { get; set; }

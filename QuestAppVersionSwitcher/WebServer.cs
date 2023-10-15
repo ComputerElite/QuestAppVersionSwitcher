@@ -478,6 +478,7 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(JsonSerializer.Serialize(new AndroidDevice()
                 {
                     sdkVersion = (int)Build.VERSION.SdkInt,
+                    device = Build.Device,
                     freeSpace = Environment.ExternalStorageDirectory.UsableSpace,
                     totalSpace = Environment.ExternalStorageDirectory.TotalSpace,
                 }), "application/json");
@@ -550,6 +551,7 @@ namespace QuestAppVersionSwitcher
                 report.version = CoreService.version.ToString();
                 report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
+                report.device = Build.Device;
                 report.availableSpace = Environment.ExternalStorageDirectory.UsableSpace;
                 QAVSModManager.Update();
                 report.modsAndLibs = QAVSModManager.GetModsAndLibs();

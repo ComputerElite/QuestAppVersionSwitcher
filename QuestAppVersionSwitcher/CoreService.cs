@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
+using Android.OS;
 using Android.Views;
 using AndroidX.Activity.Result;
 using ComputerUtils.Android;
@@ -69,6 +70,7 @@ namespace QuestAppVersionSwitcher.Core
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
                 Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
+                Logger.Log("Device: " + Build.Device);
                 if (!File.Exists(coreVars.QAVSConfigLocation))
                     File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
                 coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
