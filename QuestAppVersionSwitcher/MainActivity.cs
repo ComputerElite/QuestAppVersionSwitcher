@@ -23,7 +23,7 @@ using AlertDialog = Android.App.AlertDialog;
 
 namespace QuestAppVersionSwitcher
 {
-    [Activity(Theme = "@style/AppTheme", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [Activity(Theme = "@style/AppTheme", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
     public class MainActivity : AppCompatActivity
     {
         public static int pickFileCode = 1;
@@ -35,7 +35,7 @@ namespace QuestAppVersionSwitcher
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
-            this.RequestedOrientation = ScreenOrientation.Landscape;
+            //this.RequestedOrientation = ScreenOrientation.Landscape;
             //Get webView WebView from Main Layout  
             webView = FindViewById<WebView>(Resource.Id.webView);
             CoreService.mainActivity = this;

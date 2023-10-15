@@ -16,15 +16,18 @@ using Handler = Android.OS.Handler;
 
 namespace QuestAppVersionSwitcher
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [Activity(Theme = "@style/AppTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
     public class SplashScreen : AppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            ComputerUtils.Android.Logging.Logger.displayLogInConsole = true;
+            ComputerUtils.Android.Logging.Logger.Log(this.GetType().Name);
+            ComputerUtils.Android.Logging.Logger.Log(this.GetType().FullName);
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.splash);
-            this.RequestedOrientation = ScreenOrientation.Landscape;
+            //this.RequestedOrientation = ScreenOrientation.Landscape;
             WebView webView = FindViewById<WebView>(Resource.Id.webView);
             webView.LoadUrl("file:///android_asset/html/splash.html");
             AndroidCore.context = this;
