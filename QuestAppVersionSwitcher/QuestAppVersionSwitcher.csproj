@@ -244,6 +244,7 @@
   <ItemGroup>
     <AndroidAsset Include="Assets\html\newstyle.css" />
     <AndroidAsset Include="Assets\html\qavs_inject.js" />
+    <AndroidAsset Include="Assets\html\scotlandforever.mp3" />
     <AndroidAsset Include="Assets\html\setup.html" />
     <AndroidAsset Include="Assets\html\splash.html" />
     <AndroidAsset Include="Assets\html\style.css" />

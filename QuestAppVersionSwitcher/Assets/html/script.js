@@ -82,6 +82,7 @@ function UpdateModLoader(data) {
 
 function UpdatePatchStatus(j) {
     if (j.done) {
+        if(scotlandForever) scotlandForever.pause()
         TextBoxGood("patchingTextBox", j.currentOperation)
         patchInProgress = false
         if(j.backupName) {
@@ -96,6 +97,7 @@ function UpdatePatchStatus(j) {
         UpdateUI()
 
     } else if (j.error) {
+        if(scotlandForever) scotlandForever.pause()
         TextBoxError("patchingTextBox", j.errorText)
         clearInterval(i)
         patchInProgress = false
@@ -514,6 +516,7 @@ function RemovePermission(name) {
 
 var patchInProgress = false
 var lastApp = ""
+var scotlandForever
 function PatchGame() {
     patchInProgress = true
     var addMicPerm = document.getElementById("mic").checked
@@ -530,6 +533,13 @@ function PatchGame() {
         externalStorage: externalStorageCheckbox.checked,
         openXR: openXRCheckbox.checked,
         modloader: parseInt(document.getElementById("modloader").value)
+    }
+    if(patchOptions.modloader == 1) {
+        scotlandForever = new Audio("/scotlandforever.mp3")
+        scotlandForever.addEventListener("canplaythrough", (event) => {
+            /* the audio is now playable; play it if permissions allow */
+            scotlandForever.play();
+        });
     }
     var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
     fetch(`/api/patching/patchoptions`, {
