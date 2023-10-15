@@ -10,6 +10,7 @@ using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Webserver;
 using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
+using QuestAppVersionSwitcher.ClientModels;
 using Exception = System.Exception;
 
 namespace QuestAppVersionSwitcher.Mods
@@ -95,6 +96,11 @@ namespace QuestAppVersionSwitcher.Mods
         {
             QAVSWebserver.BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<ModsAndLibs>("/api/mods/mods", GetModsAndLibs()));
         }
+        
+        public static void BroadcastModloader()
+        {
+            QAVSWebserver.BroadcaseMessageOnWebSocket(new QAVSWebsocketMessage<ModLoaderResponse>("/api/mods/modloader", new ModLoaderResponse {modloader = modManager.usedModLoader, success = true}));
+        }
 
         public static void BroadcastOperation(int operationId)
         {
@@ -125,6 +131,22 @@ namespace QuestAppVersionSwitcher.Mods
             try
             {
                 modManager.Reset();
+                // Get modloader used
+                ModdedJson json = PatchingManager.GetModdedJson(CoreService.coreVars.currentApp);
+                switch (json.patcherName)
+                {
+                    case "QuestLoader":
+                        modManager.usedModLoader = ModLoader.QuestLoader;
+                        break;
+                    case "Scotland2":
+                        modManager.usedModLoader = ModLoader.Scotland2;
+                        break;
+                    default:
+                        modManager.usedModLoader = ModLoader.QuestLoader;
+                        break;
+                }
+
+                BroadcastModloader();
                 await modManager.LoadModsForCurrentApp();
             }
             catch (Exception e)
@@ -426,8 +448,16 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 Logger.Log("Haha mods go brrrr, yeeeeeeeeeeeeeeeeeeeeeeeeeeet. We doin this on a background thread, hell yeah.");
                 FileManager.RecreateDirectoryIfExisting(modManager.ModsExtractPath);
-                FolderPermission.DeleteDirectoryContent(modManager.ModsPath);
-                FolderPermission.DeleteDirectoryContent(modManager.LibsPath);
+                if (modManager.usedModLoader == ModLoader.QuestLoader)
+                {
+                    FolderPermission.DeleteDirectoryContent(modManager.QuestLoaderModsPath);
+                    FolderPermission.DeleteDirectoryContent(modManager.QuestLoaderLibsPath);
+                } else if (modManager.usedModLoader == ModLoader.Scotland2)
+                {
+                    FileManager.RecreateDirectoryIfExisting(modManager.Scotland2ModsPath);
+                    FileManager.RecreateDirectoryIfExisting(modManager.Scotland2LibsPath);
+                    FileManager.RecreateDirectoryIfExisting(modManager.Scotland2LateModsPath);
+                }
                 File.Delete(modManager.ConfigPath);
                 modManager.Reset();
             });

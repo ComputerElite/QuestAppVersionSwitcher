@@ -35,8 +35,9 @@ namespace QuestAppVersionSwitcher
         public const string TagPermission = "qavs.modded";
         public static readonly Uri AndroidNamespaceUri = new Uri("http://schemas.android.com/apk/res/android");
 
-        public static readonly string mainLoaderVersion = "v0.1.0-alpha";
+        public static readonly string mainScotlandLoaderVersion = "v0.1.0-alpha";
         public static readonly string scotland2Version = "v0.1.0-alpha";
+        public static readonly string questLoaderVersion = "v1.2.3";
 
         // Attribute resource IDs, used during manifest patching
         public const int NameAttributeResourceId = 16842755;
@@ -46,20 +47,39 @@ namespace QuestAppVersionSwitcher
         public const int ValueAttributeResourceId = 16842788;
         private const int AuthoritiesAttributeResourceId = 16842776;
 
-        // lib paths
-        public static string libMain64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain.so";
+        // lib paths Scotland2
+        public static string libMainScotlandPath = CoreService.coreVars.QAVSPatchingFilesDir + "libscotland.so";
         public static string libScotland2Path = CoreService.coreVars.QAVSPatchingFilesDir + "libsl2.so";
-        public static string mainLoaderVersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "mainLoaderVersion.txt";
+        public static string mainLoaderScotlandVersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "mainLoaderScotlandVersion.txt";
         public static string scotland2VersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "scotland2Version.txt";
 
+        
+        // lib paths QuestLoader
+        public static string libMain32Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain32.so";
+        public static string libMain64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmain64.so";
+        public static string libModloader32Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmodloader32.so";
+        public static string libModloader64Path = CoreService.coreVars.QAVSPatchingFilesDir + "libmodloader64.so";
+        public static string questLoaderVersionLocation = CoreService.coreVars.QAVSPatchingFilesDir + "QuestLoaderVersion.txt";
+        
         public static void DownloadDependencies()
         {
-            string currentVersion = File.Exists(mainLoaderVersionLocation) ? File.ReadAllText(mainLoaderVersionLocation) : "";
-            string currentSL2Version = File.Exists(scotland2VersionLocation) ? File.ReadAllText(scotland2VersionLocation) : "";
-            DownloadFileIfMissing(currentVersion, mainLoaderVersion, libMain64Path, "https://github.com/sc2ad/LibMainLoader/releases/download/" + mainLoaderVersion + "/libmain.so");
-            DownloadFileIfMissing(currentSL2Version, mainLoaderVersion, libScotland2Path, "https://github.com/sc2ad/scotland2/releases/download/" + scotland2Version + "/libsl2.so");
-            File.WriteAllText(mainLoaderVersionLocation, mainLoaderVersion);
-            File.WriteAllText(scotland2VersionLocation, scotland2Version);
+            if (CoreService.coreVars.patchingPermissions.modloader == ModLoader.Scotland2)
+            {
+                string currentMainLoaderScotlandVersion = File.Exists(mainLoaderScotlandVersionLocation) ? File.ReadAllText(mainLoaderScotlandVersionLocation) : "";
+                string currentSL2Version = File.Exists(scotland2VersionLocation) ? File.ReadAllText(scotland2VersionLocation) : "";
+                DownloadFileIfMissing(currentMainLoaderScotlandVersion, mainScotlandLoaderVersion, libMainScotlandPath, "https://github.com/sc2ad/LibMainLoader/releases/download/" + mainLoaderScotlandVersionLocation + "/libmain.so");
+                DownloadFileIfMissing(currentSL2Version, scotland2Version, libScotland2Path, "https://github.com/sc2ad/scotland2/releases/download/" + scotland2Version + "/libsl2.so");
+                File.WriteAllText(mainLoaderScotlandVersionLocation, mainScotlandLoaderVersion);
+                File.WriteAllText(scotland2VersionLocation, scotland2Version);
+            } else if (CoreService.coreVars.patchingPermissions.modloader == ModLoader.QuestLoader)
+            {
+                string currentVersion = File.Exists(questLoaderVersionLocation) ? File.ReadAllText(CoreService.coreVars.QAVSPatchingFilesDir + "QuestLoaderVersion.txt") : "";
+                DownloadFileIfMissing(currentVersion, questLoaderVersion, libMain32Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmain32.so");
+                DownloadFileIfMissing(currentVersion, questLoaderVersion, libMain64Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmain64.so");
+                DownloadFileIfMissing(currentVersion, questLoaderVersion, libModloader32Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader32.so");
+                DownloadFileIfMissing(currentVersion, questLoaderVersion, libModloader64Path, "https://github.com/sc2ad/QuestLoader/releases/download/" + questLoaderVersion + "/libmodloader64.so");
+                File.WriteAllText(questLoaderVersionLocation, questLoaderVersion);
+            }
             QAVSWebserver.patchStatus.doneOperations = 2;
             QAVSWebserver.patchStatus.progress = .1;
             QAVSWebserver.BroadcastPatchingStatus();
@@ -85,6 +105,14 @@ namespace QuestAppVersionSwitcher
         public static bool IsAPKModded(ZipArchive apkArchive)
         {
             return apkArchive.GetEntry(QAVSTagName) != null || OtherTagNames.Any(tagName => apkArchive.GetEntry(tagName) != null);
+        }
+
+        public static ModdedJson GetModdedJson(string package)
+        {
+            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
+            ModdedJson json = GetModdedJson(apk);
+            apk.Dispose();
+            return json;
         }
 
         public static ModdedJson GetModdedJson(ZipArchive apkArchive)
@@ -198,27 +226,46 @@ namespace QuestAppVersionSwitcher
                 apkArchive.CreateEntryFromFile(CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", libpath + "libunity.so");
                 moddedJson.modifiedFiles.Add(libpath + "libunity.so");
             }
-            
-            // Copy scotland2 to correct location
-            QAVSWebserver.patchStatus.progress = .35;
-            QAVSWebserver.patchStatus.currentOperation = "Copying scotland2";
-            QAVSWebserver.BroadcastPatchingStatus();
-            FileManager.CreateDirectoryIfNotExisting("/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader");
-            File.Copy(libScotland2Path, "/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader/libsl2.so", true);
+
+            if (CoreService.coreVars.patchingPermissions.modloader == ModLoader.Scotland2)
+            {
+                // Copy scotland2 to correct location
+                QAVSWebserver.patchStatus.progress = .35;
+                QAVSWebserver.patchStatus.currentOperation = "Copying scotland2";
+                QAVSWebserver.BroadcastPatchingStatus();
+                FileManager.CreateDirectoryIfNotExisting("/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader");
+                File.Copy(libScotland2Path, "/sdcard/ModData/" + CoreService.coreVars.currentApp + "/Modloader/libsl2.so", true);
 
 
-            QAVSWebserver.patchStatus.progress = .45;
-            QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
-            QAVSWebserver.BroadcastPatchingStatus();
-            ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
-            if (main != null) main.Delete();
-            moddedJson.modifiedFiles.Add(libpath + "libmain.so");
-            apkArchive.CreateEntryFromFile(libMain64Path, libpath + "libmain.so");
+                QAVSWebserver.patchStatus.progress = .45;
+                QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
+                QAVSWebserver.BroadcastPatchingStatus();
+                ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
+                if (main != null) main.Delete();
+                moddedJson.modifiedFiles.Add(libpath + "libmain.so");
+                apkArchive.CreateEntryFromFile(libMainScotlandPath, libpath + "libmain.so");
 
-            // Perhaps add this?
-            //moddedJson.libMainVersion = mainLoaderVersion;
-            moddedJson.modloaderName = "Scotland2";
-            moddedJson.modloaderVersion = scotland2Version;
+                moddedJson.modloaderName = "Scotland2";
+                moddedJson.modloaderVersion = scotland2Version;
+            } else if (CoreService.coreVars.patchingPermissions.modloader == ModLoader.QuestLoader)
+            {
+                QAVSWebserver.patchStatus.progress = .35;
+                QAVSWebserver.patchStatus.currentOperation = "Adding modloader";
+                QAVSWebserver.BroadcastPatchingStatus();
+                apkArchive.CreateEntryFromFile(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so");
+                moddedJson.modifiedFiles.Add(libpath + "libmodloader.so");
+
+                QAVSWebserver.patchStatus.progress = .45;
+                QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
+                QAVSWebserver.BroadcastPatchingStatus();
+                ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
+                if (main != null) main.Delete();
+                moddedJson.modifiedFiles.Add(libpath + "libmain.so");
+                apkArchive.CreateEntryFromFile(isApk64Bit ? libMain64Path : libMain32Path, libpath + "libmain.so");
+
+                moddedJson.modloaderName = "QuestLoader";
+                moddedJson.modloaderVersion = questLoaderVersion;
+            }
         }
 
         public static Dictionary<string, ApkSigner.PrePatchHash>? AddLibsAndPatchGame(ZipArchive apkArchive)

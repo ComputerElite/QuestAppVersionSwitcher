@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Java.IO;
+using File = System.IO.File;
 
 namespace QuestAppVersionSwitcher.Mods
 {
@@ -240,31 +242,35 @@ namespace QuestAppVersionSwitcher.Mods
         public override async Task LoadMods()
         {
             Logger.Log("Checking mod status");
-            List<string> modFiles = Directory.GetFiles(_modManager.ModsPath).ToList();
-            List<string> libFiles = Directory.GetFiles(_modManager.LibsPath).ToList();
-            for(int i = 0; i < modFiles.Count; i++)
+            List<string> modFiles = new List<string>();
+            List<string> lateModFiles = new List<string>();
+            List<string> libFiles = new List<string>();
+            if (_modManager.usedModLoader == ModLoader.Scotland2)
             {
-                modFiles[i] = Path.GetFileName(modFiles[i]);
-            }
-            for (int i = 0; i < libFiles.Count; i++)
+                modFiles = FolderPermission.GetFiles(_modManager.Scotland2ModsPath).ConvertAll(x => Path.GetFileName(x));
+                lateModFiles = FolderPermission.GetFiles(_modManager.Scotland2LateModsPath).ConvertAll(x => Path.GetFileName(x));
+                libFiles = FolderPermission.GetFiles(_modManager.Scotland2LibsPath).ConvertAll(x => Path.GetFileName(x));
+            } else if (_modManager.usedModLoader == ModLoader.QuestLoader)
             {
-                libFiles[i] = Path.GetFileName(libFiles[i]);
+                modFiles = FolderPermission.GetFiles(_modManager.QuestLoaderModsPath).ConvertAll(x => Path.GetFileName(x));
+                libFiles = FolderPermission.GetFiles(_modManager.QuestLoaderLibsPath).ConvertAll(x => Path.GetFileName(x));
             }
             foreach (QPMod mod in ModsById.Values)
             {
-                SetModStatus(mod, modFiles, libFiles);
+                SetModStatus(mod, modFiles, lateModFiles, libFiles);
             }
         }
-
-        private void SetModStatus(QPMod mod, List<string> modFiles, List<string> libFiles)
+        
+        private void SetModStatus(QPMod mod, List<string> modFiles, List<string> lateModFiles, List<string> libFiles)
         {
             bool hasAllMods = mod.Manifest.ModFileNames.TrueForAll(modFiles.Contains);
+            bool hasAllLateMods = mod.Manifest.LateModFileNames.TrueForAll(lateModFiles.Contains);
             bool hasAllLibs = mod.Manifest.LibraryFileNames.TrueForAll(libFiles.Contains);
             // TODO: Should we also check that file copies are present?
             // TODO: This would be more expensive as we would have to check the files in more directories
             // TODO: Should we check that the files in mods/libs actually match the ones within the mod?
 
-            mod.IsInstalled = hasAllMods && hasAllLibs;
+            mod.IsInstalled = hasAllMods && hasAllLibs && hasAllLateMods;
         }
 
         public override void ClearMods()

@@ -90,6 +90,19 @@ namespace QuestAppVersionSwitcher
             return JsonSerializer.Serialize(r);
         }
     }
+    
+    public class ModLoaderResponse : GenericResponse
+    {
+        public ModLoader modloader { get; set; } = ModLoader.QuestLoader;
+        public static string GetResponse(string msg, ModLoader modloader, bool success)
+        {
+            ModLoaderResponse r = new ModLoaderResponse();
+            r.msg = msg;
+            r.modloader = modloader;
+            r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
 
     public class BackupStatus
     {

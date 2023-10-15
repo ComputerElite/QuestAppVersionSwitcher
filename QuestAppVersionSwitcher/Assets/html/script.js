@@ -50,6 +50,8 @@ socket.onmessage = function (e) {
             modStatus.operations[i] = data.data
         }
         UpdateMods()
+    } else if(data.route == "/api/mods/modloader") {
+        modloader = data.data.modloader
     }
 }
 
@@ -86,6 +88,12 @@ function UpdateModsManually() {
     }))
 }
 var modStatus = {}
+var modloader = "QuestLoader"
+function GetModLoaderName() {
+    if(modloader == 0) return "QuestLoader"
+    if(modloader == 1) return "Scotland2"
+    return modloader
+}
 function UpdateMods() {
     modStatus.operations = modStatus.operations.filter(x => !x.isDone && !x.isError)
     operationsOngoing = modStatus.operations.length > 0
@@ -493,7 +501,8 @@ function PatchGame() {
         handTracking: handTrackingCheckbox.checked,
         handTrackingVersion: parseInt(handTrackingVersion.value),
         externalStorage: externalStorageCheckbox.checked,
-        openXR: openXRCheckbox.checked
+        openXR: openXRCheckbox.checked,
+        modloader: parseInt(document.getElementById("modloader").value)
     }
     var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
     fetch(`/api/patching/patchoptions`, {

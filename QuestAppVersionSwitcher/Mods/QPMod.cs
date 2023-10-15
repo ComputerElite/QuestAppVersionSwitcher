@@ -94,17 +94,40 @@ namespace QuestAppVersionSwitcher.Mods
 
             List<KeyValuePair<string, string>> copyPaths = new List<KeyValuePair<string, string>>();
             List<string> directoriesToCreate = new List<string>();
-            foreach (string libraryPath in Manifest.LibraryFileNames)
+            if (_modManager.usedModLoader == ModLoader.QuestLoader)
             {
-                Logger.Log($"Starting library file copy {libraryPath} . . .");
-                copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, libraryPath), Path.Combine(_modManager.LibsPath, Path.GetFileName(libraryPath))));
-            }
+                foreach (string libraryPath in Manifest.LibraryFileNames)
+                {
+                    Logger.Log($"Starting library file copy {libraryPath} . . .");
+                    copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, libraryPath), Path.Combine(_modManager.QuestLoaderLibsPath, Path.GetFileName(libraryPath))));
+                }
 
-            foreach (string modPath in Manifest.ModFileNames)
+                foreach (string modPath in Manifest.ModFileNames)
+                {
+                    Logger.Log($"Starting mod file copy {modPath} . . .");
+                    copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, modPath), Path.Combine(_modManager.QuestLoaderModsPath, Path.GetFileName(modPath))));
+                }
+            } else if (_modManager.usedModLoader == ModLoader.Scotland2)
             {
-                Logger.Log($"Starting mod file copy {modPath} . . .");
-                copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, modPath), Path.Combine(_modManager.ModsPath, Path.GetFileName(modPath))));
+                foreach (string libraryPath in Manifest.LibraryFileNames)
+                {
+                    Logger.Log($"Starting library file copy {libraryPath} . . .");
+                    copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, libraryPath), Path.Combine(_modManager.Scotland2LibsPath, Path.GetFileName(libraryPath))));
+                }
+
+                foreach (string modPath in Manifest.ModFileNames)
+                {
+                    Logger.Log($"Starting mod file copy {modPath} . . .");
+                    copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, modPath), Path.Combine(_modManager.Scotland2ModsPath, Path.GetFileName(modPath))));
+                }
+                
+                foreach (string lateModPath in Manifest.LateModFileNames)
+                {
+                    Logger.Log($"Starting late mod file copy {lateModPath} . . .");
+                    copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, lateModPath), Path.Combine(_modManager.Scotland2LateModsPath, Path.GetFileName(lateModPath))));
+                }
             }
+            
 
             foreach (FileCopy fileCopy in Manifest.FileCopies)
             {
@@ -161,32 +184,69 @@ namespace QuestAppVersionSwitcher.Mods
             
             List<string> filesToRemove = new List<string>();
             // Remove mod SOs so that the mod will not load
-            foreach (string modFilePath in Manifest.ModFileNames)
+            if (_modManager.usedModLoader == ModLoader.QuestLoader)
             {
-                Logger.Log($"Removing mod file {modFilePath}");
-                filesToRemove.Add(Path.Combine(_modManager.ModsPath, Path.GetFileName(modFilePath)));
-            }
-
-            foreach (string libraryPath in Manifest.LibraryFileNames)
-            {
-                // Only remove libraries if they aren't used by another mod
-                bool isUsedElsewhere = false;
-                foreach (QPMod otherMod in _provider.ModsById.Values)
+                foreach (string modFilePath in Manifest.ModFileNames)
                 {
-                    if (otherMod != this && otherMod.IsInstalled && otherMod.Manifest.LibraryFileNames.Contains(libraryPath))
+                    Logger.Log($"Removing mod file {modFilePath}");
+                    filesToRemove.Add(Path.Combine(_modManager.QuestLoaderModsPath, Path.GetFileName(modFilePath)));
+                }
+
+                foreach (string libraryPath in Manifest.LibraryFileNames)
+                {
+                    // Only remove libraries if they aren't used by another mod
+                    bool isUsedElsewhere = false;
+                    foreach (QPMod otherMod in _provider.ModsById.Values)
                     {
-                        Logger.Log($"Other mod {otherMod.Id} still needs lib file {libraryPath}, not removing");
-                        isUsedElsewhere = true;
-                        break;
+                        if (otherMod != this && otherMod.IsInstalled && otherMod.Manifest.LibraryFileNames.Contains(libraryPath))
+                        {
+                            Logger.Log($"Other mod {otherMod.Id} still needs lib file {libraryPath}, not removing");
+                            isUsedElsewhere = true;
+                            break;
+                        }
+                    }
+
+                    if (!isUsedElsewhere)
+                    {
+                        Logger.Log("Removing library file " + libraryPath);
+                        filesToRemove.Add(Path.Combine(_modManager.QuestLoaderLibsPath, Path.GetFileName(libraryPath)));
                     }
                 }
-
-                if (!isUsedElsewhere)
+            } else if (_modManager.usedModLoader == ModLoader.Scotland2)
+            {
+                foreach (string modFilePath in Manifest.ModFileNames)
                 {
-                    Logger.Log("Removing library file " + libraryPath);
-                    filesToRemove.Add(Path.Combine(_modManager.LibsPath, Path.GetFileName(libraryPath)));
+                    Logger.Log($"Removing mod file {modFilePath}");
+                    filesToRemove.Add(Path.Combine(_modManager.Scotland2ModsPath, Path.GetFileName(modFilePath)));
+                }
+                foreach (string lateModFilePath in Manifest.LateModFileNames)
+                {
+                    Logger.Log($"Removing late mod file {lateModFilePath}");
+                    filesToRemove.Add(Path.Combine(_modManager.Scotland2LateModsPath, Path.GetFileName(lateModFilePath)));
+                }
+
+                foreach (string libraryPath in Manifest.LibraryFileNames)
+                {
+                    // Only remove libraries if they aren't used by another mod
+                    bool isUsedElsewhere = false;
+                    foreach (QPMod otherMod in _provider.ModsById.Values)
+                    {
+                        if (otherMod != this && otherMod.IsInstalled && otherMod.Manifest.LibraryFileNames.Contains(libraryPath))
+                        {
+                            Logger.Log($"Other mod {otherMod.Id} still needs lib file {libraryPath}, not removing");
+                            isUsedElsewhere = true;
+                            break;
+                        }
+                    }
+
+                    if (!isUsedElsewhere)
+                    {
+                        Logger.Log("Removing library file " + libraryPath);
+                        filesToRemove.Add(Path.Combine(_modManager.Scotland2LibsPath, Path.GetFileName(libraryPath)));
+                    }
                 }
             }
+            
 
             foreach (FileCopy fileCopy in Manifest.FileCopies)
             {

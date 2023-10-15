@@ -24,12 +24,15 @@ namespace QuestAppVersionSwitcher.Mods
             }
         }
         private static readonly List<IMod> EmptyModList = new List<IMod>();
+        public ModLoader usedModLoader = ModLoader.Scotland2;
 
-        public string ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/early_mods/";
+        public string QuestLoaderModsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/mods/";
+        public string QuestLoaderLibsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/libs/";
+        public string Scotland2ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/early_mods/";
         // ToDo: Implement late mod support
-        public string LateModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/mods/";
+        public string Scotland2LateModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/mods/";
 
-        public string LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/libs/";
+        public string Scotland2LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/libs/";
 
         public string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
         public string ModsExtractPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/installedMods/";
@@ -124,8 +127,16 @@ namespace QuestAppVersionSwitcher.Mods
 
         public async Task CreateModDirectories()
         {
-            FolderPermission.CreateDirectoryIfNotExisting(ModsPath);
-            FolderPermission.CreateDirectoryIfNotExisting(LibsPath);
+            if (usedModLoader == ModLoader.Scotland2)
+            {
+                FolderPermission.CreateDirectoryIfNotExisting(Scotland2ModsPath);
+                FolderPermission.CreateDirectoryIfNotExisting(Scotland2LibsPath);
+                FolderPermission.CreateDirectoryIfNotExisting(Scotland2LateModsPath);
+            } else if(usedModLoader == ModLoader.QuestLoader)
+            {
+                FolderPermission.CreateDirectoryIfNotExisting(QuestLoaderModsPath);
+                FolderPermission.CreateDirectoryIfNotExisting(QuestLoaderLibsPath);
+            }
             FolderPermission.CreateDirectoryIfNotExisting(ModsExtractPath);
         }
 
@@ -134,31 +145,7 @@ namespace QuestAppVersionSwitcher.Mods
             Logger.Log("Loading mods . . .");
             await CreateModDirectories();
             Logger.Log("Created directories");
-
-            // If a config file exists, we'll need to load our mods from it
-            /*
-            if (File.Exists(ConfigPath))
-            {
-                Logger.Log("Loading mods from quest mod config");
-
-                try
-                {
-                    ModConfig? modConfig = JsonSerializer.Deserialize<ModConfig>(File.ReadAllText(ConfigPath), _configSerializationOptions);
-                    if (modConfig != null)
-                    {
-                        modConfig.Mods.ForEach(ModLoadedCallback);
-                        _modConfig = modConfig;
-                        Logger.Log($"{AllMods.Count} mods loaded");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log($"Failed to load mods from quest config: {ex}");
-                }
-            }
-            else
-            {
-            */
+            
             if (loadingMods) return;
             loadingMods = true;
             Logger.Log("Loading mods from disk");

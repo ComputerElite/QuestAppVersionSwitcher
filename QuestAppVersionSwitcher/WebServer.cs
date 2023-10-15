@@ -174,6 +174,11 @@ namespace QuestAppVersionSwitcher
                 request.SendString(QAVSModManager.GetMods(), "application/json");
                 return true;
             });
+            server.AddRoute("GET", "/api/mods/modloader", request =>
+            {
+                request.SendString(ModLoaderResponse.GetResponse("", QAVSModManager.modManager.usedModLoader, true), "application/json");
+                return true;
+            });
             server.AddRoute("GET", "/api/mods/operation/", request =>
             {
                 try
