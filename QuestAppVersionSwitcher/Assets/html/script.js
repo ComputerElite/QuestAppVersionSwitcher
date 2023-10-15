@@ -82,7 +82,7 @@ function UpdateModLoader(data) {
 
 function UpdatePatchStatus(j) {
     if (j.done) {
-        if(scotlandForever) scotlandForever.Stop()
+        if(scotlandForever) scotlandForever.pause()
         TextBoxGood("patchingTextBox", j.currentOperation)
         patchInProgress = false
         if(j.backupName) {
@@ -97,7 +97,7 @@ function UpdatePatchStatus(j) {
         UpdateUI()
 
     } else if (j.error) {
-        if(scotlandForever) scotlandForever.Stop()
+        if(scotlandForever) scotlandForever.pause()
         TextBoxError("patchingTextBox", j.errorText)
         clearInterval(i)
         patchInProgress = false
