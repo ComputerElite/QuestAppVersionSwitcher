@@ -22,6 +22,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Org.BouncyCastle.Bcpg.Sig;
+using QuestPatcher.QMod;
 
 namespace QuestAppVersionSwitcher
 {
@@ -92,7 +93,7 @@ namespace QuestAppVersionSwitcher
                 string fileName = Path.GetFileName(filePath);
                 QAVSWebserver.patchStatus.currentOperation = "Downloading dependency " + fileName;
                 QAVSWebserver.BroadcastPatchingStatus();
-                Logger.Log(fileName + " doesn't exist. Downloading");
+                Logger.Log(fileName + " doesn't exist. Downloading from " + downloadLink);
                 WebClient c = new WebClient();
                 c.DownloadFile(downloadLink, filePath);
             }

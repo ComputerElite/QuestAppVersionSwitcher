@@ -11,6 +11,7 @@ using ComputerUtils.Android.Webserver;
 using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
 using QuestAppVersionSwitcher.ClientModels;
+using QuestPatcher.QMod;
 using Exception = System.Exception;
 
 namespace QuestAppVersionSwitcher.Mods

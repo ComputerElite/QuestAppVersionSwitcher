@@ -4,6 +4,7 @@ using System.Threading;
 using ComputerUtils.Android.AndroidTools;
 using Java.Lang;
 using Newtonsoft.Json;
+using QuestPatcher.QMod;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace QuestAppVersionSwitcher.Core

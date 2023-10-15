@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using QuestAppVersionSwitcher.Core;
+using QuestPatcher.QMod;
 
 namespace QuestAppVersionSwitcher
 {

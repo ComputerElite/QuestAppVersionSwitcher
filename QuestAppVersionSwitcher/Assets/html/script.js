@@ -51,27 +51,38 @@ socket.onmessage = function (e) {
         }
         UpdateMods()
     } else if(data.route == "/api/mods/modloader") {
-        modloader = data.data.modloader
-        if(lastCheckedAccessForGame != config.currentApp) {
-            lastCheckedAccessForGame = config.currentApp
-            if(modloader == 0) { // we only need access to android dir for QuestLoader
-                fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
-                    res.json().then(j => {
-                        if (!j.gotAccess) {
-                            // Open need acces prompt
-                            CloseGetPasswordPopup();
-                            OpenRestorePopup();
-                            GotoStep("12")
-                        }
-                    })
+        UpdateModLoader(data.data)
+    }
+}
+
+function FetchModLoader() {
+    fetch("/api/mods/modloader").then(res => res.json().then(res => {
+        UpdateModLoader(res)
+    }))
+}
+
+function UpdateModLoader(data) {
+    modloader = data.modloader
+    if(lastCheckedAccessForGame != config.currentApp) {
+        lastCheckedAccessForGame = config.currentApp
+        if(modloader == 0) { // we only need access to android dir for QuestLoader
+            fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
+                res.json().then(j => {
+                    if (!j.gotAccess && !params.get("noaccesscheck")) {
+                        // Open need acces prompt
+                        CloseGetPasswordPopup();
+                        OpenRestorePopup();
+                        GotoStep("12")
+                    }
                 })
-            }
+            })
         }
     }
 }
 
 function UpdatePatchStatus(j) {
     if (j.done) {
+        if(scotlandForever) scotlandForever.Stop()
         TextBoxGood("patchingTextBox", j.currentOperation)
         patchInProgress = false
         if(j.backupName) {
@@ -86,6 +97,7 @@ function UpdatePatchStatus(j) {
         UpdateUI()
 
     } else if (j.error) {
+        if(scotlandForever) scotlandForever.Stop()
         TextBoxError("patchingTextBox", j.errorText)
         clearInterval(i)
         patchInProgress = false
@@ -504,6 +516,7 @@ function RemovePermission(name) {
 
 var patchInProgress = false
 var lastApp = ""
+var scotlandForever
 function PatchGame() {
     patchInProgress = true
     var addMicPerm = document.getElementById("mic").checked
@@ -520,6 +533,13 @@ function PatchGame() {
         externalStorage: externalStorageCheckbox.checked,
         openXR: openXRCheckbox.checked,
         modloader: parseInt(document.getElementById("modloader").value)
+    }
+    if(patchOptions.modloader == 1) {
+        scotlandForever = new Audio("/scotlandforever.mp3")
+        scotlandForever.addEventListener("canplaythrough", (event) => {
+            /* the audio is now playable; play it if permissions allow */
+            scotlandForever.play();
+        });
     }
     var extra = backupToPatch ? `?package=${config.currentApp}&backup=${backupToPatch}` : ""
     fetch(`/api/patching/patchoptions`, {
@@ -679,6 +699,7 @@ function UpdateUI(closeLists = false) {
         if(firstConfigFetch) {
             firstConfigFetch = false;
             CheckStartParams()
+            FetchModLoader()
         }
         Array.prototype.forEach.call(document.getElementsByClassName("packageName"), e => {
             if(config.currentApp) e.innerHTML = config.currentApp
