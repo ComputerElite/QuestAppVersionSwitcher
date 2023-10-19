@@ -37,7 +37,7 @@ namespace QuestAppVersionSwitcher
         public static readonly Uri AndroidNamespaceUri = new Uri("http://schemas.android.com/apk/res/android");
 
         public static readonly string mainScotlandLoaderVersion = "v0.1.0-alpha";
-        public static readonly string scotland2Version = "v0.1.0-alpha";
+        public static readonly string scotland2Version = "v0.1.2";
         public static readonly string questLoaderVersion = "v1.2.3";
 
         // Attribute resource IDs, used during manifest patching
