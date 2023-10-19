@@ -49,7 +49,18 @@ namespace QuestAppVersionSwitcher.Mods
             Logger.Log($"Mod ID: {qmod.Id}, Version: {qmod.Version}, Is Library: {qmod.IsLibrary}");
             if (qmod.PackageId != null && qmod.PackageId != CoreService.coreVars.currentApp)
             {
-                throw new InstallationException($"Mod is intended for app {qmod.PackageId}, but {CoreService.coreVars.currentApp} is selected");
+                string msg =
+                    $"Mod is intended for app {qmod.PackageId}, but {CoreService.coreVars.currentApp} is selected";
+                Logger.Log(msg);
+                throw new InstallationException(msg);
+            }
+            
+            if (qmod.ModLoader != _modManager.usedModLoader)
+            {
+                string msg =
+                    $"Mod is intended for modloader {qmod.ModLoader}, but game has {_modManager.usedModLoader}. Please find another version of this mod which uses {_modManager.usedModLoader} or remod your game with it. Former is recommended.";
+                Logger.Log(msg);
+                throw new InstallationException(msg);
             }
 
             var mod = new QPMod(this, qmod.GetManifest(), _modManager);

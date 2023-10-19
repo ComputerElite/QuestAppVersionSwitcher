@@ -123,8 +123,28 @@ function GetModLoaderName() {
     if(modloader == 1) return "Scotland2"
     return modloader
 }
+
+function RemoveOperation(id) {
+    var o = modStatus.operations.find(x => x.operationId == id)
+    if(o.modId) {
+        DeleteMod(o.modId).then(() => {
+            ChangeApp(config.currentApp) // reload mods
+            UpdateMods()
+        })
+    }
+    for(const op of modStatus.operations) {
+        if(o.taskId == op.taskId) DeleteOperationFromServer(op.operationId)
+    }
+    modStatus.operations = modStatus.operations.filter(x => x.taskId != o.taskId)
+    UpdateMods()
+}
+
+function DeleteOperationFromServer(id) {
+    fetch(`/api/mods/operation`, {method: "DELETE", body: id})
+}
+
 function UpdateMods() {
-    modStatus.operations = modStatus.operations.filter(x => !x.isDone && !x.isError)
+    modStatus.operations = modStatus.operations.filter(x => !x.isDone || x.type == 6)
     operationsOngoing = modStatus.operations.length > 0
     var mods = ``
     if(!operationsOngoing) {
@@ -136,6 +156,7 @@ function UpdateMods() {
             operations += `
                     <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
                         ${operation.name}
+                        ${operation.type == 6 ? `<div class="button" style="display: inline; margin-left: 20px;" onclick="RemoveOperation(${operation.operationId})">Remove Error${operation.modId ? " and delete mod" : ""}</div>` : ""}
                     </div>
                     `
         }
@@ -423,7 +444,13 @@ function InstallCosmetic() {
 }
 
 function DeleteMod(id) {
-    fetch(`/api/mods/delete?id=${id}`, {method: "POST"})
+    return new Promise((resolve, reject) => {
+        fetch(`/api/mods/delete?id=${id}`, {method: "POST"}).then(res => {
+            resolve()
+        }).catch(e => {
+            reject(e)
+        })
+    });
 }
 
 function UpdateModState(id, enable) {

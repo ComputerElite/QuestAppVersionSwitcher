@@ -431,6 +431,7 @@ namespace QuestAppVersionSwitcher
         /// <returns></returns>
         public static List<string> GetFiles(string path)
         {
+            Logger.Log("Getting files in " + path);
             if (Build.VERSION.SdkInt <= BuildVersionCodes.Q || !path.Contains("sdcard/Android"))
             {
                 return Directory.GetFiles(path).ToList();

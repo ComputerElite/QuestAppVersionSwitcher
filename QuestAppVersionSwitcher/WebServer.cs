@@ -549,6 +549,7 @@ namespace QuestAppVersionSwitcher
                 QAVSReport report = new QAVSReport();
                 report.androidVersion = (int)Build.VERSION.SdkInt;
                 report.version = CoreService.version.ToString();
+                report.modloaderMode = QAVSModManager.modManager.usedModLoader.ToString();
                 report.userIsLoggedIn = GetLoggedInStatus() == LoggedInStatus.LoggedIn;
                 report.reportTime = DateTime.Now;
                 report.device = Build.Device;

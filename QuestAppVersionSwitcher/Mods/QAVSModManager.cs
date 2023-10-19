@@ -134,7 +134,7 @@ namespace QuestAppVersionSwitcher.Mods
                 modManager.Reset();
                 // Get modloader used
                 ModdedJson json = PatchingManager.GetModdedJson(CoreService.coreVars.currentApp);
-                switch (json.patcherName)
+                switch (json.modloaderName)
                 {
                     case "QuestLoader":
                         modManager.usedModLoader = ModLoader.QuestLoader;
@@ -191,10 +191,11 @@ namespace QuestAppVersionSwitcher.Mods
             int operationId = operations;
             operations++;
             AddRunningOperation(new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + installQueue[0].filename, operationId = operationId, taskId = installQueue[0].taskId});
-            
+            string modId = "";
             try
             {
                 IMod mod = modManager.TryParseMod(installQueue[0].path, installQueue[0].taskId).Result;
+                modId = mod.Id;
                 UpdateOperationModId(operationId, mod.Id);
                 mod.Install(installQueue[0].taskId).Wait();
                 MarkOperationAsDone(operationId);
@@ -204,7 +205,7 @@ namespace QuestAppVersionSwitcher.Mods
                 MarkOperationAsError(operationId);
                 operationId = operations;
                 operations++;
-                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, taskId = installQueue[0].taskId, isDone = true, error = true});
+                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, taskId = installQueue[0].taskId, isDone = true, error = true, modId = modId});
             }
             modManager.ForceSave();
             FileManager.DeleteFileIfExisting(installQueue[0].path);
@@ -398,7 +399,7 @@ namespace QuestAppVersionSwitcher.Mods
                                 type = QAVSOperationType.Error,
                                 name = "Error enabling mod: " + e.Message +
                                        "\n\nTo remove this message restart QuestAppVersionSwitcher",
-                                taskId = taskId, operationId = operationId, isDone = true, error = true
+                                taskId = taskId, operationId = operationId, isDone = true, error = true, modId = id
                             });
                         }
 

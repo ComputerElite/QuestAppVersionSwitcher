@@ -30,7 +30,6 @@ namespace QuestAppVersionSwitcher.Mods
         public string QuestLoaderModsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/mods/";
         public string QuestLoaderLibsPath => $"/sdcard/Android/data/{CoreService.coreVars.currentApp}/files/libs/";
         public string Scotland2ModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/early_mods/";
-        // ToDo: Implement late mod support
         public string Scotland2LateModsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/mods/";
 
         public string Scotland2LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/libs/";
