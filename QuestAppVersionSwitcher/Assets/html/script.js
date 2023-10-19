@@ -126,17 +126,10 @@ function GetModLoaderName() {
 
 function RemoveOperation(id) {
     var o = modStatus.operations.find(x => x.operationId == id)
-    if(o.modId) {
-        DeleteMod(o.modId).then(() => {
-            ChangeApp(config.currentApp) // reload mods
-            UpdateMods()
-        })
-    }
     for(const op of modStatus.operations) {
         if(o.taskId == op.taskId) DeleteOperationFromServer(op.operationId)
     }
-    modStatus.operations = modStatus.operations.filter(x => x.taskId != o.taskId)
-    UpdateMods()
+    setTimeout(UpdateModsManually, 1500)
 }
 
 function DeleteOperationFromServer(id) {
@@ -156,7 +149,7 @@ function UpdateMods() {
             operations += `
                     <div class="mod" style="padding: 10px; ${operation.type == 6 ? "color: #FF0000;" : ""}">
                         ${operation.name}
-                        ${operation.type == 6 ? `<div class="button" style="display: inline; margin-left: 20px;" onclick="RemoveOperation(${operation.operationId})">Remove Error${operation.modId ? " and delete mod" : ""}</div>` : ""}
+                        ${operation.type == 6 ? `<div class="button" style="display: inline; margin-left: 20px;" onclick="RemoveOperation(${operation.operationId})">Remove Error</div>` : ""}
                     </div>
                     `
         }

@@ -192,10 +192,12 @@ namespace QuestAppVersionSwitcher.Mods
             operations++;
             AddRunningOperation(new QAVSOperation { type = QAVSOperationType.ModInstall, name = "Installing " + installQueue[0].filename, operationId = operationId, taskId = installQueue[0].taskId});
             string modId = "";
+            string modName = "";
             try
             {
                 IMod mod = modManager.TryParseMod(installQueue[0].path, installQueue[0].taskId).Result;
                 modId = mod.Id;
+                modName = mod.Name;
                 UpdateOperationModId(operationId, mod.Id);
                 mod.Install(installQueue[0].taskId).Wait();
                 MarkOperationAsDone(operationId);
@@ -205,7 +207,11 @@ namespace QuestAppVersionSwitcher.Mods
                 MarkOperationAsError(operationId);
                 operationId = operations;
                 operations++;
-                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod: " + e.Message + "\n\nTo remove this message restart QuestAppVersionSwitcher", operationId = operationId, taskId = installQueue[0].taskId, isDone = true, error = true, modId = modId});
+                if (modId != "")
+                {
+                    DeleteMod(modId);
+                }
+                AddRunningOperation(new QAVSOperation { type = QAVSOperationType.Error, name = "Error installing mod " + modName + ": " + e.Message, operationId = operationId, taskId = installQueue[0].taskId, isDone = true, error = true, modId = modId});
             }
             modManager.ForceSave();
             FileManager.DeleteFileIfExisting(installQueue[0].path);
@@ -279,8 +285,7 @@ namespace QuestAppVersionSwitcher.Mods
                             AddRunningOperation(new QAVSOperation
                             {
                                 type = QAVSOperationType.Error,
-                                name = "Error uninstalling mod: " + e.Message +
-                                       "\n\nTo remove this message restart QuestAppVersionSwitcher",
+                                name = "Error uninstalling mod " + m.Name + ": " + e.Message,
                                 operationId = operationId, taskId = taskId, isDone = true, error = true
                             });
                         }
@@ -322,8 +327,7 @@ namespace QuestAppVersionSwitcher.Mods
                             AddRunningOperation(new QAVSOperation
                             {
                                 type = QAVSOperationType.Error,
-                                name = "Error deleting mod: " + e.Message +
-                                       "\n\nTo remove this message restart QuestAppVersionSwitcher",
+                                name = "Error deleting mod " + m.Name + ": " + e.Message,
                                 operationId = operationId, taskId = taskId, isDone = true, error = true
                             });
                         }
@@ -397,8 +401,7 @@ namespace QuestAppVersionSwitcher.Mods
                             AddRunningOperation(new QAVSOperation
                             {
                                 type = QAVSOperationType.Error,
-                                name = "Error enabling mod: " + e.Message +
-                                       "\n\nTo remove this message restart QuestAppVersionSwitcher",
+                                name = "Error enabling mod " + m.Name + ": " + e.Message,
                                 taskId = taskId, operationId = operationId, isDone = true, error = true, modId = id
                             });
                         }
