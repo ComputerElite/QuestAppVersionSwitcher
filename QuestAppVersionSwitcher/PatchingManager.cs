@@ -130,7 +130,7 @@ namespace QuestAppVersionSwitcher
         public static ModdedJson GetModdedJson(ApkZip apkArchive)
         {
             if (!apkArchive.ContainsFile(QAVSTagName)) return null;
-            Stream stream = apkArchive.OpenReader(QAVSTagName);
+            using Stream stream = apkArchive.OpenReader(QAVSTagName);
             string json = "";
             using (var sr = new StreamReader(stream, Encoding.UTF8))
             {
@@ -140,7 +140,7 @@ namespace QuestAppVersionSwitcher
                     json += line + "\n";
                 }
             }
-            Logger.Log(json);
+            //Logger.Log(json);
             return JsonSerializer.Deserialize<ModdedJson>(json);
         }
 
@@ -374,7 +374,10 @@ namespace QuestAppVersionSwitcher
         {
             PatchingStatus status = new PatchingStatus();
             MemoryStream manifestStream = new MemoryStream();
-            apk.OpenReader(ManifestPath).CopyTo(manifestStream);
+            using (Stream s = apk.OpenReader(ManifestPath))
+            {
+                s.CopyTo(manifestStream);
+            }
             manifestStream.Position = 0;
             AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
             foreach (AxmlAttribute a in manifest.Attributes)
@@ -389,6 +392,7 @@ namespace QuestAppVersionSwitcher
                 }
             }
             status.isPatched = IsAPKModded(apk);
+            Logger.Log(JsonSerializer.Serialize(status));
             status.moddedJson = GetModdedJson(apk);
             manifestStream.Close();
             manifestStream.Dispose();

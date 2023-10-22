@@ -201,6 +201,8 @@ namespace QuestPatcher.Zip
                 throw new InvalidOperationException("Attempted to open a file for reading when another file was already being read/written to");
             }
 
+            _isStreamInUse = true;
+
             if(_centralDirectoryRecords.TryGetValue(NormaliseFileName(fileName), out var centralDirectoryHeader))
             {
                 _stream.Position = centralDirectoryHeader.LocalHeaderOffset;
