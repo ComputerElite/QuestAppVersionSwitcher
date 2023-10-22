@@ -2,6 +2,7 @@ name: .NET
 
 # Run on every push on main branch
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
 
