@@ -338,10 +338,11 @@ namespace QuestAppVersionSwitcher
                     patchStatus.doneOperations = 1;
                     patchStatus.progress = .1;
                     BroadcastPatchingStatus();
-                    GeneralPurposeWorker.ExecuteWork(() =>
+                    Thread t = new Thread(() =>
                     {
                         PatchingManager.PatchAPK(apk, appLocation, request.queryString.Get("force") != null);
                     });
+                    t.Start();
                 }
                 catch (Exception e)
                 {

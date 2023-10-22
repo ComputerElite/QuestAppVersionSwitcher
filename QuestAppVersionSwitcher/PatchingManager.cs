@@ -124,7 +124,6 @@ namespace QuestAppVersionSwitcher
             using var apkStream = File.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
             using ApkZip apk = ApkZip.Open(apkStream);
             ModdedJson json = GetModdedJson(apk);
-            apk.Dispose();
             return json;
         }
 
@@ -141,11 +140,12 @@ namespace QuestAppVersionSwitcher
                     json += line + "\n";
                 }
             }
+            Logger.Log(json);
             return JsonSerializer.Deserialize<ModdedJson>(json);
         }
 
 
-        public static async void PatchAPK(ApkZip apkArchive, string appLocation, bool forcePatch)
+        public static void PatchAPK(ApkZip apkArchive, string appLocation, bool forcePatch)
         {
             if (!forcePatch && IsAPKModded(apkArchive))
             {
@@ -167,15 +167,23 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.currentOperation = "Signing apk";
             QAVSWebserver.BroadcastPatchingStatus();
             apkArchive.Dispose();
+            Console.WriteLine("Opening patched apk to get patching status");
             
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
             QAVSWebserver.BroadcastPatchingStatus();
-            PatchingStatus status = GetPatchingStatus(apkArchive);
+            
+            // Get app version
+            Logger.Log("Opening patched apk to get patching status");
+            using var apkStream = File.OpenRead(appLocation);
+            using ApkZip a = ApkZip.Open(apkStream);
+            PatchingStatus status = GetPatchingStatus(a);
+            // Move apk to correct backup folder
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + packageId + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
+            
             File.Move(appLocation, backupDir + "app.apk");
             Logger.Log("Moved apk");
 
@@ -307,7 +315,6 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = 4;
             QAVSWebserver.BroadcastPatchingStatus();
             moddedJson.modifiedFiles.Add(ManifestPath);
-            apkArchive.AddFile(QAVSTagName, new MemoryStream(), null);
             apkArchive.AddFile(LegacyTagName, new MemoryStream(), null);
             moddedJson.patcherVersion = CoreService.version.ToString();
             moddedJson.patcherName = "QuestAppVersionSwitcher";

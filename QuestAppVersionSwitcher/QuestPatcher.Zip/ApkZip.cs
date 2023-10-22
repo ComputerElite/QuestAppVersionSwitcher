@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using ComputerUtils.Android.Logging;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.X509;
 using QuestPatcher.Zip.Data;
@@ -373,7 +374,9 @@ namespace QuestPatcher.Zip
             }   finally
             {
                 _stream.Dispose();
-                _reader.Dispose();
+                
+                Console.WriteLine("Disposing reader");
+                //_reader.Dispose();
             }
         }
     }

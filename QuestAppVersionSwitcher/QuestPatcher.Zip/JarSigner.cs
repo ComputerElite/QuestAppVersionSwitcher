@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Crypto;
@@ -35,12 +36,12 @@ namespace QuestPatcher.Zip
             using (StreamWriter manifestWriter = OpenStreamWriter(manifestFile))
             {
                 manifestWriter.WriteLine("Manifest-Version: 1.0");
-                manifestWriter.WriteLine("Created-By: QuestPatcher");
+                manifestWriter.WriteLine("Created-By: QuestAppVersionSwitcher");
                 manifestWriter.WriteLine();
             }
 
             // Write the digest for each APK entry
-            foreach(var fileName in apk.Entries)
+            foreach(var fileName in apk.Entries.ToList())
             {
                 if(fileName.StartsWith("META-INF"))
                 {
@@ -66,7 +67,7 @@ namespace QuestPatcher.Zip
             {
                 signatureWriter.WriteLine("Signature-Version: 1.0");
                 signatureWriter.WriteLine($"SHA-256-Digest-Manifest: {Convert.ToBase64String(manifestHash)}");
-                signatureWriter.WriteLine("Created-By: QuestPatcher");
+                signatureWriter.WriteLine("Created-By: QuestAppVersionSwitcher");
                 signatureWriter.WriteLine("X-Android-APK-Signed: 2");
                 signatureWriter.WriteLine();
             }
