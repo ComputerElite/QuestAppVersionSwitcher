@@ -40,8 +40,7 @@ namespace QuestAppVersionSwitcher
             if (info.containsApk)
             {
                 
-                using var apkStream = File.OpenRead(pathWithoutSlash + "/app.apk");
-                using ApkZip apk = ApkZip.Open(apkStream);
+                using (ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk"))
                 {
                     PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
                     info.gameVersion = s.version;

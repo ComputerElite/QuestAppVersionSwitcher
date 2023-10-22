@@ -114,6 +114,11 @@ namespace QuestAppVersionSwitcher
         {
             return apkArchive.ContainsFile(QAVSTagName) || OtherTagNames.Any(tagName => apkArchive.ContainsFile(tagName));
         }
+        
+        public static bool IsAPKModded(ZipArchive apkArchive)
+        {
+            return apkArchive.GetEntry(QAVSTagName) != null || OtherTagNames.Any(tagName => apkArchive.GetEntry(tagName) != null);
+        }
 
         /// <summary>
         /// Gets the modded json of the currently selected app
@@ -121,24 +126,19 @@ namespace QuestAppVersionSwitcher
         /// <returns></returns>
         public static ModdedJson GetModdedJson()
         {
-            using var apkStream = File.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
-            using ApkZip apk = ApkZip.Open(apkStream);
+            using ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
             ModdedJson json = GetModdedJson(apk);
             return json;
         }
 
-        public static ModdedJson GetModdedJson(ApkZip apkArchive)
+        public static ModdedJson GetModdedJson(ZipArchive apkArchive)
         {
-            if (!apkArchive.ContainsFile(QAVSTagName)) return null;
-            using Stream stream = apkArchive.OpenReader(QAVSTagName);
-            string json = "";
+            if (apkArchive.GetEntry(QAVSTagName) == null) return null;
+            using Stream stream = apkArchive.GetEntry(QAVSTagName).Open();
+            string json;
             using (var sr = new StreamReader(stream, Encoding.UTF8))
             {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    json += line + "\n";
-                }
+                json = sr.ReadToEnd();
             }
             //Logger.Log(json);
             return JsonSerializer.Deserialize<ModdedJson>(json);
@@ -176,8 +176,7 @@ namespace QuestAppVersionSwitcher
             
             // Get app version
             Logger.Log("Opening patched apk to get patching status");
-            using var apkStream = File.OpenRead(appLocation);
-            using ApkZip a = ApkZip.Open(apkStream);
+            ZipArchive a = ZipFile.OpenRead(appLocation);
             PatchingStatus status = GetPatchingStatus(a);
             // Move apk to correct backup folder
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
@@ -355,8 +354,7 @@ namespace QuestAppVersionSwitcher
                 };
             }
             
-            using Stream apkStream = File.OpenRead(AndroidService.FindAPKLocation(app));
-            using ApkZip apk = ApkZip.Open(apkStream);
+            using ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
             PatchingStatus s =  GetPatchingStatus(apk);
             return s;
         }
@@ -364,12 +362,16 @@ namespace QuestAppVersionSwitcher
         public static PatchingStatus GetPatchingStatusOfBackup(string package, string backupName)
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupName + "/";
-            using Stream apkStream = File.OpenRead(backupDir + "app.apk");
-            using ApkZip apk = ApkZip.Open(apkStream);
+            using ZipArchive apk = ZipFile.OpenRead(backupDir + "app.apk");
             PatchingStatus s =  GetPatchingStatus(apk);
             return s;
         }
-
+        
+        /// <summary>
+        /// WARNING! ONLY POPULATES VERSION AND VERSIONCODE
+        /// </summary>
+        /// <param name="apk"></param>
+        /// <returns></returns>
         public static PatchingStatus GetPatchingStatus(ApkZip apk)
         {
             PatchingStatus status = new PatchingStatus();
@@ -391,8 +393,33 @@ namespace QuestAppVersionSwitcher
                     status.versionCode = a.Value.ToString();
                 }
             }
+            manifestStream.Close();
+            manifestStream.Dispose();
+            return status;
+        }
+
+        public static PatchingStatus GetPatchingStatus(ZipArchive apk)
+        {
+            PatchingStatus status = new PatchingStatus();
+            MemoryStream manifestStream = new MemoryStream();
+            using (Stream s = apk.GetEntry(ManifestPath).Open())
+            {
+                s.CopyTo(manifestStream);
+            }
+            manifestStream.Position = 0;
+            AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
+            foreach (AxmlAttribute a in manifest.Attributes)
+            {
+                if (a.Name == "versionName")
+                {
+                    status.version = a.Value.ToString();
+                }
+                if (a.Name == "versionCode")
+                {
+                    status.versionCode = a.Value.ToString();
+                }
+            }
             status.isPatched = IsAPKModded(apk);
-            Logger.Log(JsonSerializer.Serialize(status));
             status.moddedJson = GetModdedJson(apk);
             manifestStream.Close();
             manifestStream.Dispose();
