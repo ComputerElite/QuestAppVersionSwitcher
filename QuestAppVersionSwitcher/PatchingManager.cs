@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Android.Webkit;
 using Org.BouncyCastle.Bcpg.Sig;
 using QuestPatcher.QMod;
 
@@ -29,6 +30,11 @@ namespace QuestAppVersionSwitcher
     // A lot stolen from QuestPatcher
     public class PatchingManager
     {
+        /// <summary>
+        /// package id, gets set by PatchManifest
+        /// </summary>
+        private static string packageId = "";
+        
         public const string QAVSTagName = "modded.json";
         public const string LegacyTagName = "modded";
         public static readonly string[] OtherTagNames = { "BMBF.modded", "modded" };
@@ -136,6 +142,7 @@ namespace QuestAppVersionSwitcher
             return JsonSerializer.Deserialize<ModdedJson>(json);
         }
 
+
         public static async void PatchAPK(ZipArchive apkArchive, string appLocation, bool forcePatch)
         {
             if (!forcePatch && IsAPKModded(apkArchive))
@@ -170,7 +177,7 @@ namespace QuestAppVersionSwitcher
             PatchingStatus status = GetPatchingStatus(a);
             a.Dispose();
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
-            string backupDir = CoreService.coreVars.QAVSBackupDir + CoreService.coreVars.currentApp + "/" + backupName + "/";
+            string backupDir = CoreService.coreVars.QAVSBackupDir + packageId + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
             File.Move(appLocation, backupDir + "app.apk");
             Logger.Log("Moved apk");
@@ -419,7 +426,8 @@ namespace QuestAppVersionSwitcher
             if (permissions.externalStorage)
             {
                 // Technically, we only need READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE, but we also add MANAGE_EXTERNAL_STORAGE as this is what Android 11 needs instead
-                addingPermissions.AddRange(new[] {
+                addingPermissions.AddRange(new[]
+                {
                     "android.permission.READ_EXTERNAL_STORAGE",
                     "android.permission.WRITE_EXTERNAL_STORAGE",
                     "android.permission.MANAGE_EXTERNAL_STORAGE",
@@ -436,42 +444,66 @@ namespace QuestAppVersionSwitcher
                     "com.oculus.permission.HAND_TRACKING"
                 });
                 // Tell Android (and thus Oculus home) that this app supports hand tracking and we can launch the app with it
-                addingFeatures.Add(new UsesFeature {name = "oculus.software.handtracking", required = false});
+                addingFeatures.Add(new UsesFeature { name = "oculus.software.handtracking", required = false });
             }
+
             if (permissions.openXR)
             {
                 Logger.Log("Adding OpenXR permission . . .");
 
-                addingPermissions.AddRange(new[] {
+                addingPermissions.AddRange(new[]
+                {
                     "org.khronos.openxr.permission.OPENXR",
                     "org.khronos.openxr.permission.OPENXR_SYSTEM",
                 });
 
-                AxmlElement providerElement = new AxmlElement("provider") {
-                    Attributes = {new AxmlAttribute("authorities", AndroidNamespaceUri, AuthoritiesAttributeResourceId, "org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker")},
+                AxmlElement providerElement = new AxmlElement("provider")
+                {
+                    Attributes =
+                    {
+                        new AxmlAttribute("authorities", AndroidNamespaceUri, AuthoritiesAttributeResourceId,
+                            "org.khronos.openxr.runtime_broker;org.khronos.openxr.system_runtime_broker")
+                    },
                 };
-                AxmlElement runtimeIntent = new AxmlElement("intent") {
-                    Children = {
-                        new AxmlElement("action") {
-                            Attributes = {new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId, "org.khronos.openxr.OpenXRRuntimeService")},
+                AxmlElement runtimeIntent = new AxmlElement("intent")
+                {
+                    Children =
+                    {
+                        new AxmlElement("action")
+                        {
+                            Attributes =
+                            {
+                                new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId,
+                                    "org.khronos.openxr.OpenXRRuntimeService")
+                            },
                         },
                     },
                 };
-                AxmlElement layerIntent = new AxmlElement("intent") {
-                    Children = {
-                        new AxmlElement("action") {
-                            Attributes = {new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId, "org.khronos.openxr.OpenXRApiLayerService")},
+                AxmlElement layerIntent = new AxmlElement("intent")
+                {
+                    Children =
+                    {
+                        new AxmlElement("action")
+                        {
+                            Attributes =
+                            {
+                                new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId,
+                                    "org.khronos.openxr.OpenXRApiLayerService")
+                            },
                         },
                     },
                 };
-                manifest.Children.Add(new AxmlElement("queries") {
-                    Children = {
+                manifest.Children.Add(new AxmlElement("queries")
+                {
+                    Children =
+                    {
                         providerElement,
                         runtimeIntent,
                         layerIntent,
                     },
                 });
             }
+
             addingPermissions.AddRange(permissions.otherPermissions);
 
             // Find which features and permissions already exist to avoid adding existing ones
@@ -480,7 +512,11 @@ namespace QuestAppVersionSwitcher
 
             foreach (string permission in addingPermissions)
             {
-                if (existingPermissions.Contains(permission)) { continue; } // Do not add existing permissions
+                if (existingPermissions.Contains(permission))
+                {
+                    continue;
+                } // Do not add existing permissions
+
                 Logger.Log("Adding permission " + permission);
                 AxmlElement permElement = new AxmlElement("uses-permission");
                 AddNameAttribute(permElement, permission);
@@ -489,13 +525,17 @@ namespace QuestAppVersionSwitcher
 
             foreach (UsesFeature feature in addingFeatures)
             {
-                if (existingFeatures.Contains(feature.name)) { continue; } // Do not add existing features
+                if (existingFeatures.Contains(feature.name))
+                {
+                    continue;
+                } // Do not add existing features
 
                 Logger.Log("adding feature " + feature.name);
                 AxmlElement featureElement = new AxmlElement("uses-feature");
                 AddNameAttribute(featureElement, feature.name);
 
-                featureElement.Attributes.Add(new AxmlAttribute("required", AndroidNamespaceUri, RequiredAttributeResourceId, feature.required));
+                featureElement.Attributes.Add(new AxmlAttribute("required", AndroidNamespaceUri,
+                    RequiredAttributeResourceId, feature.required));
                 manifest.Children.Add(featureElement);
             }
 
@@ -504,13 +544,16 @@ namespace QuestAppVersionSwitcher
             if (permissions.debug && !appElement.Attributes.Any(attribute => attribute.Name == "debuggable"))
             {
                 Logger.Log("adding debugable flag");
-                appElement.Attributes.Add(new AxmlAttribute("debuggable", AndroidNamespaceUri, DebuggableAttributeResourceId, true));
+                appElement.Attributes.Add(new AxmlAttribute("debuggable", AndroidNamespaceUri,
+                    DebuggableAttributeResourceId, true));
             }
 
-            if (permissions.externalStorage && !appElement.Attributes.Any(attribute => attribute.Name == "requestLegacyExternalStorage"))
+            if (permissions.externalStorage &&
+                !appElement.Attributes.Any(attribute => attribute.Name == "requestLegacyExternalStorage"))
             {
                 Logger.Log("adding legacy external storage flag");
-                appElement.Attributes.Add(new AxmlAttribute("requestLegacyExternalStorage", AndroidNamespaceUri, LegacyStorageAttributeResourceId, true));
+                appElement.Attributes.Add(new AxmlAttribute("requestLegacyExternalStorage", AndroidNamespaceUri,
+                    LegacyStorageAttributeResourceId, true));
             }
 
 
@@ -526,36 +569,46 @@ namespace QuestAppVersionSwitcher
                     Logger.Log("Adding high-frequency V1 hand-tracking. . .");
                     AxmlElement frequencyElement = new AxmlElement("meta-data");
                     AddNameAttribute(frequencyElement, "com.oculus.handtracking.frequency");
-                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "HIGH"));
+                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                        ValueAttributeResourceId, "HIGH"));
                     appElement.Children.Add(frequencyElement);
                     break;
                 case HandTrackingVersion.V2:
                     Logger.Log("Adding V2 hand-tracking. . .");
                     frequencyElement = new AxmlElement("meta-data");
                     AddNameAttribute(frequencyElement, "com.oculus.handtracking.version");
-                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "V2.0"));
+                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                        ValueAttributeResourceId, "V2.0"));
                     appElement.Children.Add(frequencyElement);
                     break;
                 case HandTrackingVersion.V2_1:
                     Logger.Log("Adding V2.1 hand-tracking. . .");
                     frequencyElement = new AxmlElement("meta-data");
                     AddNameAttribute(frequencyElement, "com.oculus.handtracking.version");
-                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "V2.1"));
+                    frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                        ValueAttributeResourceId, "V2.1"));
                     appElement.Children.Add(frequencyElement);
                     break;
             }
 
             // Add custom package id
-            if (permissions.customPackageId != "")
+            packageId = "";
+
+            for (int i = 0; i < manifest.Attributes.Count; i++)
             {
-                for (int i = 0; i < manifest.Attributes.Count; i++)
+                if (manifest.Attributes[i].Name == "package")
                 {
-                    if (manifest.Attributes[i].Name == "package")
+                    if (permissions.customPackageId != "")
                     {
                         manifest.Attributes[i].Value = permissions.customPackageId;
                     }
+
+                    packageId = (string)manifest.Attributes[i].Value;
                 }
             }
+
+            QAVSWebserver.patchStatus.package = packageId;
+
 
             // Save the manifest using our AXML library
             Logger.Log("Saving manifest as AXML . . .");

@@ -126,5 +126,6 @@ namespace QuestAppVersionSwitcher
     public class PatchStatus : BackupStatus
     {
         public string backupName { get; set; } = "";
+        public string package { get; set; } = "";
     }
 }

@@ -92,7 +92,9 @@ function UpdatePatchStatus(j) {
             }
             // patching returned a backup name to restore so restore the backup
             selectedBackup = j.backupName
-            OpenRestorePopup();
+            ChangeApp(j.package).then(res => {
+                OpenRestorePopup();
+            })
         }
         UpdateUI()
 
@@ -884,16 +886,19 @@ function ShowAppList() {
 }
 
 function ChangeApp(package) {
-    console.log("Changing app to " + package)
-    config.currentApp = package
-    fetch("/api/questappversionswitcher/changeapp", {
-        method: "POST",
-        body: JSON.stringify({packageName: package})
-    }).then(() => {
+    return new Promise((resolve, reject) => {
+        console.log("Changing app to " + package)
+        config.currentApp = package
+        fetch("/api/questappversionswitcher/changeapp", {
+            method: "POST",
+            body: JSON.stringify({packageName: package})
+        }).then(() => {
+            resolve()
+            UpdateUI(true)
+            UpdateCosmeticsTypes()
+        })
         UpdateUI(true)
-        UpdateCosmeticsTypes()
     })
-    UpdateUI(true)
 }
 
 document.getElementById("exit").onclick = () => {
