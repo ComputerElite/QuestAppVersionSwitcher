@@ -10,6 +10,7 @@ using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
+using QuestPatcher.Zip;
 
 namespace QuestAppVersionSwitcher
 {
@@ -38,12 +39,15 @@ namespace QuestAppVersionSwitcher
             info.containsApk = File.Exists(pathWithoutSlash + "/app.apk");
             if (info.containsApk)
             {
-                ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk");
-                PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
-                info.gameVersion = s.version;
-                info.isPatchedApk = s.isPatched;
-                info.moddedJson = PatchingManager.GetModdedJson(apk);
-                apk.Dispose();
+                
+                using var apkStream = File.OpenRead(pathWithoutSlash + "/app.apk");
+                using ApkZip apk = ApkZip.Open(apkStream);
+                {
+                    PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
+                    info.gameVersion = s.version;
+                    info.isPatchedApk = s.isPatched;
+                    info.moddedJson = PatchingManager.GetModdedJson(apk);
+                }
                 // Calculate SHA 256 of apk file
                 /*
                 if (!calculating.Contains(pathWithoutSlash + "/app.apk"))

@@ -78,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidDevice.cs" />
-    <Compile Include="APKSigner.cs" />
     <Compile Include="BackupManager.cs" />
     <Compile Include="ClientModels.cs" />
     <Compile Include="CoreService.cs" />
@@ -161,14 +160,6 @@
     <Compile Include="PatchingManager.cs" />
     <Compile Include="QAVSJavascriptInterface.cs" />
     <Compile Include="QAVSWebsocketMessage.cs" />
-    <Compile Include="QuestPatcher\ApkAligner.cs" />
-    <Compile Include="QuestPatcher\APKSignatureSchemeV2.cs" />
-    <Compile Include="QuestPatcher\APKSigningBlock.cs" />
-    <Compile Include="QuestPatcher\CentralDirectoryFileHeader.cs" />
-    <Compile Include="QuestPatcher\DataDescriptor.cs" />
-    <Compile Include="QuestPatcher\EndOfCentralDirectory.cs" />
-    <Compile Include="QuestPatcher\FileMemory.cs" />
-    <Compile Include="QuestPatcher\LocalFileHeader.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SplashScreen.cs" />

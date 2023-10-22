@@ -37,6 +37,7 @@ using ComputerUtils.Updating;
 using Fleck;
 using Java.Util;
 using Newtonsoft.Json;
+using QuestPatcher.Zip;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -331,13 +332,15 @@ namespace QuestAppVersionSwitcher
                     string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
                     FileManager.RecreateDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingDir);
                     File.Copy(apkPath, appLocation);
-                    ZipArchive apkArchive = ZipFile.Open(appLocation, ZipArchiveMode.Update);
+                    
+                    Stream apkStream = File.Open(appLocation, FileMode.Open);
+                    ApkZip apk = ApkZip.Open(apkStream);
                     patchStatus.doneOperations = 1;
                     patchStatus.progress = .1;
                     BroadcastPatchingStatus();
                     GeneralPurposeWorker.ExecuteWork(() =>
                     {
-                        PatchingManager.PatchAPK(apkArchive, appLocation, request.queryString.Get("force") != null);
+                        PatchingManager.PatchAPK(apk, appLocation, request.queryString.Get("force") != null);
                     });
                 }
                 catch (Exception e)

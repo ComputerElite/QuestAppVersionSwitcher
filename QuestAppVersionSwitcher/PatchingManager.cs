@@ -24,6 +24,7 @@ using System.Text.Json;
 using Android.Webkit;
 using Org.BouncyCastle.Bcpg.Sig;
 using QuestPatcher.QMod;
+using QuestPatcher.Zip;
 
 namespace QuestAppVersionSwitcher
 {
@@ -109,9 +110,9 @@ namespace QuestAppVersionSwitcher
             }
         }
 
-        public static bool IsAPKModded(ZipArchive apkArchive)
+        public static bool IsAPKModded(ApkZip apkArchive)
         {
-            return apkArchive.GetEntry(QAVSTagName) != null || OtherTagNames.Any(tagName => apkArchive.GetEntry(tagName) != null);
+            return apkArchive.ContainsFile(QAVSTagName) || OtherTagNames.Any(tagName => apkArchive.ContainsFile(tagName));
         }
 
         /// <summary>
@@ -120,16 +121,17 @@ namespace QuestAppVersionSwitcher
         /// <returns></returns>
         public static ModdedJson GetModdedJson()
         {
-            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
+            using var apkStream = File.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
+            using ApkZip apk = ApkZip.Open(apkStream);
             ModdedJson json = GetModdedJson(apk);
             apk.Dispose();
             return json;
         }
 
-        public static ModdedJson GetModdedJson(ZipArchive apkArchive)
+        public static ModdedJson GetModdedJson(ApkZip apkArchive)
         {
-            if (apkArchive.GetEntry(QAVSTagName) == null) return null;
-            Stream stream = apkArchive.GetEntry(QAVSTagName).Open();
+            if (!apkArchive.ContainsFile(QAVSTagName)) return null;
+            Stream stream = apkArchive.OpenReader(QAVSTagName);
             string json = "";
             using (var sr = new StreamReader(stream, Encoding.UTF8))
             {
@@ -143,7 +145,7 @@ namespace QuestAppVersionSwitcher
         }
 
 
-        public static async void PatchAPK(ZipArchive apkArchive, string appLocation, bool forcePatch)
+        public static async void PatchAPK(ApkZip apkArchive, string appLocation, bool forcePatch)
         {
             if (!forcePatch && IsAPKModded(apkArchive))
             {
@@ -159,23 +161,18 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = 3;
             QAVSWebserver.patchStatus.progress = .2;
             QAVSWebserver.BroadcastPatchingStatus();
-            Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes = AddLibsAndPatchGame(apkArchive);
-            apkArchive.Dispose();
+            AddLibsAndPatchGame(apkArchive);
             QAVSWebserver.patchStatus.doneOperations = 5;
             QAVSWebserver.patchStatus.progress = .55;
+            QAVSWebserver.patchStatus.currentOperation = "Signing apk";
             QAVSWebserver.BroadcastPatchingStatus();
-
-            if (!await ApkSigner.SignApkWithPatchingCertificate(appLocation, prePatchHashes))
-            {
-                return;
-            }
+            apkArchive.Dispose();
+            
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .95;
             QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
             QAVSWebserver.BroadcastPatchingStatus();
-            ZipArchive a = ZipFile.OpenRead(appLocation);
-            PatchingStatus status = GetPatchingStatus(a);
-            a.Dispose();
+            PatchingStatus status = GetPatchingStatus(apkArchive);
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + packageId + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
@@ -219,23 +216,35 @@ namespace QuestAppVersionSwitcher
             }
             return false;
         }
-
-        public static void PatchUnityIl2CppApp(ZipArchive apkArchive, ref ModdedJson moddedJson)
+        
+        /// <summary>
+        /// Copies the file with the given path into the APK.
+        /// </summary>
+        /// <param name="filePath">The path to the file to copy into the APK</param>
+        /// <param name="apkFilePath">The name of the file in the APK to create</param>
+        /// <param name="failIfExists">Whether to throw an exception if the file already exists</param>
+        /// <param name="apk">The apk to copy the file into</param>
+        /// <exception cref="PatchingException">If the file already exists in the APK, if configured to throw.</exception>
+        private static void AddFileToApkSync(string filePath, string apkFilePath, ApkZip apk)
         {
-            bool isApk64Bit = apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null;
+            using var fileStream = File.OpenRead(filePath);
+            apk.AddFile(apkFilePath, fileStream, CompressionLevel.Optimal);
+        }
+
+        public static void PatchUnityIl2CppApp(ApkZip apkArchive, ref ModdedJson moddedJson)
+        {
+            bool isApk64Bit = apkArchive.ContainsFile("lib/arm64-v8a/libil2cpp.so");
 
             QAVSWebserver.patchStatus.currentOperation = "Adding unstripped libunity to APK if available";
             QAVSWebserver.BroadcastPatchingStatus();
             string libpath = isApk64Bit ? "lib/arm64-v8a/" : "lib/armeabi-v7a/";
             string versionName = GetPatchingStatus(apkArchive).version;
             
-            if (apkArchive.GetEntry(libpath + "libunity.so") != null && AttemptDownloadUnstrippedUnity(versionName))
+            if (apkArchive.ContainsFile(libpath + "libunity.so") && AttemptDownloadUnstrippedUnity(versionName))
             {
-                Logger.Log("Adding libunity.so to " + (apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null ? "lib/arm64-v8a/libunity.so" : "lib/armeabi-v7a/libunity.so"));
-
-                ZipArchiveEntry unity = apkArchive.GetEntry(libpath + "libunity.so");
-                if (unity != null) unity.Delete();
-                apkArchive.CreateEntryFromFile(CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", libpath + "libunity.so");
+                Logger.Log("Adding libunity.so to " + (apkArchive.ContainsFile("lib/arm64-v8a/libil2cpp.so") ? "lib/arm64-v8a/libunity.so" : "lib/armeabi-v7a/libunity.so"));
+                
+                AddFileToApkSync(CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", libpath + "libunity.so", apkArchive);
                 moddedJson.modifiedFiles.Add(libpath + "libunity.so");
             }
 
@@ -252,10 +261,8 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.patchStatus.progress = .45;
                 QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
                 QAVSWebserver.BroadcastPatchingStatus();
-                ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
-                if (main != null) main.Delete();
                 moddedJson.modifiedFiles.Add(libpath + "libmain.so");
-                apkArchive.CreateEntryFromFile(libMainScotlandPath, libpath + "libmain.so");
+                AddFileToApkSync(libMainScotlandPath, libpath + "libmain.so", apkArchive);
 
                 moddedJson.modloaderName = "Scotland2";
                 moddedJson.modloaderVersion = scotland2Version;
@@ -264,28 +271,22 @@ namespace QuestAppVersionSwitcher
                 QAVSWebserver.patchStatus.progress = .35;
                 QAVSWebserver.patchStatus.currentOperation = "Adding modloader";
                 QAVSWebserver.BroadcastPatchingStatus();
-                apkArchive.CreateEntryFromFile(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so");
+                AddFileToApkSync(isApk64Bit ? libModloader64Path : libModloader32Path, libpath + "libmodloader.so", apkArchive);
                 moddedJson.modifiedFiles.Add(libpath + "libmodloader.so");
 
                 QAVSWebserver.patchStatus.progress = .45;
                 QAVSWebserver.patchStatus.currentOperation = "Adding libmain";
                 QAVSWebserver.BroadcastPatchingStatus();
-                ZipArchiveEntry main = apkArchive.GetEntry(libpath + "libmain.so");
-                if (main != null) main.Delete();
                 moddedJson.modifiedFiles.Add(libpath + "libmain.so");
-                apkArchive.CreateEntryFromFile(isApk64Bit ? libMain64Path : libMain32Path, libpath + "libmain.so");
+                AddFileToApkSync(isApk64Bit ? libMain64Path : libMain32Path, libpath + "libmain.so", apkArchive);
 
                 moddedJson.modloaderName = "QuestLoader";
                 moddedJson.modloaderVersion = questLoaderVersion;
             }
         }
 
-        public static Dictionary<string, ApkSigner.PrePatchHash>? AddLibsAndPatchGame(ZipArchive apkArchive)
+        public static void AddLibsAndPatchGame(ApkZip apkArchive)
         {
-            Dictionary<string, ApkSigner.PrePatchHash>? prePatchHashes;
-            QAVSWebserver.patchStatus.currentOperation = "Preparing pre patch hashes";
-            QAVSWebserver.BroadcastPatchingStatus();
-            prePatchHashes = ApkSigner.CollectPrePatchHashes(apkArchive).Result;
             QAVSWebserver.patchStatus.progress = .25;
             QAVSWebserver.BroadcastPatchingStatus();
 
@@ -294,7 +295,7 @@ namespace QuestAppVersionSwitcher
             if (!CoreService.coreVars.patchingPermissions.resignOnly)
             {
                 /// Diffrent patching apps
-                if(apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null || apkArchive.GetEntry("lib/armeabi-v7a/libil2cpp.so") != null)
+                if(apkArchive.ContainsFile("lib/arm64-v8a/libil2cpp.so") || apkArchive.ContainsFile("lib/armeabi-v7a/libil2cpp.so"))
                 {
                     // Patch Unity il2cpp game
                     PatchUnityIl2CppApp(apkArchive, ref moddedJson);
@@ -306,20 +307,17 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.patchStatus.doneOperations = 4;
             QAVSWebserver.BroadcastPatchingStatus();
             moddedJson.modifiedFiles.Add(ManifestPath);
-            apkArchive.CreateEntry(QAVSTagName);
-            apkArchive.CreateEntry(LegacyTagName);
+            apkArchive.AddFile(QAVSTagName, new MemoryStream(), null);
+            apkArchive.AddFile(LegacyTagName, new MemoryStream(), null);
             moddedJson.patcherVersion = CoreService.version.ToString();
             moddedJson.patcherName = "QuestAppVersionSwitcher";
-            
-            using (StreamWriter writer = new StreamWriter(apkArchive.GetEntry(QAVSTagName).Open()))
-            {
-                writer.WriteLine(JsonSerializer.Serialize(moddedJson, typeof(ModdedJson), new JsonSerializerOptions
+
+            string moddedJsonContent = JsonSerializer.Serialize(moddedJson, typeof(ModdedJson),
+                new JsonSerializerOptions
                 {
                     WriteIndented = true,
-                }));
-                writer.Close();
-            }
-            return prePatchHashes;
+                });
+            apkArchive.AddFile(QAVSTagName, new MemoryStream(Encoding.UTF8.GetBytes(moddedJsonContent)), null);
         }
 
         public static ISet<string> GetExistingChildren(AxmlElement manifest, string childNames)
@@ -349,26 +347,27 @@ namespace QuestAppVersionSwitcher
                     canBePatched = false,
                 };
             }
-            ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
+            
+            using Stream apkStream = File.OpenRead(AndroidService.FindAPKLocation(app));
+            using ApkZip apk = ApkZip.Open(apkStream);
             PatchingStatus s =  GetPatchingStatus(apk);
-            apk.Dispose();
             return s;
         }
         
         public static PatchingStatus GetPatchingStatusOfBackup(string package, string backupName)
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupName + "/";
-            ZipArchive apk = ZipFile.OpenRead(backupDir + "app.apk");
+            using Stream apkStream = File.OpenRead(backupDir + "app.apk");
+            using ApkZip apk = ApkZip.Open(apkStream);
             PatchingStatus s =  GetPatchingStatus(apk);
-            apk.Dispose();
             return s;
         }
 
-        public static PatchingStatus GetPatchingStatus(ZipArchive apk)
+        public static PatchingStatus GetPatchingStatus(ApkZip apk)
         {
             PatchingStatus status = new PatchingStatus();
             MemoryStream manifestStream = new MemoryStream();
-            apk.GetEntry(ManifestPath).Open().CopyTo(manifestStream);
+            apk.OpenReader(ManifestPath).CopyTo(manifestStream);
             manifestStream.Position = 0;
             AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
             foreach (AxmlAttribute a in manifest.Attributes)
@@ -382,8 +381,8 @@ namespace QuestAppVersionSwitcher
                     status.versionCode = a.Value.ToString();
                 }
             }
-            status.isPatched = PatchingManager.IsAPKModded(apk);
-            status.moddedJson = PatchingManager.GetModdedJson(apk);
+            status.isPatched = IsAPKModded(apk);
+            status.moddedJson = GetModdedJson(apk);
             manifestStream.Close();
             manifestStream.Dispose();
             return status;
@@ -394,12 +393,11 @@ namespace QuestAppVersionSwitcher
             element.Attributes.Add(new AxmlAttribute("name", AndroidNamespaceUri, NameAttributeResourceId, name));
         }
 
-        public static bool PatchManifest(ZipArchive apkArchive)
+        public static bool PatchManifest(ApkZip apkArchive)
         {
             QAVSWebserver.patchStatus.currentOperation = "Patching manifest";
             QAVSWebserver.BroadcastPatchingStatus();
-            ZipArchiveEntry? manifestEntry = apkArchive.GetEntry(ManifestPath);
-            if (manifestEntry == null)
+            if (!apkArchive.ContainsFile(ManifestPath))
             {
                 QAVSWebserver.patchStatus.error = true;
                 QAVSWebserver.patchStatus.errorText = "Android Manifest doesn't exist. Cannot mod game";
@@ -409,11 +407,9 @@ namespace QuestAppVersionSwitcher
 
             // The AMXL loader requires a seekable stream
             MemoryStream ms = new MemoryStream();
-            using (Stream stream = manifestEntry.Open())
+            using (Stream stream = apkArchive.OpenReader(ManifestPath))
             {
                 stream.CopyTo(ms);
-                stream.Close();
-                stream.Dispose();
             }
 
             ms.Position = 0;
@@ -612,17 +608,12 @@ namespace QuestAppVersionSwitcher
 
             // Save the manifest using our AXML library
             Logger.Log("Saving manifest as AXML . . .");
-            ms.Close();
-            ms.Dispose();
-            manifestEntry.Delete(); // Remove old manifest
-
-            manifestEntry = apkArchive.CreateEntry(ManifestPath);
-            using (Stream saveStream = manifestEntry.Open())
-            {
-                AxmlSaver.SaveDocument(saveStream, manifest);
-                saveStream.Close();
-                saveStream.Dispose();
-            }
+            
+            ms.SetLength(0);
+            ms.Position = 0;
+            AxmlSaver.SaveDocument(ms, manifest);
+            ms.Position = 0;
+            apkArchive.AddFile(ManifestPath, ms, CompressionLevel.Optimal);
             return true;
         }
 
