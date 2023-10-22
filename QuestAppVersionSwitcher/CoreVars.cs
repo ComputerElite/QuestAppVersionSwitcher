@@ -91,6 +91,12 @@ namespace QuestAppVersionSwitcher.Core
         public bool handTracking { get; set; } = true;
         public bool debug { get; set; } = true;
         public bool openXR { get; set; } = true;
+        /// <summary>
+        /// App will only be resigned. E. g. for disabling auto updates
+        /// </summary>
+        public bool resignOnly { get; set; } = false;
+
+        public string customPackageId { get; set; } = "";
         public ModLoader modloader { get; set; } = ModLoader.Scotland2;
         public List<string> otherPermissions { get; set; } = new List<string>();
         public List<UsesFeature> otherFeatures { get; set; } = new List<UsesFeature>();

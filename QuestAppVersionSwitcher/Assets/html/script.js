@@ -552,7 +552,9 @@ function PatchGame() {
         handTrackingVersion: parseInt(handTrackingVersion.value),
         externalStorage: externalStorageCheckbox.checked,
         openXR: openXRCheckbox.checked,
-        modloader: parseInt(document.getElementById("modloader").value)
+        modloader: parseInt(document.getElementById("modloader").value),
+        resignOnly: document.getElementById("resignOnly").checked,
+        customPackageId: document.getElementById("customPackageId").value,
     }
     if(patchOptions.modloader == 1 && document.getElementById("enableaudio").checked) {
         scotlandForever = new Audio("/scotlandforever.mp3")

@@ -133,7 +133,7 @@ namespace QuestAppVersionSwitcher.Mods
             {
                 modManager.Reset();
                 // Get modloader used
-                ModdedJson json = PatchingManager.GetModdedJson(CoreService.coreVars.currentApp);
+                ModdedJson json = PatchingManager.GetModdedJson();
                 switch (json.modloaderName)
                 {
                     case "QuestLoader":

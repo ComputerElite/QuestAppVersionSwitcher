@@ -126,8 +126,24 @@
                     <div id="otherFeatures">
                     </div>
                     <br>
+                    <h3>Advanced</h3>
+                    <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="resignOnly" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Only resign and patch Manifest (modloaders won't get added to the apk)
+                    </label>
+                    <br>
+                    <label>
+                        Custom package id
+                        <input type="text" placeholder="package id" style="margin-left: 10px" id="customPackageId">
+                    </label>
                     <br>
                     <br>
+                    <br>
+                    <h3>Fun (options don't change apk outcome)</h3>
                     <label class="option">
                         <label class="switch normal">
                             <input id="enableaudio" type="checkbox">

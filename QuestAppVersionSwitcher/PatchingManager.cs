@@ -108,7 +108,11 @@ namespace QuestAppVersionSwitcher
             return apkArchive.GetEntry(QAVSTagName) != null || OtherTagNames.Any(tagName => apkArchive.GetEntry(tagName) != null);
         }
 
-        public static ModdedJson GetModdedJson(string package)
+        /// <summary>
+        /// Gets the modded json of the currently selected app
+        /// </summary>
+        /// <returns></returns>
+        public static ModdedJson GetModdedJson()
         {
             ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
             ModdedJson json = GetModdedJson(apk);
@@ -280,11 +284,14 @@ namespace QuestAppVersionSwitcher
 
             ModdedJson moddedJson = new ModdedJson();
 
-            /// Diffrent patching apps
-            if(apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null || apkArchive.GetEntry("lib/armeabi-v7a/libil2cpp.so") != null)
+            if (!CoreService.coreVars.patchingPermissions.resignOnly)
             {
-                // Patch Unity il2cpp game
-                PatchUnityIl2CppApp(apkArchive, ref moddedJson);
+                /// Diffrent patching apps
+                if(apkArchive.GetEntry("lib/arm64-v8a/libil2cpp.so") != null || apkArchive.GetEntry("lib/armeabi-v7a/libil2cpp.so") != null)
+                {
+                    // Patch Unity il2cpp game
+                    PatchUnityIl2CppApp(apkArchive, ref moddedJson);
+                }
             }
 
             QAVSWebserver.patchStatus.currentOperation = "Creating modding json";
@@ -388,7 +395,7 @@ namespace QuestAppVersionSwitcher
             if (manifestEntry == null)
             {
                 QAVSWebserver.patchStatus.error = true;
-                QAVSWebserver.patchStatus.errorText = "Manifest doesn't exist. Cannot mod game";
+                QAVSWebserver.patchStatus.errorText = "Android Manifest doesn't exist. Cannot mod game";
                 QAVSWebserver.BroadcastPatchingStatus();
                 return false;
             }
@@ -536,6 +543,18 @@ namespace QuestAppVersionSwitcher
                     frequencyElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri, ValueAttributeResourceId, "V2.1"));
                     appElement.Children.Add(frequencyElement);
                     break;
+            }
+
+            // Add custom package id
+            if (permissions.customPackageId != "")
+            {
+                for (int i = 0; i < manifest.Attributes.Count; i++)
+                {
+                    if (manifest.Attributes[i].Name == "package")
+                    {
+                        manifest.Attributes[i].Value = permissions.customPackageId;
+                    }
+                }
             }
 
             // Save the manifest using our AXML library

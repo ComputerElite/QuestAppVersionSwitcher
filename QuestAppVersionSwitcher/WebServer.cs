@@ -325,7 +325,7 @@ namespace QuestAppVersionSwitcher
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 
                 BroadcastPatchingStatus();
-                Logger.Log("Using apk from  " + apkPath);
+                Logger.Log("Using apk at  " + apkPath);
                 try
                 {
                     string appLocation = CoreService.coreVars.QAVSTmpPatchingDir + "app.apk";
