@@ -874,6 +874,23 @@ namespace QuestAppVersionSwitcher
 
                 Logger.Log("Installing apk of backup " + backupname + " of " + package);
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
+                Thread checkApkThread = new Thread(() =>
+                {
+                    Logger.Log("Starting thread for checking if apk is installed and then reloading mods");
+                    DateTime startTime = DateTime.Now;
+                    while (DateTime.Now - new TimeSpan(0, 0, 20, 0) < startTime)
+                    {
+                        if (AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                        {
+                            Logger.Log("Apk finally installed. Reloading mods");
+                            QAVSModManager.Update();
+                            break;
+                        }
+                        Thread.Sleep(5000);
+                    }
+                    Logger.Log("thread for checking if apk is installed and then reloading mods timed out.");
+                });
+                checkApkThread.Start();
                 serverRequest.SendString(GenericResponse.GetResponse("Started apk install. Deleting existing mods in parallel", true), "application/json");
                 QAVSModManager.DeleteAllMods();
                 return true;
