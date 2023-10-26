@@ -47,15 +47,16 @@ namespace QuestAppVersionSwitcher
 
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
+            
+            Logger.Log("Checking access for " + dirInExtenalStorage);
+            
+            // Temporary hack while I figure out how to get the permission status
+            return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
             if (!Directory.Exists(dirInExtenalStorage))
             {
                 Logger.Log("QAVS doesn't have access to " + dirInExtenalStorage + "... The folder doesn't exist!");
                 return false;
             }
-            Logger.Log("Checking access for " + dirInExtenalStorage);
-            
-            // Temporary hack while I figure out how to get the permission status
-            return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
             string uri = RemapPathForApi300OrAbove(dirInExtenalStorage).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/");
             List<UriPermission> perms = AndroidCore.context.ContentResolver.PersistedUriPermissions.ToList();
             foreach (UriPermission p in perms)
