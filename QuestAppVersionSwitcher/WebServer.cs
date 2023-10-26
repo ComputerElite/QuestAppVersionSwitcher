@@ -872,8 +872,9 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
 
-                Logger.Log("Installing apk of backup " + backupname + " of " + package);
+                Logger.Log("Installing apk of backup " + backupname + " of " + package + " and clearing it's mod data");
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
+                QAVSModManager.DeleteAllMods(true);
                 Thread checkApkThread = new Thread(() =>
                 {
                     Logger.Log("Starting thread for checking if apk is installed and then reloading mods");

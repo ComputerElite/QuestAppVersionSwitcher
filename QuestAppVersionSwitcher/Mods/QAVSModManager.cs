@@ -447,17 +447,18 @@ namespace QuestAppVersionSwitcher.Mods
             return new byte[0];
         }
 
-        public static void DeleteAllMods()
+        public static void DeleteAllMods(bool deleteOnlyPersistent = false)
         {
             GeneralPurposeWorker.ExecuteWork(() =>
             {
                 Logger.Log("Haha mods go brrrr, yeeeeeeeeeeeeeeeeeeeeeeeeeeet. We doin this on a background thread, hell yeah.");
                 FileManager.RecreateDirectoryIfExisting(modManager.ModsExtractPath);
-                if (modManager.usedModLoader == ModLoader.QuestLoader)
+                if (modManager.usedModLoader == ModLoader.QuestLoader && !deleteOnlyPersistent)
                 {
                     FolderPermission.DeleteDirectoryContent(modManager.QuestLoaderModsPath);
                     FolderPermission.DeleteDirectoryContent(modManager.QuestLoaderLibsPath);
-                } else if (modManager.usedModLoader == ModLoader.Scotland2)
+                }
+                if (modManager.usedModLoader == ModLoader.Scotland2 || deleteOnlyPersistent)
                 {
                     FileManager.RecreateDirectoryIfExisting(modManager.Scotland2ModsPath);
                     FileManager.RecreateDirectoryIfExisting(modManager.Scotland2LibsPath);
