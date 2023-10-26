@@ -38,7 +38,6 @@ namespace QuestAppVersionSwitcher
                 if(!Directory.Exists(dirInExtenalStorage)) CreateDirectory(dirInExtenalStorage);
             }
             CoreService.coreVars.accessFolders.Add(dirInExtenalStorage);
-            CoreService.coreVars.Save();
             Intent intent = new Intent(Intent.ActionOpenDocumentTree)
                 .PutExtra(
                     DocumentsContract.ExtraInitialUri,
@@ -56,7 +55,7 @@ namespace QuestAppVersionSwitcher
             Logger.Log("Checking access for " + dirInExtenalStorage);
             
             // Temporary hack while I figure out how to get the permission status
-            //return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
+            return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);
             string uri = RemapPathForApi300OrAbove(dirInExtenalStorage).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/");
             List<UriPermission> perms = AndroidCore.context.ContentResolver.PersistedUriPermissions.ToList();
             foreach (UriPermission p in perms)

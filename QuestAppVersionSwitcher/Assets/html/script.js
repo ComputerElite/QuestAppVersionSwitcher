@@ -968,6 +968,7 @@ document.getElementById("createBackup").onclick = () => {
             if (j.gotAccess) {
                 RealBackup()
             } else {
+                TextBoxError("No permission to access storage. Please grant permission and try again.")
                 CloseGetPasswordPopup();
                 OpenRestorePopup();
                 GotoStep("12")
