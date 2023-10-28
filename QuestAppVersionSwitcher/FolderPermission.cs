@@ -37,6 +37,7 @@ namespace QuestAppVersionSwitcher
             {
                 if(!Directory.Exists(dirInExtenalStorage)) CreateDirectory(dirInExtenalStorage);
             }
+            Logger.Log("Requesting access to " + dirInExtenalStorage);
             CoreService.coreVars.accessFolders.Add(dirInExtenalStorage);
             Intent intent = new Intent(Intent.ActionOpenDocumentTree)
                 .PutExtra(
@@ -48,7 +49,7 @@ namespace QuestAppVersionSwitcher
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
             
-            Logger.Log("Checking access for " + dirInExtenalStorage);
+            Logger.Log("Checking access for " + dirInExtenalStorage + ": " + CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage));
             
             // Temporary hack while I figure out how to get the permission status
             return CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage);

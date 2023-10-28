@@ -61,6 +61,7 @@ namespace QuestAppVersionSwitcher.Core
             // Create all directories and files
             if (!started)
             {
+                Logger.Log("\n\n\nQAVS Version: " + version + " starting up...\n\n\n");
                 ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
