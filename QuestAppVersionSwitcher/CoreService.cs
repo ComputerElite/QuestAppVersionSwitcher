@@ -61,24 +61,21 @@ namespace QuestAppVersionSwitcher.Core
             // Create all directories and files
             if (!started)
             {
+                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
+                Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
                 Logger.Log("\n\n\nQAVS Version: " + version + " starting up...\n\n\n");
                 ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
-                FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpPatchingDir);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSPatchingFilesDir);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSModAssetsDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpModsDir);
-                Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
                 Logger.Log("Device: " + Build.Device);
                 if (!File.Exists(coreVars.QAVSConfigLocation))
                     File.WriteAllText(coreVars.QAVSConfigLocation, JsonSerializer.Serialize(coreVars));
                 coreVars = JsonSerializer.Deserialize<CoreVars>(File.ReadAllText(coreVars.QAVSConfigLocation));
-                if (coreVars.qavsVersion != version.ToString())
-                {
-                    coreVars.accessFolders.Clear();
-                }
+                coreVars.accessFolders.Clear();
                 coreVars.qavsVersion = version.ToString();
                 coreVars.Save();
                 if (!File.Exists(coreVars.QAVSUIConfigLocation))
