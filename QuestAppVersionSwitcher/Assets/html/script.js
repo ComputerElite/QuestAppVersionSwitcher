@@ -347,6 +347,7 @@ function UpdatePatchingStatus() {
             UpdateVersion(res.version)
             patchingStatus = res
             isGamePatched = res.isPatched
+            document.getElementById("copyOf").innerHTML = res.copyOf ? `Mods for <b>${res.copyOf}</b> can also be installed as this app is an copy of <b>${res.copyOf}</b>` : ""
             if (res.isPatched) {
                 document.getElementById("modsButton").style.display = "block"
                 patchingOptions.style.display = "none"
@@ -539,6 +540,7 @@ function RemovePermission(name) {
 var patchInProgress = false
 var lastApp = ""
 var scotlandForever
+const packageRegex = /^[a-zA-Z]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/g
 function PatchGame() {
     patchInProgress = true
     var addMicPerm = document.getElementById("mic").checked
@@ -557,6 +559,10 @@ function PatchGame() {
         modloader: parseInt(document.getElementById("modloader").value),
         resignOnly: document.getElementById("resignOnly").checked,
         customPackageId: document.getElementById("customPackageId").value,
+    }
+    if(patchOptions.customPackageId && !packageRegex.test(patchOptions.customPackageId)) {
+        TextBoxError("patchingTextBox", "invalid package id provided. Packackge id must match regex " + packageRegex)
+        return;
     }
     if(patchOptions.modloader == 1 && document.getElementById("enableaudio").checked) {
         scotlandForever = new Audio("/scotlandforever.mp3")
@@ -1083,6 +1089,7 @@ document.getElementById("install").onclick = () => {
         method: "POST"
     }).then(res => {
         res.json().then(j => {
+            backupToPatch = ""
             if (res.status == 200) {
                 AfterAPKInstall()
             }

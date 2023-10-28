@@ -9,6 +9,7 @@ namespace QuestAppVersionSwitcher.ClientModels
         public bool isInstalled { get; set; } = true;
         public bool canBePatched { get; set; } = true; // Not implemented yet.
         public string version { get; set; } = "";
+        public string copyOf { get; set; } = "";
         public string versionCode { get; set; } = "";
         public ModdedJson moddedJson { get; set; } = null;
     }

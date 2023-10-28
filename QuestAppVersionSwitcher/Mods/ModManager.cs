@@ -14,6 +14,10 @@ namespace QuestAppVersionSwitcher.Mods
 {
     public class ModManager
     {
+        /// <summary>
+        /// List of other package ids that are valid for the currently selected app
+        /// </summary>
+        public List<string> otherValidPackageIds { get; set; } = new List<string>();
         public List<IMod> Mods { get; } = new List<IMod>();
         public List<IMod> Libraries { get; } = new List<IMod>();
 

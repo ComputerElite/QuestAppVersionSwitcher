@@ -408,6 +408,7 @@ namespace QuestAppVersionSwitcher
             }
             manifestStream.Position = 0;
             AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
+            string packageId = "";
             foreach (AxmlAttribute a in manifest.Attributes)
             {
                 if (a.Name == "versionName")
@@ -417,6 +418,16 @@ namespace QuestAppVersionSwitcher
                 if (a.Name == "versionCode")
                 {
                     status.versionCode = a.Value.ToString();
+                }
+            }
+            AxmlElement appElement = manifest.Children.Single(element => element.Name == "application");
+            status.copyOf = null;
+            foreach (AxmlElement e in appElement.Children)
+            {
+                if (e.Attributes.Any(x => x.Name == "name" && x.Value.ToString() == "QAVS.copyOf"))
+                {
+                    status.copyOf = (string)e.Attributes.FirstOrDefault(x => x.Name == "value").Value;
+                    Logger.Log("App is copy of " + status.copyOf);
                 }
             }
             status.isPatched = IsAPKModded(apk);
@@ -627,19 +638,31 @@ namespace QuestAppVersionSwitcher
 
             // Add custom package id
             packageId = "";
+            string orgPackageId = "";
 
             for (int i = 0; i < manifest.Attributes.Count; i++)
             {
                 if (manifest.Attributes[i].Name == "package")
                 {
+                    orgPackageId = (string)manifest.Attributes[i].Value;
+                    Logger.Log("Original package id is " + orgPackageId);
                     if (permissions.customPackageId != "")
                     {
+                        Logger.Log("Patching to " + permissions.customPackageId);
                         manifest.Attributes[i].Value = permissions.customPackageId;
                     }
 
                     packageId = (string)manifest.Attributes[i].Value;
                 }
             }
+            
+            
+            AxmlElement copyOfElement = new AxmlElement("meta-data");
+            AddNameAttribute(copyOfElement, "QAVS.copyOf");
+            copyOfElement.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                ValueAttributeResourceId, orgPackageId));
+            appElement.Children.Add(copyOfElement);
+            
 
             QAVSWebserver.patchStatus.package = packageId;
 
