@@ -982,7 +982,7 @@ function CreateBackupButton() {
             if (j.gotAccess) {
                 RealBackup()
             } else {
-                TextBoxError("backupTextBox", "No permission to access storage. Please grant permission and try again.")
+                TextBoxError("backupTextBox", "No permission was granted when you pressed the create backup button. Please try again.")
                 CloseGetPasswordPopup();
                 OpenRestorePopup();
                 GotoStep("15")
