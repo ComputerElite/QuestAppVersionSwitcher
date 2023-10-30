@@ -959,7 +959,15 @@ function OpenTab(section) {
 
 var backupInProgress = false
 
+document.getElementById("confirmAccessBackup").onclick = () => {
+    CloseRestorePopup()
+    CreateBackupButton()
+}
 document.getElementById("createBackup").onclick = () => {
+    CreateBackupButton()
+}
+
+function CreateBackupButton() {
     if (!config.currentApp) {
         TextBoxError("backupTextBox", "Please select an app first via the change app button above")
         return
@@ -977,11 +985,10 @@ document.getElementById("createBackup").onclick = () => {
                 TextBoxError("backupTextBox", "No permission to access storage. Please grant permission and try again.")
                 CloseGetPasswordPopup();
                 OpenRestorePopup();
-                GotoStep("12")
+                GotoStep("15")
             }
         })
     })
-    
 }
 
 function RealBackup() {
@@ -1212,6 +1219,12 @@ document.getElementById("deleteAllMods").onclick = () => {
 document.getElementById("grantAccess2").onclick = () => {
     fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
         CloseRestorePopup();
+    })
+}
+
+document.getElementById("grantAccess3").onclick = () => {
+    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
+        GotoStep(16)
     })
 }
 
