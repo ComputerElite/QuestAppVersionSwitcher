@@ -656,6 +656,30 @@ namespace QuestAppVersionSwitcher
                 }
             }
             
+            // Update Splash screen
+            if (permissions.splashImageBase64 != "")
+            {
+                string trimmedBase64 = permissions.splashImageBase64;
+                if (trimmedBase64.Contains(",")) trimmedBase64 = trimmedBase64.Split(',')[1];
+                byte[] data = Convert.FromBase64String(trimmedBase64);
+                using (MemoryStream splash = new MemoryStream(data))
+                {
+                    apkArchive.AddFile("assets/vr_splash.png", splash, CompressionLevel.Optimal);
+                }
+
+                if (!appElement.Children.Any(x =>
+                        x.Attributes.Any(x => x.Name == "name" && x.Value.ToString() == "com.oculus.ossplash")
+                        && x.Attributes.Any(x => x.Name == "value" && x.Value.ToString() == "true")))
+                {
+                    // Add ossplash meta-data if it's not already present
+                    AxmlElement ossplash = new AxmlElement("meta-data");
+                    AddNameAttribute(ossplash, "com.oculus.ossplash");
+                    ossplash.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                        ValueAttributeResourceId, "true"));
+                    appElement.Children.Add(ossplash);
+                }
+            }
+            
             
             AxmlElement copyOfElement = new AxmlElement("meta-data");
             AddNameAttribute(copyOfElement, "QAVS.copyOf");

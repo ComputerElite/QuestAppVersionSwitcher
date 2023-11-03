@@ -101,6 +101,7 @@ namespace QuestAppVersionSwitcher.Core
         public List<string> otherPermissions { get; set; } = new List<string>();
         public List<UsesFeature> otherFeatures { get; set; } = new List<UsesFeature>();
         public HandTrackingVersion handTrackingVersion { get; set; }
+        public string splashImageBase64 { get; set; } = "";
     }
 
     public class UsesFeature

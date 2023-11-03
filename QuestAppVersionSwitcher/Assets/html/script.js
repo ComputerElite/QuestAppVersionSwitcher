@@ -541,6 +541,45 @@ var patchInProgress = false
 var lastApp = ""
 var scotlandForever
 const packageRegex = /^[a-zA-Z]+(\.[a-zA-Z][a-zA-Z0-9_]*)+$/g
+
+var splashBase64 = ""
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+}
+
+function AfterSplashSelect() {
+
+    var file = document.getElementById("splashScreenInput").files[0];
+    
+    getBase64(file).then(
+        data => {
+            SetSplashScreen(data)
+        }
+    )
+}
+
+function SetSplashScreen(data) {
+    splashBase64 = data
+    console.log(data)
+    document.getElementById("splashImage").src = data
+}
+
+document.getElementById("splashScreenInput").onchange = () => AfterSplashSelect()
+
 function PatchGame() {
     patchInProgress = true
     var addMicPerm = document.getElementById("mic").checked
@@ -559,6 +598,7 @@ function PatchGame() {
         modloader: parseInt(document.getElementById("modloader").value),
         resignOnly: document.getElementById("resignOnly").checked,
         customPackageId: document.getElementById("customPackageId").value,
+        splashImageBase64: splashBase64
     }
     if(patchOptions.customPackageId && !packageRegex.test(patchOptions.customPackageId)) {
         TextBoxError("patchingTextBox", "invalid package id provided. Packackge id must match regex " + packageRegex)
