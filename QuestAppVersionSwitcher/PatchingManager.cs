@@ -29,7 +29,6 @@ namespace QuestAppVersionSwitcher
         public const string LegacyTagName = "modded";
         public static readonly string[] OtherTagNames = { "BMBF.modded", "modded" };
         public const string ManifestPath = "AndroidManifest.xml";
-        public const string TagPermission = "qavs.modded";
         public static readonly Uri AndroidNamespaceUri = new Uri("http://schemas.android.com/apk/res/android");
 
         public static readonly string mainScotlandLoaderVersion = "v0.1.0-alpha";
@@ -464,8 +463,7 @@ namespace QuestAppVersionSwitcher
                 {
                     "android.permission.READ_EXTERNAL_STORAGE",
                     "android.permission.WRITE_EXTERNAL_STORAGE",
-                    "android.permission.MANAGE_EXTERNAL_STORAGE",
-                    TagPermission
+                    "android.permission.MANAGE_EXTERNAL_STORAGE"
                 });
             }
 
