@@ -152,15 +152,23 @@ namespace QuestAppVersionSwitcher
             wsServer.StartServer(CoreService.coreVars.wsPort);
             server.AddRoute("GET", "/api/proxy", request =>
             {
-                WebClient c = new WebClient();
-                c.Headers.Add("user-agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
+                HttpWebRequest r = new HttpWebRequest(new Uri(request.queryString.Get("url")));
+                r.UserAgent = "QuestAppVersionSwitcher/" + CoreService.version;
+                HttpWebResponse res = (HttpWebResponse)r.GetResponse();
                 try
                 {
-                    byte[] s = c.DownloadData(request.queryString.Get("url"));
-                    request.SendData(s);
+                    Stream resStream = res.GetResponseStream();
+                    Dictionary<string, string> headers = new Dictionary<string, string>();
+                    foreach (string header in res.Headers.AllKeys)
+                    {
+                        if (header.ToLower() != "etag") continue;
+                        headers.Add(header, res.Headers[header]);
+                    }
+                    request.ForwardStream(resStream, res.ContentLength, res.ContentType, res.ContentEncoding == "" ? Encoding.Default : Encoding.GetEncoding(res.ContentEncoding), (int)res.StatusCode, true, headers);
                 }
                 catch (Exception e)
                 {
+                    Logger.Log("Error in proxy:\n" + e.ToString(), LoggingType.Warning);
                     request.SendString("", "text/plain", 500);
                 }
                 return true;
@@ -970,7 +978,13 @@ namespace QuestAppVersionSwitcher
                 serverRequest.SendString(GenericResponse.GetResponse("Opened folder permission dialogues", true), "application/json", 200);
                 return true;
             });
-            
+            server.AddRoute("GET", "/api/game/splashcover", request =>
+            {
+                string package = request.queryString.Get("package") ?? CoreService.coreVars.currentApp;
+                byte[] data = PatchingManager.GetSplashCover(package);
+                request.SendData(data, "image/png", data == null ? 404 : 200);
+                return true;
+            });
             server.AddRoute("GET", "/api/gotaccess", serverRequest =>
             {
                 if (serverRequest.queryString.Get("package") == null)

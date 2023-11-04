@@ -22,6 +22,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using Android.Webkit;
+using ComputerUtils.Android;
 using Org.BouncyCastle.Bcpg.Sig;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
@@ -702,5 +703,17 @@ namespace QuestAppVersionSwitcher
             return true;
         }
 
+        public static byte[] GetSplashCover(string package)
+        {
+            using ZipArchive a = ZipFile.OpenRead(AndroidService.FindAPKLocation(package));
+            if (a.GetEntry("assets/vr_splash.png") != null)
+            {
+                using Stream s = a.GetEntry("assets/vr_splash.png").Open();
+                byte[] data = new byte[s.Length];
+                s.Read(data, 0, (int)s.Length);
+                return data;
+            }
+            return null;
+        }
     }
 }
