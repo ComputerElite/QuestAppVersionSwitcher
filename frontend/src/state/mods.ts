@@ -42,10 +42,18 @@ export interface BSCoreModsRaw {
  * Core Mods list for Beat Saber
  */
 export const [beatSaberCores, { refetch: refetchBeatSaberCores, mutate: mutateBeatSaberCores }] = createResource(async () => {
-    let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
-    let json: BSCoreModsRaw = JSON.parse(text);
-
-    return json;
+    try {
+        let response = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json");
+        if (!response.ok) {
+            throw new Error("Failed to get Beat Saber Core Mods list");
+        }
+        return await response.json();;
+    } catch (e) {
+        toast.error("Failed to get Beat Saber Core Mods list");
+        console.error(e);
+        return {};
+    }
+    
 })
 
 

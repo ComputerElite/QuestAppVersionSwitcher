@@ -71,8 +71,19 @@ async function refetchModListForVersion() {
 
 
     {
-        let text = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/mods.json");
-        let json = JSON.parse(text);
+        let json: any;
+
+        try {
+            const response = await proxyFetch("https://computerelite.github.io/tools/Beat_Saber/mods.json");
+            if (!response.ok) {
+                toast.error("Failed to fetch mod list");
+                return;
+            }
+            json = await response.json();
+        } catch (error) {
+            toast.error("Failed to fetch mod list");
+            return;
+        }
 
         // check if json has version
         if (json[version]) {

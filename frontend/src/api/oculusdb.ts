@@ -50,9 +50,13 @@ export async function OculusDBGetGame(oculusId: string, test: boolean = false): 
         return gamedata;
     }
 
-    let text = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/connected/${oculusId}?onlydownloadable=true`);
-    let json = JSON.parse(text);
-    return json;
+    const response = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/connected/${oculusId}?onlydownloadable=true`);
+    if (response.ok) {
+        const json = await response.json();
+        return json;
+    } else {
+        throw new Error("Failed to get game");
+    }
 }
 
 
@@ -190,7 +194,13 @@ export async function OculusDBSearchGame(gameId: string, test: boolean = false):
         return searchData;
     }
 
-    let text = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/search/${gameId}?headsets=MONTEREY,HOLLYWOOD,SEACLIFF`);
-    let json: IOculusDBApplication[] = JSON.parse(text);
-    return json;
+    let response = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/search/${gameId}?headsets=MONTEREY,HOLLYWOOD,SEACLIFF`);
+
+    if (response.ok) {
+        const json = await response.json();
+        return json;
+    } else { 
+        throw new Error("Failed to search");
+        return [];
+    }
 }

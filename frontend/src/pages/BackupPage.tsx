@@ -83,7 +83,7 @@ export default function BackupPage() {
                             "align-items": "center",
                             "text-align": "center",
                         }} class="text-accent" >
-                            Used: {backupList()?.backupsSizeString ?? "?"} / 64.00 GB
+                            Used: {backupList()?.backupsSizeString ?? "0"} / 64.00 GB
 
                         </span>
                         <RunButton text='Delete all' onClick={() => { }} style={"width: 80px"} />
