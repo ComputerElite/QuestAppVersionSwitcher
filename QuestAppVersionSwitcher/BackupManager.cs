@@ -10,7 +10,6 @@ using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
-using QuestPatcher.Zip;
 
 namespace QuestAppVersionSwitcher
 {

@@ -1,15 +1,6 @@
 ﻿using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
-using Org.BouncyCastle.Asn1.X509;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
-using Org.BouncyCastle.Crypto.Prng;
-using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Security;
-using Org.BouncyCastle.Utilities;
-using Org.BouncyCastle.Utilities.IO.Pem;
-using Org.BouncyCastle.X509;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
 using QuestPatcher.Axml;
@@ -21,9 +12,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Android.Webkit;
-using ComputerUtils.Android;
-using Org.BouncyCastle.Bcpg.Sig;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
 
@@ -665,7 +653,7 @@ namespace QuestAppVersionSwitcher
                 byte[] data = Convert.FromBase64String(trimmedBase64);
                 using (MemoryStream splash = new MemoryStream(data))
                 {
-                    apkArchive.AddFile("assets/vr_splash.png", splash, CompressionLevel.Optimal);
+                    //apkArchive.AddFile("assets/vr_splash.png", splash, null);
                 }
 
                 if (!appElement.Children.Any(x =>
