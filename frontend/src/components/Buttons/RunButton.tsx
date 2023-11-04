@@ -14,28 +14,31 @@ type RunButtonProps = JSX.HTMLAttributes<HTMLButtonElement> & {
 }
 
 const RunButton: Component<RunButtonProps> = (props) => {
-    let [local, other] = splitProps(props, ['children', 'icon', 'text', 'variant', 'hideTextOnMobile', 'fullWidth'])
+    let [local, other] = splitProps(props, ['children', 'icon', 'text', 'variant', 'hideTextOnMobile', 'fullWidth', 'classList'])
 
     return (
-        <button class={style.button} classList={{
-            [style.success]: local.variant === 'success',
-            [style.error]: local.variant === 'error',
-            [style.warning]: local.variant === 'warning',
-            [style.info]: local.variant === 'info',
-            [style.textOnly]: !local.icon,
-            [style.iconOnly]: !local.text,
-            [style.hideTextOnMobile]: local.hideTextOnMobile,
-            [style.fullWidth]: local.fullWidth
-        }} {...other}>
+        <button
+            classList={{
+                [style.button]: true, // set this here so we can override it in style prop
+                [style.success]: local.variant === 'success',
+                [style.error]: local.variant === 'error',
+                [style.warning]: local.variant === 'warning',
+                [style.info]: local.variant === 'info',
+                [style.textOnly]: !local.icon,
+                [style.iconOnly]: !local.text,
+                [style.hideTextOnMobile]: local.hideTextOnMobile,
+                [style.fullWidth]: local.fullWidth,
+                ...local.classList,
+            }} {...other}>
             <Show when={local.icon}>
                 <div class={style.icon}>
                     {local.icon}
                 </div>
             </Show>
             <Show when={local.text}>
-                <div class={style.text}>
+                <span class={style.text}>
                     {local.text}
-                </div>
+                </span>
             </Show>
         </button>
     )

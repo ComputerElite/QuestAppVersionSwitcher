@@ -37,7 +37,10 @@ export interface IPatchOptions {
     customPackageId: string,
     modloader: ModLoaderType,
     otherPermissions: string[],
-    otherFeatures: string[],
+    otherFeatures: {
+        name: string,
+        required: boolean,
+    }[],
     splashImageBase64: string,
 }
 

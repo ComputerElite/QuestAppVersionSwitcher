@@ -25,12 +25,51 @@ export default function PatchingPage() {
 
   function onAddPermission(e: SubmitEvent) {
     e.preventDefault();
-    debugger
     let formData = new FormData(e.target as HTMLFormElement);
     let permission = formData.get("permission") as string;
     if (!permission) return;
     if (patchingOptions()?.otherPermissions.includes(permission)) return;
     updatePatchingOptions({ otherPermissions: [...patchingOptions()!.otherPermissions, permission] })
+  }
+
+  // /**
+  //  * Toggles an additional feature 
+  //  * @param feature The feature to toggle
+  //  * @param enabled Whether to enable or disable the feature (optional)
+  //  */
+  // function toggleAdditionalFeature(feature: string, enable?: boolean) {
+  //   let options = patchingOptions();
+  //   if (!options) return;
+
+  //   enable = enable ?? !options.otherFeatures?.includes(feature);
+
+  //   const filteredFeatures = options.otherFeatures.filter((i) => i !== feature);
+
+  //   if (enable) {
+  //     updatePatchingOptions({ otherFeatures: [...filteredFeatures, feature] })
+  //   } else {
+  //     updatePatchingOptions({ otherFeatures: filteredFeatures.filter((feat) => feat !== feat) })
+  //   }
+  // }
+
+  /**
+   * Toggles an additional permission 
+   * @param permission The permission to toggle
+   * @param enable Whether to enable or disable the permission (optional)
+   */
+  function toggleAdditionalPermission(permission: string, enable?: boolean) {
+    let options = patchingOptions();
+    if (!options) return;
+
+    enable = enable ?? !options.otherPermissions?.includes(permission);
+
+    const filteredPermissions = options.otherPermissions.filter((i) => i !== permission);
+
+    if (enable) {
+      updatePatchingOptions({ otherPermissions: [...filteredPermissions, permission] })
+    } else {
+      updatePatchingOptions({ otherPermissions: filteredPermissions })
+    }
   }
 
   async function startPatching() {
@@ -81,7 +120,6 @@ export default function PatchingPage() {
     <PageLayout>
       <div class="contentItem">
         <Title>Patching</Title>
-
         <Show when={config()?.currentApp && moddingStatus()?.isInstalled}>
           <RunButton text={`${moddingStatus()?.isPatched ? 'Repatch' : 'Patch'} ${GetGameName(config()!.currentApp)}`} icon={<FirePatch />} variant='success' onClick={startPatching} />
 
@@ -100,6 +138,14 @@ export default function PatchingPage() {
               <Switch checked={patchingOptions()?.debug ?? false} onChange={() => { updatePatchingOptions({ debug: !patchingOptions()?.debug }) }
               } />
               <OptionText>Add debug option</OptionText>
+            </Box>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+              <Switch checked={patchingOptions()?.otherPermissions?.includes("android.permission.RECORD_AUDIO") ?? false}
+
+                onChange={() => {
+                  toggleAdditionalPermission("android.permission.RECORD_AUDIO")
+                }} />
+              <OptionText>Microphone permission</OptionText>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
               <Switch checked={patchingOptions()?.openXR ?? false} onChange={() => { updatePatchingOptions({ openXR: !patchingOptions()?.openXR }) }
@@ -132,13 +178,14 @@ export default function PatchingPage() {
           {/* Additional permissions */}
           <Box sx={{ marginY: 3 }}>
             <OptionHeader>Additional permissions</OptionHeader>
-            <form onSubmit={onAddPermission}>
-              <Box sx={{
-                display: "flex",
-                gap: 0,
-                alignItems: "center",
-                marginTop: 1,
-              }}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                let formData = new FormData(e.target as HTMLFormElement);
+                let permission = formData.get("permission") as string;
+                if (!permission) return;
+                toggleAdditionalPermission(permission, true);
+            }}>
+              <Box class="flex gap-0 items-center mt-1">
                 <TextField name="permission" sx={{
                   borderRadius: "222px",
                   ".MuiInputBase-root": {
@@ -151,26 +198,63 @@ export default function PatchingPage() {
                     height: "40px",
                     width: "100px",
                     "border-radius": "0px 6px 6px 0px",
-                  }
-                } text='Add permission' variant="success" type="submit" />
+                  }} text='Add permission' variant="success" type="submit" />
               </Box>
 
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", marginTop: 1 }}>
+              <Box class="flex gap-1 items-center flex-wrap mt-1">
                 <For each={patchingOptions()?.otherPermissions}>
                   {(permission, index) => {
                     return (
                       <Chip label={permission} sx={{ marginTop: 1 }} onDelete={() => {
-                        updatePatchingOptions({ otherPermissions: patchingOptions()?.otherPermissions.filter((_, i) => i !== index()) })
+                        toggleAdditionalPermission(permission, false);
                       }} />
                     )
                   }}
                 </For>
-
               </Box>
             </form>
           </Box>
 
-      
+          {/* TODO: Design a features control */}
+          {/* Additional features
+          <Box sx={{ marginY: 3 }}>
+            <OptionHeader>Additional features</OptionHeader>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                let formData = new FormData(e.target as HTMLFormElement);
+                let feature = formData.get("feature") as string;
+                if (!feature) return;
+                toggleAdditionalFeature(feature, true);
+            }}>
+              <Box class="flex gap-0 items-center mt-1">
+                <TextField name="feature" placeholder="" sx={{
+                  borderRadius: "222px",
+                  ".MuiInputBase-root": {
+                    borderRadius: "6px 0px 0px 6px",
+                  }
+                }} size="small" variant="outlined" color="primary"
+                />
+                <RunButton style={
+                  {
+                    height: "40px",
+                    width: "100px",
+                    "border-radius": "0px 6px 6px 0px",
+                  }}
+                  text='Add feature'  variant="success" type="submit" />
+              </Box>
+              <Box class="flex gap-1 items-center flex-wrap mt-1">
+                <For each={patchingOptions()?.otherFeatures}>
+                  {(feature) => {
+                    return (
+                      <Chip label={feature.name} sx={{ marginTop: 1 }} onDelete={() => {
+                        toggleAdditionalFeature(feature.name, false);
+                      }} />
+                    )
+                  }}
+                </For>
+              </Box>
+            </form>
+          </Box> */}
         </Show>
 
 
