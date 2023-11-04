@@ -3,6 +3,7 @@ import { createStore, reconcile, unwrap } from "solid-js/store";
 import { IMod, getModsList } from "../api/mods"
 import { createDeepSignal } from "../util";
 import { proxyFetch } from "../api/app";
+import toast from "solid-toast";
 
 
 // Mods List (all mods and libs)

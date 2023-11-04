@@ -17,7 +17,6 @@ import { restoreAppBackup } from "../api/backups";
 import { useNavigate } from "@solidjs/router";
 import { showConfirmModal } from "./ConfirmModal";
 import { refetchMods } from "../state/mods";
-import styled from "@suid/system/styled";
 import { FiTrash } from 'solid-icons/fi'
 import { FaSolidTrash } from "solid-icons/fa";
 import { FirePatch } from "../assets/Icons";
@@ -272,7 +271,7 @@ function UninstallStep(props: { open: boolean, setStage: (stage: IPatchingStage)
     const [inProgress, setInProgress] = createSignal(false);
     const [isInstalled, setIsInstalled] = createSignal(true);
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         if (!inProgress()) return;
         if (!isInstalled()) return;
 
@@ -283,7 +282,7 @@ function UninstallStep(props: { open: boolean, setStage: (stage: IPatchingStage)
             setIsInstalled(false);
             setDone(true);
             setInProgress(false);
-            clearInterval(timer);
+            clearTimeout(timer);
             toast.success("Game uninstalled successfully");
         }
     }, 400);
@@ -372,7 +371,7 @@ function InstallStep(props: { open: boolean, setStage: (stage: IPatchingStage) =
     const [inProgress, setInProgress] = createSignal(false);
     const [isInstalled, setIsInstalled] = createSignal(false);
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         if (!inProgress()) return;
         if (isInstalled()) return;
 
@@ -488,7 +487,7 @@ function PermissionStep(props: { open: boolean, setStage: (stage: IPatchingStage
     }
 
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         let currentApp = config()?.currentApp;
         if (!currentApp) return toast.error("No game selected");
 

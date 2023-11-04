@@ -1,7 +1,7 @@
 import { createEffect, createResource, createSignal, on } from "solid-js"
 
 import { getAppInfo, getConfig } from "./api/app";
-import { HandtrackingTypes, getPatchedModdingStatus, getPatchingOptions } from "./api/patching";
+import { HandtrackingType, IPatchOptions, getPatchedModdingStatus, getPatchingOptions } from "./api/patching";
 import { getCosmeticsTypes } from "./api/cosmetics";
 import { createStore } from "solid-js/store";
 import { getDeviceInfo } from "./api/android";
@@ -22,20 +22,8 @@ export const [cosmeticTypes, { mutate: mutateCosmeticTypes, refetch: refetchCosm
 
 export const [deviceInfo, { mutate: mutateDeviceInfo, refetch: refetchDeviceInfo }] = createResource(getDeviceInfo, { storage: createSignal });
 
-export const [patchingOptions, { mutate: mutatePatchingOptions, refetch: refetchPatchingOptions }] = createResource<InternalPatchingOptions>(
-    // TODO: Check if we can remove the useless flag that enables handtracking
-    (async () => {
-        let options = await getPatchingOptions();
-
-        // Map api response to internal response
-        return {
-            handtracking: options.handTracking ? options.handTrackingVersion : HandtrackingTypes.None,
-            addExternalStorage: options.externalStorage,
-            addDebug: options.debug,
-            additionalPermissions: options.otherPermissions,
-            otherFeatures: options.otherFeatures,
-        }
-    }),
+export const [patchingOptions, { mutate: mutatePatchingOptions, refetch: refetchPatchingOptions }] = createResource<IPatchOptions>(
+    (async () => { return await getPatchingOptions(); }),
     { storage: createSignal });
 
 // Refetch modding status if the config changes
@@ -45,12 +33,3 @@ createEffect(on(config, async (config, prevConfig) => {
     await refetchPatchingOptions();
     await refetchDeviceInfo();
 }))
-
-
-export interface InternalPatchingOptions {
-    handtracking: HandtrackingTypes;
-    addExternalStorage: boolean;
-    addDebug: boolean;
-    additionalPermissions: string[];
-    otherFeatures: string[];
-}

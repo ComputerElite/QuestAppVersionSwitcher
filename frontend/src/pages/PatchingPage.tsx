@@ -4,21 +4,16 @@ import Checkbox from "@suid/material/Checkbox"
 import PageLayout from "../Layouts/PageLayout";
 import RunButton from "../components/Buttons/RunButton";
 
-import { DeleteIcon, FirePatch } from "../assets/Icons";
-import { InternalPatchingOptions, appInfo, config, currentApplication, moddingStatus, mutatePatchingOptions, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
-import { For, Show, children, createEffect, createSignal, splitProps } from "solid-js";
-import { CustomModal } from "../modals/CustomModal";
+import { FirePatch } from "../assets/Icons";
+import { appInfo, config, moddingStatus, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
+import { For, Show, createEffect, createSignal } from "solid-js";
 import { FiRefreshCcw } from "solid-icons/fi";
 import { Box, MenuItem, Select, Switch, TextField, Typography, Chip } from "@suid/material";
 import { OptionHeader } from "./ToolsPage";
-import { createStore, produce } from "solid-js/store";
 import { GetGameName } from "../util";
-import { HandtrackingTypes, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
+import { HandtrackingType, IPatchOptions, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
 import toast from "solid-toast";
 import { isPackageInstalled } from "../api/android";
-import { BackendEvents, PatchingProgressData } from "../state/eventBus";
-import { onCleanup } from "solid-js";
-import { LinearProgress } from "@suid/material"
 import { refetchBackups } from "../state/backups";
 import PatchingModal from "../modals/PatchingModal";
 
@@ -34,8 +29,8 @@ export default function PatchingPage() {
     let formData = new FormData(e.target as HTMLFormElement);
     let permission = formData.get("permission") as string;
     if (!permission) return;
-    if (patchingOptions()?.additionalPermissions.includes(permission)) return;
-    updatePatchingOptions({ additionalPermissions: [...patchingOptions()!.additionalPermissions, permission] })
+    if (patchingOptions()?.otherPermissions.includes(permission)) return;
+    updatePatchingOptions({ otherPermissions: [...patchingOptions()!.otherPermissions, permission] })
   }
 
   async function startPatching() {
@@ -50,7 +45,7 @@ export default function PatchingPage() {
     setIsPatchingModalOpen(true);
   }
 
-  async function updatePatchingOptions(options: Partial<InternalPatchingOptions>) {
+  async function updatePatchingOptions(options: Partial<IPatchOptions>) {
     let newOptions = patchingOptions();
     if (!newOptions) return console.warn("Patching options are null");
 
@@ -94,45 +89,45 @@ export default function PatchingPage() {
           <Box sx={{ marginY: 3 }}>
             <OptionHeader>Patching options</OptionHeader>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
-              <Switch checked={patchingOptions()?.addExternalStorage} onChange={
+              <Switch checked={patchingOptions()?.externalStorage} onChange={
                 () => {
-                  updatePatchingOptions({ addExternalStorage: !patchingOptions()?.addExternalStorage })
+                  updatePatchingOptions({ externalStorage: !patchingOptions()?.externalStorage })
                 }
               } />
               <OptionText>Add external storage permission</OptionText>
             </Box>
             <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
-              <Switch checked={patchingOptions()?.addDebug ?? false} onChange={
-                () => {
-                  updatePatchingOptions({ addDebug: !patchingOptions()?.addDebug })
-                }
+              <Switch checked={patchingOptions()?.debug ?? false} onChange={() => { updatePatchingOptions({ debug: !patchingOptions()?.debug }) }
               } />
               <OptionText>Add debug option</OptionText>
+            </Box>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+              <Switch checked={patchingOptions()?.openXR ?? false} onChange={() => { updatePatchingOptions({ openXR: !patchingOptions()?.openXR }) }
+              } />
+              <OptionText>OpenXR (Mixed Reality)</OptionText>
+            </Box>
+            <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+              <Switch checked={patchingOptions()?.handTracking ?? false} onChange={() => { updatePatchingOptions({ handTracking: !patchingOptions()?.handTracking }) }
+              } />
+              <OptionText>Hand tracking</OptionText>
             </Box>
           </Box>
 
           {/* Hand tracking */}
-          <Box sx={{ marginY: 3 }}>
-            <OptionHeader>Hand tracking</OptionHeader>
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
-              <Select
-                sx={{
-                  minWidth: 200,
-                }}
-                size="small" variant="outlined" color="primary" value={patchingOptions()?.handtracking ?? null} onChange={
-                  (e) => {
-                    updatePatchingOptions({ handtracking: e.target.value })
-                  }
-                }>
-                <MenuItem value={HandtrackingTypes.None}>None</MenuItem>
-                <MenuItem value={HandtrackingTypes.V1}>V1</MenuItem>
-                <MenuItem value={HandtrackingTypes.V1HighFrequency}>V1 high frequency</MenuItem>
-                <MenuItem value={HandtrackingTypes.V2}>V2</MenuItem>
-              </Select>
-
+          <Show when={config()?.currentApp && patchingOptions()?.handTracking}>
+            <Box sx={{ marginY: 3 }}>
+              <OptionHeader>Hand tracking version</OptionHeader>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+                <Select sx={{ minWidth: 200, }} size="small" variant="outlined" color="primary"
+                  value={patchingOptions()?.handTrackingVersion ?? null} onChange={(e) => { updatePatchingOptions({ handTrackingVersion: e.target.value }) }}>
+                  <MenuItem value={HandtrackingType.None}>Default (Recommended)</MenuItem>
+                  <MenuItem value={HandtrackingType.V2}>V2</MenuItem>
+                  <MenuItem value={HandtrackingType.V2_1}>V2.1</MenuItem>
+                </Select>
+              </Box>
             </Box>
+          </Show>
 
-          </Box>
 
           {/* Additional permissions */}
           <Box sx={{ marginY: 3 }}>
@@ -161,11 +156,11 @@ export default function PatchingPage() {
               </Box>
 
               <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap", marginTop: 1 }}>
-                <For each={patchingOptions()?.additionalPermissions}>
+                <For each={patchingOptions()?.otherPermissions}>
                   {(permission, index) => {
                     return (
                       <Chip label={permission} sx={{ marginTop: 1 }} onDelete={() => {
-                        updatePatchingOptions({ additionalPermissions: patchingOptions()?.additionalPermissions.filter((_, i) => i !== index()) })
+                        updatePatchingOptions({ otherPermissions: patchingOptions()?.otherPermissions.filter((_, i) => i !== index()) })
                       }} />
                     )
                   }}
@@ -174,6 +169,8 @@ export default function PatchingPage() {
               </Box>
             </form>
           </Box>
+
+      
         </Show>
 
 

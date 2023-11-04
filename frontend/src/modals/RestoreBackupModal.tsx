@@ -1,9 +1,6 @@
 import { Show, createMemo, createSignal, onCleanup } from "solid-js";
-import { BackendEvents, PatchingProgressData } from "../state/eventBus";
 import { config, currentApplication, deviceInfo, moddingStatus, refetchAppInfo, refetchModdingStatus, refetchSettings } from "../store";
 import toast from "solid-toast";
-import { createEffect } from "solid-js";
-import { patchCurrentApp } from "../api/patching";
 import RunButton from "../components/Buttons/RunButton";
 import { CustomModal } from "./CustomModal";
 import { Box, FormControlLabel, LinearProgress, Typography as MuiTypography, Switch, TextField } from "@suid/material";
@@ -14,13 +11,7 @@ import { gotAccessToAppAndroidFolders, grantAccessToAppAndroidFolders, grantMana
 import { onMount } from "solid-js";
 import { GetAndroidVersionName, IsOnQuest } from "../util";
 import { IBackup, restoreAppBackup } from "../api/backups";
-import { useNavigate } from "@solidjs/router";
-import { showConfirmModal } from "./ConfirmModal";
-import { refetchMods } from "../state/mods";
-import styled from "@suid/system/styled";
-import { FiTrash } from 'solid-icons/fi'
 import { FaSolidTrash } from "solid-icons/fa";
-import { FirePatch } from "../assets/Icons";
 import { MediumText, SmallText, TitleText } from "../styles/TextStyles";
 
 enum IRestoreStage {
@@ -223,7 +214,7 @@ function UninstallingStep(props: {
     const [inProgress, setInProgress] = createSignal(false);
     const [isInstalled, setIsInstalled] = createSignal(true);
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         if (!inProgress()) return;
         if (!isInstalled()) return;
 
@@ -345,7 +336,7 @@ function InstallingStep(props: {
     const [inProgress, setInProgress] = createSignal(false);
     const [isInstalled, setIsInstalled] = createSignal(false);
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         if (!inProgress()) return;
         if (isInstalled()) return;
 
@@ -470,7 +461,7 @@ function PermissionStep(props: {
     }
 
 
-    const timer: NodeJS.Timer = setInterval(async () => {
+    const timer: NodeJS.Timeout = setInterval(async () => {
         let currentApp = config()?.currentApp;
         if (!currentApp) return toast.error("No game selected");
 

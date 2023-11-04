@@ -1,6 +1,8 @@
 import { proxyFetch } from "./app";
-import gamedata from "./testData/gameData"
-import searchData from "./testData/searchResults"
+
+// TODO: Find a good way to test this
+// import gamedata from "./testData/gameData"
+// import searchData from "./testData/searchResults.json"
 
 export interface IOculusDBGameVersion {
     id: string,
@@ -46,9 +48,9 @@ export async function OculusDBGetGame(oculusId: string, test: boolean = false): 
     versions: Array<IOculusDBGameVersion>
     applications: Array<IOculusDBApplication>
 }> {
-    if (test) {
-        return gamedata;
-    }
+    // if (test) {
+    //     return gamedata;
+    // }
 
     const response = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/connected/${oculusId}?onlydownloadable=true`);
     if (response.ok) {
@@ -190,9 +192,9 @@ export interface IOculusDBApplication {
 }
 
 export async function OculusDBSearchGame(gameId: string, test: boolean = false): Promise<IOculusDBApplication[]> {
-    if (test) {
-        return searchData;
-    }
+    // if (test) {
+    //     return searchData;
+    // }
 
     let response = await proxyFetch(`https://oculusdb.rui2015.me/api/v1/search/${gameId}?headsets=MONTEREY,HOLLYWOOD,SEACLIFF`);
 
