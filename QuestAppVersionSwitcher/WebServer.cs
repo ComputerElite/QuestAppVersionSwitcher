@@ -981,7 +981,27 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/api/game/splashcover", request =>
             {
                 string package = request.queryString.Get("package") ?? CoreService.coreVars.currentApp;
-                byte[] data = PatchingManager.GetSplashCover(package);
+                string backupname = request.queryString.Get("backupname") ?? "";
+                string apkLocation = AndroidService.FindAPKLocation(package);
+                if (backupname != "")
+                {
+                    
+                    string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupname + "/";
+                    if (!Directory.Exists(backupDir))
+                    {
+                        request.SendString(GenericResponse.GetResponse("This backup does not exist", false), "application/json", 404);
+                        return true;
+                    }
+
+                    apkLocation = backupDir + "app.apk";
+                    if (!File.Exists(apkLocation))
+                    {
+                        request.SendString(GenericResponse.GetResponse("This backup does not have an apk file", false),
+                            "application/json", 404);
+                        return true;
+                    }
+                }
+                byte[] data = PatchingManager.GetSplashCover(apkLocation);
                 request.SendData(data, "image/png", data == null ? 404 : 200);
                 return true;
             });
