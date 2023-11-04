@@ -93,25 +93,6 @@
     <Compile Include="QAVSReport.cs" />
     <Compile Include="QAVSWebViewClient.cs" />
     <Compile Include="QAVSWebChromeClient.cs" />
-    <Compile Include="QuestPatcher.Zip\ApkZip.cs" />
-    <Compile Include="QuestPatcher.Zip\Certificates.cs" />
-    <Compile Include="QuestPatcher.Zip\Crc32.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\CentralDirectoryHeader.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\CompressionMethod.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\EndOfCentralDirectory.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\EntryFlags.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\EntryFlagsExtensions.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\LocalFileHeader.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\Timestamp.cs" />
-    <Compile Include="QuestPatcher.Zip\Data\ZipVersion.cs" />
-    <Compile Include="QuestPatcher.Zip\JarSigner.cs" />
-    <Compile Include="QuestPatcher.Zip\SigningUtility.cs" />
-    <Compile Include="QuestPatcher.Zip\StreamExtensions.cs" />
-    <Compile Include="QuestPatcher.Zip\V2Signer.cs" />
-    <Compile Include="QuestPatcher.Zip\ZipDataException.cs" />
-    <Compile Include="QuestPatcher.Zip\ZipEntryReadStream.cs" />
-    <Compile Include="QuestPatcher.Zip\ZipFormatException.cs" />
-    <Compile Include="QuestPatcher.Zip\ZipMemory.cs" />
     <Compile Include="WebserverResponses.cs" />
     <None Include="LICENSE-QuestPatcher" />
     <Compile Include="FastFileDownloader.cs" />
@@ -225,6 +206,9 @@
     <PackageReference Include="QuestPatcher.QMod">
       <Version>2.1.0</Version>
     </PackageReference>
+    <PackageReference Include="QuestPatcher.Zip">
+      <Version>1.1.1</Version>
+    </PackageReference>
     <PackageReference Include="SemanticVersioning">
       <Version>2.0.2</Version>
     </PackageReference>
@@ -279,8 +263,6 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <AndroidAsset Include="Assets\html\script.js" />
-    <Content Include="QuestPatcher.Zip\QuestPatcher.Zip.csproj" />
-    <Content Include="QuestPatcher.Zip\README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj">

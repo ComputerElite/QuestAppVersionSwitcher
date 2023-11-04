@@ -651,12 +651,21 @@ namespace QuestAppVersionSwitcher
                 byte[] data = Convert.FromBase64String(trimmedBase64);
                 using (MemoryStream splash = new MemoryStream(data))
                 {
-                    //apkArchive.AddFile("assets/vr_splash.png", splash, null);
+                    apkArchive.AddFile("assets/vr_splash.png", splash, null);
                 }
 
-                if (!appElement.Children.Any(x =>
-                        x.Attributes.Any(x => x.Name == "name" && x.Value.ToString() == "com.oculus.ossplash")
-                        && x.Attributes.Any(x => x.Name == "value" && x.Value.ToString() == "true")))
+                bool exists = false;
+                foreach (AxmlElement e in appElement.Children)
+                {
+                    if (e.Attributes.Any(x => x.Name == "name" && x.Value.ToString() == "com.oculus.ossplash"))
+                    {
+                        e.Attributes.RemoveAll(x => x.Name == "value");
+                        e.Attributes.Add(new AxmlAttribute("value", AndroidNamespaceUri,
+                            ValueAttributeResourceId, "true"));
+                        exists = true;
+                    }
+                }
+                if (!exists)
                 {
                     // Add ossplash meta-data if it's not already present
                     AxmlElement ossplash = new AxmlElement("meta-data");
