@@ -237,12 +237,8 @@ if(!IsOnQuest()) {
     document.getElementById("logout").classList.add("notActive")
     //document.getElementById("getModsButton").style.display = "none"
     
-} else {
-    document.getElementById("installModButton").classList.add("notActive")
-    document.getElementById("installModButton").style.display = "none"
-    document.getElementById("installCosmeticButton").classList.add("notActive")
-    document.getElementById("installCosmeticButton").style.display = "none"
 }
+
 const cosmeticsTypeSelect = document.getElementById("cosmeticsType")
 var cosmeticTypes = {}
 function UpdateCosmeticsTypes() {
