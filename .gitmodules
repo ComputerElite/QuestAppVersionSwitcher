@@ -1,0 +1,3 @@
+[submodule "ComputerUtils"]
+	path = ComputerUtils
+	url = https://github.com/ComputerElite/ComputerUtils
