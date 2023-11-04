@@ -25,6 +25,7 @@ using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using Android.App;
 using Android.OS;
 using Android.Provider;
 using Socket = System.Net.Sockets.Socket;
@@ -70,7 +71,12 @@ namespace QuestAppVersionSwitcher
             if(CoreService.coreVars.token == "") return LoggedInStatus.NotLoggedIn;
             return LoggedInStatus.LoggedIn;
         }
-
+        
+        public static string GetRealPathFromURI(Android.Net.Uri uri)
+        {
+            return HttpServer.DecodeUrlString(uri.ToString()
+                .Replace("content://com.android.externalstorage.documents/document/primary%3A", "/sdcard/"));
+        }
 
         public static void BroadcaseMessageOnWebSocket<T>(QAVSWebsocketMessage<T> qavsWebsocketMessage)
         {
@@ -150,8 +156,8 @@ namespace QuestAppVersionSwitcher
                 c.Headers.Add("user-agent", "QuestAppVersionSwitcher/" + CoreService.version.ToString());
                 try
                 {
-                    string s = c.DownloadString(request.queryString.Get("url"));
-                    request.SendString(s);
+                    byte[] s = c.DownloadData(request.queryString.Get("url"));
+                    request.SendData(s);
                 }
                 catch (Exception e)
                 {
@@ -675,7 +681,25 @@ namespace QuestAppVersionSwitcher
                 chooseFile.SetType("application/vnd.android.package-archive");
                 chooseFile = Intent.CreateChooser(chooseFile, "Choose an apk to install");
                 Logger.Log("Opening file picker for apk install");
-                CoreService.mainActivity.StartActivityForResult(chooseFile, MainActivity.pickFileCode);
+                
+                
+                Action<Result, Intent> callback = (resultCode, intentData) =>
+                {
+                    // Get the URI of the selected file
+                    Android.Net.Uri uri = intentData.Data;
+                    Logger.Log(uri.ToString());
+
+                    // Convert the URI to a file path
+                    string path = GetRealPathFromURI(uri);
+
+                    // Start apk install
+                    Logger.Log("Selected apk for installation: " + path);
+                    AndroidService.InitiateInstallApk(path);
+                };
+                
+                int newRequestCode = ActivityResultCallbackRegistry.RegisterActivityResultCallback(callback);
+
+                CoreService.mainActivity.StartActivityForResult(chooseFile, newRequestCode);
                 serverRequest.SendString(GenericResponse.GetResponse("Opened file picker", true), "application/json");
                 return true;
             });

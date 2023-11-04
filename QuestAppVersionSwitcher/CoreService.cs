@@ -31,8 +31,7 @@ namespace QuestAppVersionSwitcher.Core
 
         public static void Start()
         {
-            //Set webbrowser settings
-            browser.SetWebChromeClient(new WebChromeClient());
+            browser.SetWebChromeClient(new QAVSWebChromeClient(mainActivity));
             browser.Settings.JavaScriptEnabled = true;
             browser.Settings.AllowContentAccess = true;
             browser.Settings.CacheMode = CacheModes.Default;
