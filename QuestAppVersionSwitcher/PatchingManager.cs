@@ -705,13 +705,20 @@ namespace QuestAppVersionSwitcher
 
         public static byte[] GetSplashCover(string package)
         {
-            using ZipArchive a = ZipFile.OpenRead(AndroidService.FindAPKLocation(package));
-            if (a.GetEntry("assets/vr_splash.png") != null)
+            try
             {
-                using Stream s = a.GetEntry("assets/vr_splash.png").Open();
-                byte[] data = new byte[s.Length];
-                s.Read(data, 0, (int)s.Length);
-                return data;
+                using ZipArchive a = ZipFile.OpenRead(AndroidService.FindAPKLocation(package));
+                if (a.GetEntry("assets/vr_splash.png") != null)
+                {
+                    using Stream s = a.GetEntry("assets/vr_splash.png").Open();
+                    using MemoryStream ms = new MemoryStream();
+                    s.CopyTo(ms);
+                    return ms.ToArray();
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Error while getting splash cover: " + e.Message, LoggingType.Warning);
             }
             return null;
         }
