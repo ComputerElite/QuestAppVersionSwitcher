@@ -548,18 +548,13 @@ function getBase64(file) {
     });
 }
 
-function getBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
-function AfterSplashSelect() {
+async function AfterSplashSelect() {
 
     var file = document.getElementById("splashScreenInput").files[0];
+
+    if (file.type != "image/png") {
+        file = await ConvertImageToPNG(file);
+    }
     
     getBase64(file).then(
         data => {
@@ -572,6 +567,34 @@ function SetSplashScreen(data) {
     splashBase64 = data
     console.log(data)
     document.getElementById("splashImage").src = data
+}
+
+function ConvertImageToPNG(image) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = URL.createObjectURL(image);
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject("Failed to convert image to png");
+                    return;
+                }
+                let fileName = image.name;
+                if (!fileName.endsWith(".png")) {
+                    fileName += ".png";
+                }
+
+                const file = new File([blob], fileName);
+
+                resolve(file);
+            }, "image/png");
+        }
+    })
 }
 
 document.getElementById("splashScreenInput").onchange = () => AfterSplashSelect()
