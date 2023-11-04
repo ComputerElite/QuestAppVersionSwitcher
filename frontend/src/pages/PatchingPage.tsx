@@ -6,71 +6,24 @@ import RunButton from "../components/Buttons/RunButton";
 
 import { FirePatch } from "../assets/Icons";
 import { appInfo, config, moddingStatus, patchingOptions, refetchModdingStatus, refetchPatchingOptions } from "../store";
-import { For, Show, createEffect, createSignal } from "solid-js";
+import { For, Show, createEffect, createSignal, onCleanup } from "solid-js";
 import { FiRefreshCcw } from "solid-icons/fi";
 import { Box, MenuItem, Select, Switch, TextField, Typography, Chip } from "@suid/material";
 import { OptionHeader } from "./ToolsPage";
-import { GetGameName } from "../util";
-import { HandtrackingType, IPatchOptions, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
+import { ConvertImageToPNG, DownloadImageAsBlob, DownloadImageAsPNG, FileToBase64, GetGameName } from "../util";
+import { HandtrackingType, IPatchOptions, ModLoaderType, getPatchedModdingStatus, patchCurrentApp, setPatchingOptions } from "../api/patching";
 import toast from "solid-toast";
 import { isPackageInstalled } from "../api/android";
 import { refetchBackups } from "../state/backups";
 import PatchingModal from "../modals/PatchingModal";
+import { FileDropper } from "../components/FileDropper";
+import { proxyUrl } from "../api/app";
 
 export default function PatchingPage() {
   let [isPatchingModalOpen, setIsPatchingModalOpen] = createSignal(false);
   createEffect(() => {
     console.log(appInfo()?.version)
   })
-
-  function onAddPermission(e: SubmitEvent) {
-    e.preventDefault();
-    let formData = new FormData(e.target as HTMLFormElement);
-    let permission = formData.get("permission") as string;
-    if (!permission) return;
-    if (patchingOptions()?.otherPermissions.includes(permission)) return;
-    updatePatchingOptions({ otherPermissions: [...patchingOptions()!.otherPermissions, permission] })
-  }
-
-  // /**
-  //  * Toggles an additional feature 
-  //  * @param feature The feature to toggle
-  //  * @param enabled Whether to enable or disable the feature (optional)
-  //  */
-  // function toggleAdditionalFeature(feature: string, enable?: boolean) {
-  //   let options = patchingOptions();
-  //   if (!options) return;
-
-  //   enable = enable ?? !options.otherFeatures?.includes(feature);
-
-  //   const filteredFeatures = options.otherFeatures.filter((i) => i !== feature);
-
-  //   if (enable) {
-  //     updatePatchingOptions({ otherFeatures: [...filteredFeatures, feature] })
-  //   } else {
-  //     updatePatchingOptions({ otherFeatures: filteredFeatures.filter((feat) => feat !== feat) })
-  //   }
-  // }
-
-  /**
-   * Toggles an additional permission 
-   * @param permission The permission to toggle
-   * @param enable Whether to enable or disable the permission (optional)
-   */
-  function toggleAdditionalPermission(permission: string, enable?: boolean) {
-    let options = patchingOptions();
-    if (!options) return;
-
-    enable = enable ?? !options.otherPermissions?.includes(permission);
-
-    const filteredPermissions = options.otherPermissions.filter((i) => i !== permission);
-
-    if (enable) {
-      updatePatchingOptions({ otherPermissions: [...filteredPermissions, permission] })
-    } else {
-      updatePatchingOptions({ otherPermissions: filteredPermissions })
-    }
-  }
 
   async function startPatching() {
     // Should never happen, but just in case
@@ -84,24 +37,7 @@ export default function PatchingPage() {
     setIsPatchingModalOpen(true);
   }
 
-  async function updatePatchingOptions(options: Partial<IPatchOptions>) {
-    let newOptions = patchingOptions();
-    if (!newOptions) return console.warn("Patching options are null");
 
-    newOptions = { ...newOptions, ...options }
-
-    try {
-      let result = await setPatchingOptions(newOptions);
-      if (!result) {
-        toast.error("Failed to update patching options");
-        return;
-      }
-      await refetchPatchingOptions();
-    } catch (e) {
-      console.error(e)
-      toast.error("Failed to update patching options");
-    }
-  }
 
   function onPatchFinished() {
     setIsPatchingModalOpen(false);
@@ -174,16 +110,29 @@ export default function PatchingPage() {
             </Box>
           </Show>
 
+          {/* Hand tracking */}
+          <Show when={config()?.currentApp && patchingOptions()?.handTracking}>
+            <Box sx={{ marginY: 3 }}>
+              <OptionHeader>Modloader</OptionHeader>
+              <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+                <Select sx={{ minWidth: 200, }} size="small" variant="outlined" color="primary"
+                  value={patchingOptions()?.modloader ?? null} onChange={(e) => { updatePatchingOptions({ modloader: e.target.value }) }}>
+                  <MenuItem value={ModLoaderType.QuestLoader}>QuestLoader (Quest 2)</MenuItem>
+                  <MenuItem value={ModLoaderType.Scotland2}>Scotland2 (Quest 3)</MenuItem>
+                </Select>
+              </Box>
+            </Box>
+          </Show>
 
           {/* Additional permissions */}
           <Box sx={{ marginY: 3 }}>
             <OptionHeader>Additional permissions</OptionHeader>
             <form onSubmit={(e) => {
-                e.preventDefault();
-                let formData = new FormData(e.target as HTMLFormElement);
-                let permission = formData.get("permission") as string;
-                if (!permission) return;
-                toggleAdditionalPermission(permission, true);
+              e.preventDefault();
+              let formData = new FormData(e.target as HTMLFormElement);
+              let permission = formData.get("permission") as string;
+              if (!permission) return;
+              toggleAdditionalPermission(permission, true);
             }}>
               <Box class="flex gap-0 items-center mt-1">
                 <TextField name="permission" sx={{
@@ -277,6 +226,17 @@ export default function PatchingPage() {
           />
         </Show>
 
+        <CustomSplashScreenPicker />
+
+        <Box sx={{ marginY: 3 }}>
+          <OptionHeader>Advanced</OptionHeader>
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", }}>
+            <Switch checked={patchingOptions()?.resignOnly ?? false}
+              onChange={() => { updatePatchingOptions({ resignOnly: !patchingOptions()?.resignOnly }) }
+              } />
+            <OptionText>Resign only</OptionText>
+          </Box>
+        </Box>
       </div>
     </PageLayout >
 
@@ -310,4 +270,108 @@ const OptionText = (props: { children: any }) => {
       lineHeight: "14px",
     }} variant="h4">{props.children}</Typography>
   )
+}
+
+function CustomSplashScreenPicker() {
+  return (
+    <Box sx={{ marginY: 3 }}>
+      <OptionHeader>Custom splash screen</OptionHeader>
+      <FileDropper class="flex gap-2 items-center"
+        overlayText={"Drag and drop an image, if you want transparent background use a png file"}
+        onFilesDropped={async (files) => {
+          let file = files[0];
+          if (!file) return;
+          updateSplashImage(file)
+
+        }}
+        onUrlDropped={async (url) => {
+          console.log(url)
+          const imageFile = await DownloadImageAsPNG(proxyUrl(url));
+          updateSplashImage(imageFile);
+        }}
+      >
+        <Show when={patchingOptions()?.splashImageBase64}>
+          <img src={patchingOptions()?.splashImageBase64} style={{ width: "100px", "max-height": "100px", "object-fit": "cover" }} />
+
+          <RunButton text="Remove" onClick={() => {
+            updatePatchingOptions({ splashImageBase64: "" });
+          }} />
+        </Show>
+        <RunButton text="Upload" onClick={() => {
+          let input = document.createElement("input");
+          input.type = "file";
+          input.accept = "image/*";
+          input.onchange = (e) => {
+            let file = input.files?.[0];
+            if (!file) return;
+            updateSplashImage(file)
+          }
+          input.click();
+        }} />
+      </FileDropper>
+
+
+    </Box>
+  )
+}
+
+// State utils
+export async function updatePatchingOptions(options: Partial<IPatchOptions>) {
+  let newOptions = patchingOptions();
+  if (!newOptions) return console.warn("Patching options are null");
+
+  newOptions = { ...newOptions, ...options }
+
+  try {
+    let result = await setPatchingOptions(newOptions);
+    if (!result) {
+      toast.error("Failed to update patching options");
+      return;
+    }
+    await refetchPatchingOptions();
+  } catch (e) {
+    console.error(e)
+    toast.error("Failed to update patching options");
+  }
+}
+
+
+/**
+   * Toggles an additional permission 
+   * @param permission The permission to toggle
+   * @param enable Whether to enable or disable the permission (optional)
+   */
+export function toggleAdditionalPermission(permission: string, enable?: boolean) {
+  let options = patchingOptions();
+  if (!options) return;
+
+  enable = enable ?? !options.otherPermissions?.includes(permission);
+
+  const filteredPermissions = options.otherPermissions.filter((i) => i !== permission);
+
+  if (enable) {
+    updatePatchingOptions({ otherPermissions: [...filteredPermissions, permission] })
+  } else {
+    updatePatchingOptions({ otherPermissions: filteredPermissions })
+  }
+}
+
+
+async function updateSplashImage(file: File) {
+  // Check if the file is a png
+  if (file.type != "image/png") {
+    file = await ConvertImageToPNG(file);
+    if (!file) {
+      toast.error("Failed to convert image to png");
+      return;
+    }
+  }
+
+  let base64 = await FileToBase64(file);
+  if (!base64) {
+    toast.error("Failed to convert image to base64");
+    return;
+  };
+
+  updatePatchingOptions({ splashImageBase64: base64 });
 }

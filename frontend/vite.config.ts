@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import devtools from 'solid-devtools/vite';
+import legacy from '@vitejs/plugin-legacy'
 
 export default defineConfig({
   base: "./",
   plugins: [
-    
+    legacy({
+      targets: ['defaults', 'not IE 11', 'chrome >= 92'],
+      renderModernChunks: false,
+    }),
     solidPlugin(),
     devtools({
       autoname: true,
@@ -39,7 +43,6 @@ export default defineConfig({
       }
   },
   build: {
-    target: 'esnext',
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name].js`,

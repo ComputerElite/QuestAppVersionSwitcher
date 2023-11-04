@@ -186,6 +186,10 @@ export async function getLoggedInStatus(): Promise<boolean> {
  * @throws Error if the request failed
  */
 export async function proxyFetch(url: string) {
-    const result = await fetch(`/api/proxy?url=${encodeURIComponent(url)}`);
+    const result = await fetch(proxyUrl(url));
     return result;
+}
+
+export function proxyUrl(url: string) {
+    return `/api/proxy?url=${encodeURIComponent(url)}`;
 }
