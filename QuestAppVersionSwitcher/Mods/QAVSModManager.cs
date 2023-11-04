@@ -10,9 +10,11 @@ using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Webserver;
 using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
+using AndroidX.Work;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestPatcher.QMod;
 using Exception = System.Exception;
+using Logger = ComputerUtils.Android.Logging.Logger;
 
 namespace QuestAppVersionSwitcher.Mods
 {

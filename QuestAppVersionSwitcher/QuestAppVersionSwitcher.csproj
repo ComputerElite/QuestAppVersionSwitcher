@@ -224,9 +224,18 @@
     <PackageReference Include="System.Text.Json">
       <Version>8.0.0-preview.3.23174.8</Version>
     </PackageReference>
+    <PackageReference Include="Xamarin.Android.Arch.Work.Runtime">
+      <Version>1.0.0.3</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.UI">
+      <Version>1.0.0.22</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData">
       <Version>2.6.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.AndroidX.Wear">
+      <Version>1.3.0.2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Forms">
       <Version>5.0.0.2599-pre1</Version>
@@ -253,7 +262,7 @@
     <AndroidAsset Include="Assets\html\script.js" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj">
+    <ProjectReference Include="..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj">
       <Project>{d4b84f1a-a999-482f-8253-d6761aa93e24}</Project>
       <Name>ComputerUtils.Android</Name>
     </ProjectReference>

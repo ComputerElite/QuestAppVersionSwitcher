@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestAppVersionSwitcher", "QuestAppVersionSwitcher\QuestAppVersionSwitcher.csproj", "{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils.Android", "..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj", "{D4B84F1A-A999-482F-8253-D6761AA93E24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils.Android", "ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj", "{D4B84F1A-A999-482F-8253-D6761AA93E24}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
