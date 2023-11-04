@@ -26,7 +26,6 @@ namespace QuestAppVersionSwitcher
     [Activity(Theme = "@style/AppTheme", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
     public class MainActivity : AppCompatActivity
     {
-        public static int pickFileCode = 1;
         WebView webView;
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -57,25 +56,7 @@ namespace QuestAppVersionSwitcher
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
-            if (requestCode == pickFileCode && resultCode == Result.Ok)
-            {
-                // Get the URI of the selected file
-                Android.Net.Uri uri = data.Data;
-                Logger.Log(uri.ToString());
-
-                // Convert the URI to a file path
-                string path = GetRealPathFromURI(uri);
-
-                // Start apk install
-                Logger.Log("Selected apk for installation: " + path);
-                AndroidService.InitiateInstallApk(path);
-            }
-        }
-        
-        private string GetRealPathFromURI(Android.Net.Uri uri)
-        {
-            return HttpServer.DecodeUrlString(uri.ToString()
-                .Replace("content://com.android.externalstorage.documents/document/primary%3A", "/sdcard/"));
+            ActivityResultCallbackRegistry.InvokeCallback(requestCode, resultCode, data);
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

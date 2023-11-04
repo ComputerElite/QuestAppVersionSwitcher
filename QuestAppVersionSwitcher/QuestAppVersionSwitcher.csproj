@@ -77,6 +77,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActivityResultCallbackRegistry.cs" />
     <Compile Include="AndroidDevice.cs" />
     <Compile Include="BackupManager.cs" />
     <Compile Include="ClientModels.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="QuestPatcher.Zip\ZipDataException.cs" />
     <Compile Include="QuestPatcher.Zip\ZipEntryReadStream.cs" />
     <Compile Include="QuestPatcher.Zip\ZipFormatException.cs" />
+    <Compile Include="QAVSWebChromeClient.cs" />
     <Compile Include="WebserverResponses.cs" />
     <None Include="LICENSE-QuestPatcher" />
     <Compile Include="FastFileDownloader.cs" />
