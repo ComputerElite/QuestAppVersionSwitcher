@@ -685,6 +685,8 @@ namespace QuestAppVersionSwitcher
                 
                 Action<Result, Intent> callback = (resultCode, intentData) =>
                 {
+                    if (resultCode != Result.Ok) return;
+                    
                     // Get the URI of the selected file
                     Android.Net.Uri uri = intentData.Data;
                     Logger.Log(uri.ToString());
