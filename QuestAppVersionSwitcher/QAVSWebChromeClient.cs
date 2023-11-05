@@ -24,7 +24,7 @@ namespace QuestAppVersionSwitcher
         
         public override bool OnConsoleMessage(ConsoleMessage consoleMessage)
         {
-            Logger.Log("WConsole: " + consoleMessage.Message());
+            Logger.Log("WConsole: " + consoleMessage.Message() + " at " + consoleMessage.SourceId() + ":" + consoleMessage.LineNumber());
             return true;
         }
         

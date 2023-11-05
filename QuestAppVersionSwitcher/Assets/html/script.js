@@ -565,7 +565,6 @@ async function AfterSplashSelect() {
 
 function SetSplashScreen(data) {
     splashBase64 = data
-    console.log(data)
     document.getElementById("splashImage").src = data
 }
 
