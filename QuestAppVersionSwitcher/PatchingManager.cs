@@ -653,10 +653,10 @@ namespace QuestAppVersionSwitcher
                 using (MemoryStream splash = new MemoryStream(data))
                 {
                     splash.Position = 0;
-                    apkArchive.AddFile("assets/vr_splash.png", splash, CompressionLevel.Optimal);
+                    apkArchive.AddFle("assets/vr_splash.png", splash, CompressionLevel.Optimal);
                 }
     
-                /*
+                
                 bool exists = false;
                 foreach (AxmlElement e in appElement.Children)
                 {
@@ -677,7 +677,7 @@ namespace QuestAppVersionSwitcher
                         ValueAttributeResourceId, "true"));
                     appElement.Children.Add(ossplash);
                 }
-                */
+                
             }
             
             
