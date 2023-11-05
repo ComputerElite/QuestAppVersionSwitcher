@@ -16,6 +16,7 @@ using System.IO;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
+using Android.Views;
 using AndroidX.Activity.Result.Contract;
 using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.Webserver;
@@ -52,6 +53,18 @@ namespace QuestAppVersionSwitcher
             
             
             CoreService.Start();
+        }
+
+        public override bool OnKeyDown(Keycode keyCode, KeyEvent e)
+        {
+            // Check if the key event was the Back button and if there's history
+            if ((keyCode == Keycode.Back) && webView.CanGoBack()) {
+                webView.GoBack();
+                return true;
+            }
+            // If it wasn't the Back key or there's no web page history, bubble up to the default
+            // system behavior (probably exit the activity)
+            return base.OnKeyDown(keyCode, e);
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
