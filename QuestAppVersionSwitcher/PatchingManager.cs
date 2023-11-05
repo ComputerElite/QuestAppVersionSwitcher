@@ -653,7 +653,7 @@ namespace QuestAppVersionSwitcher
                 using (MemoryStream splash = new MemoryStream(data))
                 {
                     splash.Position = 0;
-                    apkArchive.AddFile("assets/vr_splash.png", splash, null);
+                    apkArchive.AddFile("assets/vr_splash.png", splash, CompressionLevel.Optimal);
                 }
     
                 /*
