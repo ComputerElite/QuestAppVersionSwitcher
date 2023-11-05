@@ -646,6 +646,7 @@ namespace QuestAppVersionSwitcher
             // Update Splash screen
             if (permissions.splashImageBase64 != "")
             {
+                Logger.Log("Updating splash screen");
                 string trimmedBase64 = permissions.splashImageBase64;
                 if (trimmedBase64.Contains(",")) trimmedBase64 = trimmedBase64.Split(',')[1];
                 byte[] data = Convert.FromBase64String(trimmedBase64);
@@ -653,7 +654,7 @@ namespace QuestAppVersionSwitcher
                 {
                     apkArchive.AddFile("assets/vr_splash.png", splash, null);
                 }
-
+    
                 bool exists = false;
                 foreach (AxmlElement e in appElement.Children)
                 {
