@@ -151,12 +151,14 @@ namespace QuestAppVersionSwitcher
             GraphQLClient.oculusStoreToken = PasswordEncryption.Decrypt(CoreService.coreVars.token, request.password);
             
             // Check entitlements
+            /*
             if(!HasEntitlementFor(request.parentId))
             {
                 Logger.Log("User has no entitlement for " + request.parentId);
                 SetEntitlementError();
                 return;
             }
+            */
             
             try
             {
