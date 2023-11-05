@@ -190,8 +190,18 @@ fetch("/api/android/device").then(res => res.json().then(res => {
     if(res.sdkVersion <= 29) {
         // Android 10 and below don't need new storage perms
         document.getElementById("requestAppManage").style.display = "none"
-        document.getElementById("requestAppObb").style.display = "none"
         document.getElementById("requestAppData").style.display = "none"
+    }
+    if(res.device == "monterey" && IsOnQuest()) {
+        // FUCK YOU QUEST 1 I HATE YOU SO BADLY RN JUST MAKE THAT FUQING FILE PICKIN CODE WORK ON Q1. IT WORKS ON LITERALLY STOCK ANDROID HGOUAEHGOAPEMJGHPUEL_GUHHUMÄ
+        document.getElementById("installModButton").classList.add("notActive")
+        document.getElementById("installModButton").style.display = "none"
+        document.getElementById("installCosmeticButton").classList.add("notActive")
+        document.getElementById("installCosmeticButton").style.display = "none"
+        
+        
+        document.getElementById("installApkFromDisk").style.display = "none"
+        document.getElementById("splashImageContainer").style.display = "none"
     }
 }))
 

@@ -426,7 +426,6 @@ select {
     display: flex;
     flex-wrap: wrap;
     background-color: #1F1F1F;
-    height: fit-content;
     color: #FFFFFF;
     width: fit-content;
     width: 90%;

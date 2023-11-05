@@ -13,11 +13,10 @@ namespace QuestAppVersionSwitcher
     // https://github.com/dotnet/maui/blob/7be95d4e895af0f225f63c8a65fb04f2528e5fa3/src/Core/src/Platform/Android/MauiWebChromeClient.cs
     public class QAVSWebChromeClient : WebChromeClient
     {
+        Activity activity;
         public QAVSWebChromeClient(Activity activity)
         {
-            _ = activity ?? throw new ArgumentNullException("activity");
-
-            SetContext(activity);
+            this.activity = activity;
         }
         
         
@@ -34,9 +33,10 @@ namespace QuestAppVersionSwitcher
         public override bool OnShowFileChooser(WebView webView, IValueCallback filePathCallback, FileChooserParams fileChooserParams)
         {
             base.OnShowFileChooser(webView, filePathCallback, fileChooserParams);
+            Logger.Log("Show File chooser called");
             return ChooseFile(filePathCallback, fileChooserParams.CreateIntent(), fileChooserParams.Title);
         }
-
+        
         public void UnregisterCallbacks()
         {
             if (_requestCodes == null || _requestCodes.Count == 0 || !_activityRef.TryGetTarget(out Activity _))
@@ -52,10 +52,7 @@ namespace QuestAppVersionSwitcher
 
         protected bool ChooseFile(IValueCallback filePathCallback, Intent intent, string title)
         {
-            if (!_activityRef.TryGetTarget(out Activity activity))
-                return false;
-            
-            
+
             Action<Result, Intent> callback = (resultCode, intentData) =>
             {
                 if (filePathCallback == null)
@@ -70,8 +67,9 @@ namespace QuestAppVersionSwitcher
             int newRequestCode = ActivityResultCallbackRegistry.RegisterActivityResultCallback(callback);
 
             _requestCodes.Add(newRequestCode);
-
-            activity.StartActivityForResult(Intent.CreateChooser(intent, title), newRequestCode);
+            Intent i = Intent.CreateChooser(intent, title);
+            Logger.Log("Starting activity for result");
+            activity.StartActivityForResult(i, newRequestCode);
 
             return true;
         }
@@ -93,10 +91,6 @@ namespace QuestAppVersionSwitcher
         {
             UnregisterCallbacks();
             _activityRef = null;
-        }
-        void SetContext(Activity activity)
-        {
-            _activityRef = new WeakReference<Activity>(activity);
         }
     }
 }

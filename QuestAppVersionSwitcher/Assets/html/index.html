@@ -70,6 +70,14 @@
                         Add hand tracking permission
                     </label>
                     <br>
+                    <label class="option">
+                        <label class="switch normal">
+                            <input id="openxr" type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        Add OpenXR Permission
+                    </label>
+                    <br>
                     <label class="option" style="margin-left: 10px;">
                         <b>Hand tracking version</b>
                         <select style="margin-left: 20px; width: auto" class="inline" id="handtrackingversion">
@@ -77,14 +85,6 @@
                             <option value="3">V2</option>
                             <option value="4">V2.1</option>
                         </select>
-                    </label>
-                    <br>
-                    <label class="option">
-                        <label class="switch normal">
-                            <input id="openxr" type="checkbox" checked>
-                            <span class="slider round"></span>
-                        </label>
-                        Add OpenXR Permission
                     </label>
                     <br>
                     <label class="option" style="margin-left: 10px;">
@@ -95,11 +95,13 @@
                         </select>
                     </label>
                     
-                    <h4>Custom Splash Screen</h4>
-                    <img id="splashImage" style="max-width: 80%;">
-                    <br>
-                    <label class="option">Select custom splash screen <input type="file" id="splashScreenInput" accept="image/*"></label>
-                    <div class="button" onclick="SetSplashScreen('')">Remove custom splash screen</div>
+                    <div id="splashImageContainer">
+                        <h4>Custom Splash Screen</h4>
+                        <img id="splashImage" style="max-width: 80%;">
+                        <br>
+                        <label class="option">Select custom splash screen <input type="file" id="splashScreenInput" accept="image/*"></label>
+                        <div class="button" onclick="SetSplashScreen('')">Remove custom splash screen</div>
+                    </div>
                     
                     <br>
                     <h4>Custom Permissions</h4>
@@ -317,8 +319,8 @@
                     <div class="button" id="deleteAllMods">Delete all mods</div>
                     <div class="buttonLabel">Disables and deletes all mods from the currently selected game</div>
                 </div>
-                <div class="buttonContainer">
-                    <div class="button" onclick="InstallAPKFromDisk()">Install apk from disk</div>
+                <div class="buttonContainer" id="installApkFromDisk">
+                    <div class="button" id onclick="InstallAPKFromDisk()">Install apk from disk</div>
                     <div class="buttonLabel">Opens a file picker to install any apk on your quest</div>
                 </div>
                 <div id="updateTextBox" class="textBox"></div>
