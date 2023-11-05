@@ -47,7 +47,7 @@ namespace QuestAppVersionSwitcher.Mods
 
             // Check that the package ID is correct. We don't want people installing Beat Saber mods on Gorilla Tag!
             Logger.Log($"Mod ID: {qmod.Id}, Version: {qmod.Version}, Is Library: {qmod.IsLibrary}");
-            if (qmod.PackageId != null && qmod.PackageId != CoreService.coreVars.currentApp && _modManager.otherValidPackageIds.Contains(qmod.PackageId))
+            if (qmod.PackageId != null && qmod.PackageId != CoreService.coreVars.currentApp && !_modManager.otherValidPackageIds.Contains(qmod.PackageId))
             {
                 string msg =
                     $"Mod is intended for app {qmod.PackageId}, but {CoreService.coreVars.currentApp} is selected";
