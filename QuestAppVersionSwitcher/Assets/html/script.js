@@ -577,7 +577,7 @@ function ConvertImageToPNG(image) {
             canvas.width = img.naturalWidth;
             canvas.height = img.naturalHeight;
             const ctx = canvas.getContext("2d");
-            ctx?.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0);
             canvas.toBlob((blob) => {
                 if (!blob) {
                     reject("Failed to convert image to png");
