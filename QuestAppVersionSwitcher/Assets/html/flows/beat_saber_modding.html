@@ -81,7 +81,7 @@
     </div>
     <div id="downgradeDowngrade">
         <p>
-            Your current Beat Saber version is <code class="bsVersion"></code>. This version does not support mods yet.
+            Your current Beat Saber version is <code class="bsVersion"></code>. This version does not support mods yet or is not the latest moddable version.
             <br>
             You can downgrade your game to <code class="supportedBsVersion"></code> to use mods.
             <br>
@@ -115,6 +115,10 @@
     <br>
     <br>
     <button style="font-size: .7em;" onclick="ModSettingsDowngradedGame()"><i>Open modding settings</i></button>
+</div>
+<div class="content hidden" id="offline">
+    <h1>It looks like you're offline!</h1>
+    <p>Please enable WiFi and restart QuestAppVersionSwitcher to continue.</p>
 </div>
 <div style="position: fixed; bottom: 10px; left: 10px;">
     <button id="showSupportButton" onclick="ShowSupport()">Help</button>
@@ -467,7 +471,10 @@
                 CheckDowngrade()
             } else {
                 UpdateSupportedBeatSaberVersions().then(() => {
-                    if(SupportedBeatSaberVersions.includes(moddedStatus.version)) {
+                    if(SupportedBeatSaberVersions.length <= 0) {
+                        // OH NO; USER IS OFFLINE
+                        OpenTab("offline")
+                    } else if(SupportedBeatSaberVersions[0] == moddedStatus.version) {
                         // Continue with modding
                         
                         if(moddedStatus.isPatched) {
@@ -499,7 +506,10 @@
                 SupportedBeatSaberVersions.sort()
                 SupportedBeatSaberVersions.reverse()
                 resolve()
-            }))
+            })).catch(() => {
+                SupportedBeatSaberVersions = []
+                resolve()
+            })
         })
     }
     function Start() {
