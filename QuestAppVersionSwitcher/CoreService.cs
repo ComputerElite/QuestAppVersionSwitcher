@@ -61,6 +61,7 @@ namespace QuestAppVersionSwitcher.Core
             if (!started)
             {
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
+                File.WriteAllText(coreVars.QAVSDir + ".nomedia", "");
                 Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
                 Logger.Log("\n\n\nQAVS Version: " + version + " starting up...\n\n\n");
                 ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
