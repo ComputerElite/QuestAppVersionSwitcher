@@ -68,6 +68,11 @@ namespace QuestAppVersionSwitcher
                 // redirect to oculus page
                 view.LoadUrl("https://developer.oculus.com/manage");
             }
+            if (url.ToLower().StartsWith("https://auth.meta.com/language"))
+            {
+                // redirect to oculus page
+                view.LoadUrl("https://auth.meta.com/settings");
+            }
         }
 
         public static Dictionary<string, string> headers = new Dictionary<string, string>

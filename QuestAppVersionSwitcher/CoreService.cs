@@ -3,15 +3,17 @@ using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Mods;
 using System;
-using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
 using Android.OS;
+using Android.Systems;
 using Android.Views;
 using AndroidX.Activity.Result;
 using ComputerUtils.Android;
+using Java.IO;
 using Newtonsoft.Json;
+using File = System.IO.File;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Object = Java.Lang.Object;
 
@@ -56,7 +58,6 @@ namespace QuestAppVersionSwitcher.Core
             
             // Accept every ssl certificate, may be a security risk but it's the only way to get the mod list (CoPilot)
             Logger.displayLogInConsole = true;
-            
             // Create all directories and files
             if (!started)
             {
@@ -64,6 +65,7 @@ namespace QuestAppVersionSwitcher.Core
                 File.WriteAllText(coreVars.QAVSDir + ".nomedia", "");
                 Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");
                 Logger.Log("\n\n\nQAVS Version: " + version + " starting up...\n\n\n");
+                Logger.Log(Android.OS.Build.VERSION.Incremental);
                 ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(delegate { return true; });
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSBackupDir);
                 FileManager.RecreateDirectoryIfExisting(coreVars.QAVSTmpDowngradeDir);
