@@ -2,6 +2,7 @@
 using System.IO;
 using Android.Webkit;
 using ComputerUtils.Android;
+using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Core;
 
 namespace QuestAppVersionSwitcher
@@ -13,10 +14,10 @@ namespace QuestAppVersionSwitcher
 
         public string injectedJs = "";
         private bool isLoggingOut = false;
-        
         // Grab token
         public override void OnPageFinished(WebView view, string url)
         {
+            Logger.Log("WebView on page finished: " + url.Split('?')[0]);
             CookieManager.Instance.Flush();
             if(!url.ToLower().Contains("localhost") && !url.ToLower().StartsWith("https://auth.meta.com") && !url.ToLower().Contains("http://127.0.0.1"))
             {
@@ -71,7 +72,7 @@ namespace QuestAppVersionSwitcher
             if (url.ToLower().StartsWith("https://auth.meta.com/language"))
             {
                 // redirect to oculus page
-                view.LoadUrl("https://auth.meta.com/settings");
+                view.LoadUrl("https://auth.meta.com/settings/account/");
             }
         }
 
