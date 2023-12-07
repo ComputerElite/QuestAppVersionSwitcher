@@ -18,13 +18,13 @@ namespace QuestAppVersionSwitcher
 {
     public class GameDownloadManager
     {
-        public string packageName { get; set; } = "";
-        public string version { get; set; } = "";
-        public string gameName { get; set; } = "";
-        public long filesToDownload { get; set; } = 0;
-        public long filesDownloaded { get; set; } = 0;
+        public virtual string packageName { get; set; } = "";
+        public virtual string version { get; set; } = "";
+        public virtual string gameName { get; set; } = "";
+        public virtual long filesToDownload { get; set; } = 0;
+        public virtual long filesDownloaded { get; set; } = 0;
 
-        public double progress
+        public virtual double progress
         {
             get
             {
@@ -33,22 +33,22 @@ namespace QuestAppVersionSwitcher
             }
         }
 
-        public string progressString
+        public virtual string progressString
         {
             get
             {
                 return String.Format("{0:0.#}", progress * 100) + "%";
             }
         }
-        public string id { get; set; } = "";
-        public string status { get; set; } = "";
-        public string textColor { get; set; } = "#FFFFFF";
-        public string backupName { get; set; } = "";
+        public virtual string id { get; set; } = "";
+        public virtual string status { get; set; } = "";
+        public virtual string textColor { get; set; } = "#FFFFFF";
+        public virtual string backupName { get; set; } = "";
 
-        public long totalBytes { get; set; } = 0;
-        public long downloadedBytes { get; set; } = 0;
-        public long eTASeconds { get; set; } = 0;
-        public long speed { get; set; } = 0;
+        public virtual long totalBytes { get; set; } = 0;
+        public virtual long downloadedBytes { get; set; } = 0;
+        public virtual long eTASeconds { get; set; } = 0;
+        public virtual long speed { get; set; } = 0;
 
         public string speedString
         {
@@ -83,23 +83,27 @@ namespace QuestAppVersionSwitcher
 
         private long downloadedFilesTotalBytes = 0;
         
-        public List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
-        public List<ObbEntry> obbsToDo { get; set; } = new List<ObbEntry>();
-        public List<ObbEntry> allObbs { get; set; } = new List<ObbEntry>();
+        public virtual List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
+        public virtual List<ObbEntry> obbsToDo { get; set; } = new List<ObbEntry>();
+        public virtual List<ObbEntry> allObbs { get; set; } = new List<ObbEntry>();
         [JsonIgnore]
         public DownloadRequest request = null;
         [JsonIgnore]
         public Thread updateThread = null;
-        public bool canceled { get; set; } = false;
-        public bool error { get; set; } = false;
-        public bool entitlementError { get; set; } = false;
-        public bool done { get; set; } = false;
-        public int maxConcurrentDownloads { get; set; } = 1;
-        public int maxConcurrentConnections { get; set; } = 10;
+        public virtual bool canceled { get; set; } = false;
+        public virtual bool error { get; set; } = false;
+        public virtual bool entitlementError { get; set; } = false;
+        public virtual bool done { get; set; } = false;
+        public virtual int maxConcurrentDownloads { get; set; } = 1;
+        public virtual int maxConcurrentConnections { get; set; } = 10;
 
         public GameDownloadManager(DownloadRequest r)
         {
             request = r;
+        }
+        
+        public GameDownloadManager()
+        {
         }
 
         public bool HasEntitlementFor(string id)

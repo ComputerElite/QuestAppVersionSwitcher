@@ -38,6 +38,7 @@ using ComputerUtils.Updating;
 using Fleck;
 using Java.Util;
 using Newtonsoft.Json;
+using QuestAppVersionSwitcher.DiffDowngrading;
 using QuestPatcher.Zip;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
@@ -150,6 +151,31 @@ namespace QuestAppVersionSwitcher
                 clients.Remove(socket);
             };
             wsServer.StartServer(CoreService.coreVars.wsPort);
+            server.AddRoute("GET", "/api/currentsha256", serverRequest =>
+            {
+                string apkLoc = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
+                byte[] hash;
+                using (FileStream fileStream = File.OpenRead(apkLoc))
+                {
+                    using (SHA256 sha256 = SHA256.Create())
+                    {
+                        hash = sha256.ComputeHash(fileStream);
+                    }
+                }
+                serverRequest.SendString(GenericResponse.GetResponse(BitConverter.ToString(hash).Replace("-", "").ToLower(), true), "application/json");
+                return true;
+            });
+            server.AddRoute("POST", "/api/downloaddiff", serverRequest =>
+            {
+                DiffDownloadRequest r = JsonSerializer.Deserialize<DiffDownloadRequest>(serverRequest.bodyString);
+
+                DiffDowngrader gdm = new DiffDowngrader(r);
+                gameDownloadManagers.Add(gdm);
+                gdm.StartDownload();
+                ChangeApp(gdm.packageName);
+                serverRequest.SendString(GenericResponse.GetResponse("Downloading!", true), "application/json");
+                return true;
+            });
             server.AddRoute("GET", "/api/proxy", request =>
             {
                 HttpWebRequest r = new HttpWebRequest(new Uri(request.queryString.Get("url")));
