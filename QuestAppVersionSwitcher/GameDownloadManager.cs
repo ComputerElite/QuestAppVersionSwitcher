@@ -244,14 +244,6 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.BroadcastDownloads(true);
             string backupDir = CoreService.coreVars.QAVSBackupDir + this.packageName + "/" + this.backupName + "/";
             BackupInfo info = BackupManager.GetBackupInfo(backupDir, true); // Populate info.json correctly
-            CoreService.coreVars.downloadedApps.RemoveAll(x => x.binaryId == request.binaryId);
-            CoreService.coreVars.downloadedApps.Add(new DownloadedApp
-            {
-                apkSHA256 = info.apkSHA256,
-                package = this.packageName,
-                version = this.version,
-                binaryId = request.binaryId
-            });
             CoreService.coreVars.Save();
         }
 

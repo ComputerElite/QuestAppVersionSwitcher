@@ -153,6 +153,11 @@ namespace QuestAppVersionSwitcher
             wsServer.StartServer(CoreService.coreVars.wsPort);
             server.AddRoute("GET", "/api/currentsha256", serverRequest =>
             {
+                if (AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                {
+                    serverRequest.SendString(GenericResponse.GetResponse("", true), "application/json");
+                    return true;
+                }
                 string apkLoc = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
                 byte[] hash;
                 using (FileStream fileStream = File.OpenRead(apkLoc))

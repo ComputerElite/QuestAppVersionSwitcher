@@ -103,7 +103,7 @@ namespace QuestAppVersionSwitcher
         {
             get
             {
-                return CoreService.coreVars.downloadedApps.Any(x => x.apkSHA256 == apkSHA256);
+                return backupName.EndsWith("_Downgraded");
             }
         }
     }
