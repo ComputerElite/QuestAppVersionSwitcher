@@ -130,7 +130,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
 
         public void Done()
         {
-            status = "Download completed. Applying diff patch to current apk";
+            status = "Download completed. Applying diff patch to current apk. Please wait up to 5 minutes.";
             UpdateManagersAndProgress();
             QAVSWebserver.BroadcastDownloads(true);
             string backupDir = CoreService.coreVars.QAVSBackupDir + this.packageName + "/" + this.backupName + "/";
