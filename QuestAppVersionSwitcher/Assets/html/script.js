@@ -17,7 +17,7 @@ const browser = document.getElementById("browser")
 const toastsE = document.getElementById("toasts")
 ReloadDowngradeIFrame();
 function ReloadDowngradeIFrame() {
-    document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
+    //document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 }
 // connect to websocket one port higher than the server
 var socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
