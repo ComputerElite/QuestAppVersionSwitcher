@@ -773,19 +773,7 @@ setInterval(() => {
 }, 5000)
 
 function TokenUIUpdate() {
-    fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
-        res.json().then(res => {
-            if(res.msg == "2") {
-                // Logged in
-                document.getElementById("loggedInMsg").style.visibility = "visible"
-                document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
-            } else {
-                // Not logged in
-                document.getElementById("loggedInMsg").style.visibility = "hidden"
-                document.getElementById("downgradeLoginMsg").style.visibility = "visible"
-            }
-        })
-    })
+    console.log("TokenUIUpdate removed due to no need for it rn")
 }
 
 var firstConfigFetch = true;

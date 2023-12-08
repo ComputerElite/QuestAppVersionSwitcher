@@ -153,7 +153,7 @@ namespace QuestAppVersionSwitcher
             wsServer.StartServer(CoreService.coreVars.wsPort);
             server.AddRoute("GET", "/api/currentsha256", serverRequest =>
             {
-                if (AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
+                if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
                 {
                     serverRequest.SendString(GenericResponse.GetResponse("", true), "application/json");
                     return true;
