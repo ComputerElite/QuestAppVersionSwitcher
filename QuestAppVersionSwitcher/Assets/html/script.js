@@ -814,7 +814,7 @@ function UpdateUI(closeLists = false) {
                             }
                             // Also show mod this version button if backup is not modded and has an apk
                             document.getElementById("backupList").innerHTML +=
-                                `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.backupName} (${backup.backupSizeString}) ${extra}</div>`
+                                `<div class="listItem${backup.backupName == selectedBackup ? " listItemSelected" : ""}" value="${backup.backupName}">${backup.isCorrupted ? `<b style="color: #FF0000">CORRUPTED </b>` : ``} ${backup.backupName} (${backup.backupSizeString}) ${extra}</div>`
                         })
                     }
                     if (document.getElementById("backupList").innerHTML == "") document.getElementById("backupList").innerHTML = `<div class="listItem" value="">No Backups</div>`

@@ -10,6 +10,7 @@ using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
+using Exception = Java.Lang.Exception;
 
 namespace QuestAppVersionSwitcher
 {
@@ -38,13 +39,18 @@ namespace QuestAppVersionSwitcher
             info.containsApk = File.Exists(pathWithoutSlash + "/app.apk");
             if (info.containsApk)
             {
-                
-                using (ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk"))
+                try
                 {
+                    ZipArchive apk = ZipFile.OpenRead(pathWithoutSlash + "/app.apk");
                     PatchingStatus s = PatchingManager.GetPatchingStatus(apk);
                     info.gameVersion = s.version;
                     info.isPatchedApk = s.isPatched;
                     info.moddedJson = PatchingManager.GetModdedJson(apk);
+                    apk.Dispose();
+                }
+                catch (InvalidDataException e)
+                {
+                    info.isCorrupted = true;
                 }
                 // Calculate SHA 256 of apk file
                 /*
@@ -86,6 +92,7 @@ namespace QuestAppVersionSwitcher
     
     public class BackupInfo
     {
+        public bool isCorrupted { get; set; } = false;
         public BackupInfoVersion BackupInfoVersion { get; set; } = BackupInfoVersion.V6;
         public string backupName { get; set; } = "";
         public string backupLocation { get; set; } = "";
