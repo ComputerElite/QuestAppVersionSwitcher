@@ -277,6 +277,11 @@ body {
     background-color: #000000EE;
 }
 
+.downgradesList {
+    display: flex;
+    flex-direction: column;
+}
+
 .menuContainer {
     background-color: #414141;
     width: 100%;
@@ -597,6 +602,26 @@ iframe {
     width: fit-content;
     overflow-y: scroll;
     z-index: 5;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #1F1F1F;
+    border-radius: 10px;
+}
+
+th {
+    text-align: left;
+    padding: 10px;
+}
+
+tr {
+    border-bottom: 1px solid #FFFFFF;
+}
+
+td {
+    padding: 10px;
 }
 
 .listContainer {

@@ -17,7 +17,7 @@
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
             <div class="menuItem" section="downgrade">Downgrade
-                <div class="button" id="reloadDowngradeIframe" onclick="ReloadDowngradeIFrame()">Reload</div></div>
+                <div class="button" id="reloadDowngradeIframe" onclick="UpdateDowngrades()">Reload</div></div>
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
             <div class="menuItem" section="mods" id="modsButton">Installed Mods</div>
@@ -259,11 +259,21 @@
                     <label><input type="checkbox" id="appdata" value="only backup app data" style="width: auto;">Only backup app data</label>
                     <div id="backupTextBox" class="textBox"></div>
                 </div>
-            </div>y
-            <div class="contentItem hidden" style="padding: 0px; position: relative" id="downgrade" style="padding: 0px;">
-                <h2>Available downgrades</h2>
-                <div class="infiniteList" id="downgradeList"></div>
-                <h1>This is ToDo</h1>
+            </div>
+            <div class="contentItem hidden" style="position: relative" id="downgrade">
+                <h3>Compatible downgrades for <div class="inline packageName"></div></h3>
+                <div id="currentVersionDowngrade" class="inline"></div>
+                <br>
+                <table id="compatibleDowngrades">
+                </table>
+                <br>
+                <br>
+                <h3>Downgrades available if you install other versions</h3>
+                These versions can only be downgraded to once you install the version shown at the left before.
+                <table id="availableDowngrades">
+
+                </table>
+            
             </div>
             <div class="contentItem hidden" id="download">
                 <h2>Game Downloads</h2>

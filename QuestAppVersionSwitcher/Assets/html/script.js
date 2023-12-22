@@ -32,6 +32,99 @@ socket.onclose = function (e) {
     // reconnect
     socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
 }
+setTimeout(() => {
+    UpdateDowngrades()
+}, 2500)
+
+function DownloadDowngrade(package, sourceSha, targetSha, targetVersion) {
+    fetch("/api/downloaddiff", {
+        method: "POST", body: JSON.stringify({
+            packageName: package,
+            sourceSha: sourceSha,
+            targetSha: targetSha,
+            targetVersion: targetVersion
+        })
+    })
+    OpenTab("download")
+}
+function UpdateDowngrades() {
+    document.getElementById("compatibleDowngrades").innerHTML = `Loading downgrades${squareLoader}`
+    fetch(`https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json`).then(res => res.json().then(res => {
+        
+        document.getElementById("compatibleDowngrades").innerHTML = `Checking compatibility. This may take 2 minutes${squareLoader}`
+        fetch(`/api/currentsha256`).then(s => s.json().then(s => {
+            var sha = s.msg
+            var compatible = []
+            var available = []
+            for(const version of res.versions) {
+                if(version.appid == config.currentApp) {
+                    if(version.SSHA256 == sha) {
+                        compatible.push(version)
+                    } else {
+                        available.push(version)
+                    }
+                }
+            }
+            var html = ""
+            if(compatible.length > 0) {
+                html = `<tr>
+                            <th>Version</th>
+                            <th></th>
+                            <th>Info</th>
+                        </tr>`
+                for(const version of compatible) {
+                    html += `
+                    <tr>
+                        <td>${version.TV}</td>
+                        <td><div onclick="DownloadDowngrade('${config.currentApp}', '${version.SSHA256}', '${version.TSHA256}', '${version.TV}')" class="button">Download</div></td>
+                        <td>${version.Annotation ? version.Annotation : "None"}</td>
+                    </tr>`
+                }
+            } else {
+                html = "No compatible versions found for currently installed version. Please refer to below"
+            }
+            document.getElementById("compatibleDowngrades").innerHTML = html
+
+            if(available.length > 0) {
+                html = `<tr>
+                            <th>Needed Version</th>
+                            <th>Target Version</th>
+                            <th>Info</th>
+                        </tr>`
+                for(const version of available) {
+                    html += `
+                    <tr>
+                        <td>${version.SV}</td>
+                        <td>${version.TV}</td>
+                        <td>${version.Annotation ? version.Annotation : "None"}</td>
+                    </tr>`
+                }
+            } else {
+                html = "No other downgrades available for this game."
+            }
+            document.getElementById("availableDowngrades").innerHTML = html
+            
+        }))
+    })).catch(e => {
+        document.getElementById("compatibleDowngrades").innerHTML = `<span style="color: #EE0000;">Error loading downgrades</span>`
+    })
+    fetch(`/api/patching/getmodstatus`).then(res => res.json().then(res => {
+        document.getElementById("currentVersionDowngrade").innerHTML = `Current installed version: ${res.version} ${res.isPatched ? "(Patched)" : ""}`
+    }))
+}
+
+function FormatBytes(bytes, decimals = 2) {
+    if (bytes > 1099511627776) return (input / 1099511627776.0).toFixed(decimals) + " TB";
+    // GB
+    else if (bytes > 1073741824) return (input / 1073741824.0).toFixed(decimals) + " GB";
+    // MB
+    else if (bytes > 1048576) return (input / 1048576.0).toFixed(decimals) + " MB";
+    // KB
+    else if (bytes > 1024) return (input / 1024.0).toFixed(decimals) + " KB";
+    // Bytes
+    else return bytes + " Bytes";
+}
+    
 
 socket.onmessage = function (e) {
     var data = JSON.parse(e.data);
