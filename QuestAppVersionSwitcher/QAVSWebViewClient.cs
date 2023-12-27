@@ -125,37 +125,18 @@ namespace QuestAppVersionSwitcher
             return headers;
         }
         
-        /*
+        
         public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
         {
-            bool changed = false;
-            Logger.Log(request.Url.ToString());
-            if (request.RequestHeaders != null)
+            if (view.Url.StartsWith("oculus://"))
             {
-                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-                {
-                    Logger.Log("Header: " + p.Key + " - " + p.Value);
-                    request.RequestHeaders[p.Key] = p.Value.Replace("require-trusted-types-for 'script';", "");
-                }
+                view.LoadUrl("https://127.0.0.1:" + CoreService.coreVars.serverPort + "?showprocessing=true");
+                string token = QAVSWebserver.loginClient.UriCallback(view.Url);
+                view.LoadUrl("https://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
             }
-            if (request.RequestHeaders != null)
-            {
-                foreach (KeyValuePair<string, string> p in request.RequestHeaders)
-                {
-                    if (p.Value.Contains(toRemove))
-                    {
-                        changed = true;
-                        request.RequestHeaders[p.Key] = p.Value.Replace(toRemove, "");
-                    }
-                }
-
-                if (changed)
-                    if (request.Url != null)
-                        view.LoadUrl(request.Url.ToString(), request.RequestHeaders);
-            }
-
-            return changed;
+            
+            return base.ShouldOverrideUrlLoading(view, request);
         }
-        */
+        
 	}
 }

@@ -773,6 +773,10 @@ function CheckStartParams() {
     var backuptopatchParam = params.get("backuptopatch")
     afterRestore = params.get("afterrestore")
     afterDownload = params.get("afterdownload")
+    
+    if(params.get("startlogin")) {
+        StartLogin();
+    }
 
     if(params.get("token")) {
         //OpenTokenPasswordPopup()
@@ -1639,11 +1643,19 @@ document.getElementById("abortLogin").onclick = () => {
 }
 document.getElementById("confirmLogin").onclick = () => {
     TextBoxGood("step9box", "One sec...")
-    location = oculusLink
+    StartLogin();
 }
+function StartLogin() {
+    fetch("/api/login/start", {
+        method: "POST"
+    }).then(res => res.json().then(res => {
+        window.open(res.url)
+    }))
+}
+
 document.getElementById("login2").onclick = () => {
     TextBoxGood("step13box", "One sec...")
-    location = oculusLink
+    StartLogin();
 }
 document.getElementById("abortLogin").onclick = () => {
     CloseGetPasswordPopup()

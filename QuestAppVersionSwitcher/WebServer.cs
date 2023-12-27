@@ -38,6 +38,7 @@ using ComputerUtils.Updating;
 using Fleck;
 using Java.Util;
 using Newtonsoft.Json;
+using OculusGraphQLApiLib.GraphQL;
 using QuestAppVersionSwitcher.DiffDowngrading;
 using QuestPatcher.Zip;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
@@ -134,6 +135,7 @@ namespace QuestAppVersionSwitcher
         
         public static List<IWebSocketConnection> clients = new List<IWebSocketConnection>();
         public static BackupStatus backupStatus = new BackupStatus();
+        public static LoginClient loginClient = new LoginClient();
         
         public void Start()
         {
@@ -151,6 +153,11 @@ namespace QuestAppVersionSwitcher
                 clients.Remove(socket);
             };
             wsServer.StartServer(CoreService.coreVars.wsPort);
+            server.AddRoute("POST", "/api/login/start", request =>
+            {
+                request.SendString(JsonSerializer.Serialize(loginClient.StartLogin()), "application/json");
+                return true;
+            });
             server.AddRoute("GET", "/api/currentsha256", serverRequest =>
             {
                 if (!AndroidService.IsPackageInstalled(CoreService.coreVars.currentApp))
