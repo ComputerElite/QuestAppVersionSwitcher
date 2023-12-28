@@ -137,6 +137,14 @@ namespace QuestAppVersionSwitcher
         public static BackupStatus backupStatus = new BackupStatus();
         public static LoginClient loginClient = new LoginClient();
         
+        public static void SaveToken(string token)
+        {
+            string password = AndroidService.GetDeviceID();
+            CoreService.coreVars.token = PasswordEncryption.Encrypt(token, password);
+            CoreService.coreVars.password = GetSHA256OfString(password);
+            CoreService.coreVars.Save();
+        }
+        
         public void Start()
         {
             wsServer.OnMessage = (socket, msg) =>
@@ -551,13 +559,13 @@ namespace QuestAppVersionSwitcher
             });
 			server.AddRoute("GET", "/api/android/installedappsandbackups", serverRequest =>
             {
-                List<App> apps = AndroidService.GetInstalledApps();
+                List<AndroidApp> apps = AndroidService.GetInstalledApps();
 
                 foreach (string f in Directory.GetDirectories(CoreService.coreVars.QAVSBackupDir))
                 {
                     if (apps.FirstOrDefault(x => x.PackageName == Path.GetFileName(f)) == null)
                     {
-                        apps.Add(new App("unknown", Path.GetFileName(f)));
+                        apps.Add(new AndroidApp("unknown", Path.GetFileName(f)));
                     }
                 }
                 serverRequest.SendString(JsonSerializer.Serialize(apps), "application/json");

@@ -189,25 +189,37 @@ namespace QuestAppVersionSwitcher
         public static bool AttemptDownloadUnstrippedUnity(string version)
         {
             Logger.Log("Checking index for unstrippedUnity");
-            WebClient c = new WebClient();
-            string libUnityIndexString = c.DownloadString("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/index.json");
-            Dictionary<string, Dictionary<string, string>> index = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(libUnityIndexString);
-            string appId = CoreService.coreVars.currentApp;
-            if (index.ContainsKey(appId))
+            try
             {
-                if (index[appId].ContainsKey(version))
+                WebClient c = new WebClient();
+                string libUnityIndexString =
+                    c.DownloadString(
+                        "https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/index.json");
+                Dictionary<string, Dictionary<string, string>> index =
+                    JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(libUnityIndexString);
+                string appId = CoreService.coreVars.currentApp;
+                if (index.ContainsKey(appId))
                 {
-                    c.DownloadFile("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/versions/" + index[appId][version] + ".so", CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so");
-                    return true;
+                    if (index[appId].ContainsKey(version))
+                    {
+                        c.DownloadFile(
+                            "https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/versions/" +
+                            index[appId][version] + ".so", CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so");
+                        return true;
+                    }
+                    else
+                    {
+                        Logger.Log("No unstripped libunity found. It does exist for another version of the app");
+                    }
                 }
                 else
                 {
-                    Logger.Log("No unstripped libunity found. It does exist for another version of the app");
+                    Logger.Log("No unstripped libunity found.", LoggingType.Warning);
                 }
             }
-            else
+            catch (Exception e)
             {
-                Logger.Log("No unstripped libunity found.", LoggingType.Warning);
+                Logger.Log("Failed to check index for unstripped libunity: " + e, LoggingType.Warning);
             }
             return false;
         }

@@ -135,7 +135,8 @@ namespace QuestAppVersionSwitcher
                 try
                 {
                     string token = QAVSWebserver.loginClient.UriCallback(request.Url.ToString());
-                    view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
+                    QAVSWebserver.SaveToken(token);
+                    view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loginsuccess=true");
                 }
                 catch (Exception e)
                 {

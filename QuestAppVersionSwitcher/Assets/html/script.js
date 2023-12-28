@@ -797,6 +797,12 @@ function CheckStartParams() {
         GotoStep(18)
         document.getElementById("loginerror").innerText = params.get("loginerror")
     }
+    
+    if(params.get("loginsuccess")) {
+        alert("logged in")
+        location = location.href.split('?')[0]
+        return
+    }
 
     if(params.get("token")) {
         //OpenTokenPasswordPopup()
