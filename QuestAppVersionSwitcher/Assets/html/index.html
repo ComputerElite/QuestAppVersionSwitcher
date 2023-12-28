@@ -13,7 +13,6 @@
                 <div style="font-size: 80%; width: 100%;">
                     Managing <div class="inline packageName">some game</div>
                 </div>
-                <div class="button" style="margin-top: 5px;" onclick="LaunchApp()">Launch Game</div>
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
             <div class="menuItem" section="downgrade">Downgrade
@@ -165,7 +164,6 @@
             <div class="contentItem hidden" id="mods">
                 <div class="quest3hide">
                     <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
-                    <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
                     <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
                     <div class="button topButtonMargin" style="font-size: 1.5rem" onclick="OpenTab('getMods')">Get mods</div>
                     <div id="copyOf"></div>
@@ -205,8 +203,7 @@
                 </div>
             </div>
             <div class="contentItem hidden" id="cosmetics">
-
-                <div class="buttonContainer"><div class="button" onclick="LaunchApp()">Launch Game</div></div>
+                
                 <div class="buttonContainer"><div class="button" id="installCosmeticButton" onclick="InstallCosmetic()">Install a Cosmetic from Disk</div></div>
                 <h2>Cosmetics type</h2>
                 <select id="cosmeticsType">
