@@ -163,34 +163,45 @@
                 
             </div>
             <div class="contentItem hidden" id="mods">
-                <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
-                <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
-                <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
-                <div class="button topButtonMargin" style="font-size: 1.5rem" onclick="OpenTab('getMods')">Get mods</div>
-                <div id="copyOf"></div>
-                <div id="operations">
-                    <h2 id="ongoingCount">Ongoing operations:</h2>
-                    <div class="loaderContainer" style="margin-bottom: 10px;">
-                        <div class="loaderBarRight"></div>
-                        <div class="loaderBarLeft"></div>
-                        <div class="loaderBarTop"></div>
-                        <div class="loaderBarBottom"></div>
-                        <div class="loaderSpinningCircle"></div>
-                        <div class="loaderMiddleCircle"></div>
-                        <div class="loaderCircleHole"></div>
-                        <div class="loaderSquare"></div>
+                <div class="quest3hide">
+                    <b>Please note that mod installation is in early access and there may be issues. If you experience issues please report them on the OculusDB Discord Server at <code>discord.gg/zwRfHQN2UY</code></b>
+                    <div class="button topMargin" onclick="LaunchApp()">Launch Game</div>
+                    <div class="button topButtonMargin" id="installModButton" onclick="UploadMod()">Install a Mod from Disk</div>
+                    <div class="button topButtonMargin" style="font-size: 1.5rem" onclick="OpenTab('getMods')">Get mods</div>
+                    <div id="copyOf"></div>
+                    <div id="operations">
+                        <h2 id="ongoingCount">Ongoing operations:</h2>
+                        <div class="loaderContainer" style="margin-bottom: 10px;">
+                            <div class="loaderBarRight"></div>
+                            <div class="loaderBarLeft"></div>
+                            <div class="loaderBarTop"></div>
+                            <div class="loaderBarBottom"></div>
+                            <div class="loaderSpinningCircle"></div>
+                            <div class="loaderMiddleCircle"></div>
+                            <div class="loaderCircleHole"></div>
+                            <div class="loaderSquare"></div>
+                        </div>
+                        <div class="infiniteList" id="operationsList">
+                            ${operations}
+                        </div>
                     </div>
-                    <div class="infiniteList" id="operationsList">
-                        ${operations}
+                    <h2>Installed Mods</h2>
+                    <div class="infiniteList" id="modsList">
+
+                    </div>
+                    <h2>Installed Libraries</h2>
+                    <div class="infiniteList" id="libsList">
+
                     </div>
                 </div>
-                <h2>Installed Mods</h2>
-                <div class="infiniteList" id="modsList">
-
-                </div>
-                <h2>Installed Libraries</h2>
-                <div class="infiniteList" id="libsList">
-
+                <div class="quest3show">
+                    <h1>QAVS can currently not manage mods for Quest 3!</h1>
+                    <p>
+                        QAVS downgraded and modded Beat Saber for you. However it can not install mods yet. The modding team is working hard to make that possible.
+                        <br>
+                        To install mods you can install QuestPatcher on your PC or Mac to manage mods.
+                        <br>You can ask for help in the #quest-help channel at discord.gg/beatsabermods (Discord Server).
+                    </p>
                 </div>
             </div>
             <div class="contentItem hidden" id="cosmetics">
@@ -207,11 +218,23 @@
                 </div>
             </div>
             <div class="contentItem hidden" id="getMods">
-                <h2>You can download mods and cosmetics from the following sites. Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game</h2>
-                <div style="display: flex; flex-direction: column;" class="buttonsContainer">
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}&modloader=${GetModLoaderName()}`)">Open Beat Saber Mods page</div>
-                    <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}&modloader=${GetModLoaderName()}`)">Open website hub</div>
-                    <div class="button labelMargin" onclick="OpenSite(`https://www.google.com/search?q=computerelite`)">Open Google</div>
+                <div class="quest3hide">
+                    <h2>You can download mods and cosmetics from the following sites. Only QMods are supported by QuestAppVersionSwitcher + any cosmetics formats of the currently selected game</h2>
+                    <div style="display: flex; flex-direction: column;" class="buttonsContainer">
+                        <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Beat_Saber/questmods.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}&modloader=${GetModLoaderName()}`)">Open Beat Saber Mods page</div>
+                        <div class="button labelMargin" onclick="OpenSite(`https://computerelite.github.io/tools/Oculus/QAVSHome.html?version=${currentGameVersion}&isqavs=true&port=${GetPort()}&ismodded=${isGamePatched}&modloader=${GetModLoaderName()}`)">Open website hub</div>
+                        <div class="button labelMargin" onclick="OpenSite(`https://www.google.com/search?q=computerelite`)">Open Google</div>
+                    </div>
+    
+                </div>
+                <div class="quest3show">
+                    <h1>QAVS can currently not manage mods for Quest 3!</h1>
+                    <p>
+                        QAVS downgraded and modded Beat Saber for you. However it can not install mods yet. The modding team is working hard to make that possible.
+                        <br>
+                        To install mods you can install QuestPatcher on your PC or Mac to manage mods.
+                        <br>You can ask for help in the #quest-help channel at discord.gg/beatsabermods (Discord Server).
+                    </p>
                 </div>
             </div>
 

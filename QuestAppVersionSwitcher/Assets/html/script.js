@@ -153,13 +153,14 @@ function FetchModLoader() {
 
 function UpdateModLoader(data) {
     modloader = data.modloader
+    UpdateInstalledModsQuest3Hint()
     if(lastCheckedAccessForGame != config.currentApp) {
         lastCheckedAccessForGame = config.currentApp
         if(modloader == 0) { // we only need access to android dir for QuestLoader
             fetch("/api/gotaccess?package=" + config.currentApp).then(res => {
                 res.json().then(j => {
                     if (!j.gotAccess && !params.get("noaccesscheck")) {
-                        // Open need acces prompt
+                        // Open need access prompt
                         CloseGetPasswordPopup();
                         OpenRestorePopup();
                         GotoStep("12")
@@ -275,7 +276,7 @@ function GetPort() {
 document.getElementById("cancellogin2").onclick = () => {
     CloseGetPasswordPopup()
 }
-
+var device = ""
 fetch("/api/android/device").then(res => res.json().then(res => {
     if(res.sdkVersion <= 29) {
         // Android 10 and below don't need new storage perms
@@ -293,7 +294,19 @@ fetch("/api/android/device").then(res => res.json().then(res => {
         document.getElementById("installApkFromDisk").style.display = "none"
         document.getElementById("splashImageContainer").style.display = "none"
     }
+    device = res.device
+    UpdateInstalledModsQuest3Hint()
 }))
+
+function UpdateInstalledModsQuest3Hint() {
+    var isOnQuest3 = device == "eureka" && modloader == 0 // only hide mods stuff on QuestLoader
+    for(const e of document.getElementsByClassName("quest3hide")) {
+        e.style.display = isOnQuest3 ? "none" : "block"
+    }
+    for(const e of document.getElementsByClassName("quest3show")) {
+        e.style.display = isOnQuest3 ? "block" : "none"
+    }
+}
 
 function LaunchApp() {
     fetch("/api/android/launch", {

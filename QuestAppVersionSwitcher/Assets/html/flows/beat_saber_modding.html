@@ -120,9 +120,14 @@
     <h1>It looks like you're offline!</h1>
     <p>Please enable WiFi and restart QuestAppVersionSwitcher to continue.</p>
 </div>
-<div class="content hidden" id="nodowngrade">
-    <h1>Quest 3 is currently not moddable with QuestAppVersionSwitcher!</h1>
-    <p>The modding team is working hard to make Quest 3 modding work. In the meantime if you have a PC you can use QuestPatcher to mod your game. Please refer to discord.gg/beatsabermods (Discord Server) for more information.</p>
+<div class="content hidden" id="quest3">
+    <h1>QAVS can currently not manage mods for Quest 3!</h1>
+    <p>
+        QAVS downgraded and modded Beat Saber for you. However it can not install mods yet. The modding team is working hard to make that possible.
+        <br>
+        To install mods you can install QuestPatcher on your PC or Mac to manage mods.
+        <br>You can ask for help in the #quest-help channel at discord.gg/beatsabermods (Discord Server).
+    </p>
 </div>
 <div style="position: fixed; bottom: 10px; left: 10px;">
     <button id="showSupportButton" onclick="ShowSupport()">Help</button>
@@ -171,7 +176,18 @@
     </div>`
 
     if(tab) {
-        OpenTab(tab);
+        if(tab == "afterrestore") {
+            fetch(start + "/api/android/device").then(res => res.json().then(j => {
+                if (j.device == "eureka") {
+                    // Logged in
+                    OpenTab("quest3")
+                } else {
+                    OpenTab(tab)
+                }
+            }))
+        } else {
+            OpenTab(tab);
+        }
     } else {
         FirstOpen()
     }
@@ -469,43 +485,36 @@
     }
 
     function FirstOpen() {
-        fetch(start + "/api/android/device").then(res => res.json().then(j => {
-            if(j.device == "eureka") {
-                // Logged in
-                OpenTab("nodowngrade")
+        // Not logged in
+        UpdateModdedStatus().then(() => {
+            if(!moddedStatus.isInstalled) {
+                // Downgrade
+                OpenTab("downgrade")
+                CheckDowngrade()
             } else {
-                // Not logged in
-                UpdateModdedStatus().then(() => {
-                    if(!moddedStatus.isInstalled) {
+                UpdateSupportedBeatSaberVersions().then(() => {
+                    if(SupportedBeatSaberVersions.length <= 0) {
+                        // OH NO; USER IS OFFLINE
+                        OpenTab("offline")
+                    } else if(SupportedBeatSaberVersions[0] == moddedStatus.version) {
+                        // Continue with modding
+
+                        if(moddedStatus.isPatched) {
+                            // Already modded
+                            OpenTab("alreadymodded")
+                        } else {
+                            // Not modded
+                            OpenTab("modgame")
+                            UpdateModGamePage()
+                        }
+                    } else {
                         // Downgrade
                         OpenTab("downgrade")
                         CheckDowngrade()
-                    } else {
-                        UpdateSupportedBeatSaberVersions().then(() => {
-                            if(SupportedBeatSaberVersions.length <= 0) {
-                                // OH NO; USER IS OFFLINE
-                                OpenTab("offline")
-                            } else if(SupportedBeatSaberVersions[0] == moddedStatus.version) {
-                                // Continue with modding
-
-                                if(moddedStatus.isPatched) {
-                                    // Already modded
-                                    OpenTab("alreadymodded")
-                                } else {
-                                    // Not modded
-                                    OpenTab("modgame")
-                                    UpdateModGamePage()
-                                }
-                            } else {
-                                // Downgrade
-                                OpenTab("downgrade")
-                                CheckDowngrade()
-                            }
-                        })
                     }
                 })
             }
-        }))
+        })
 
     }
 
