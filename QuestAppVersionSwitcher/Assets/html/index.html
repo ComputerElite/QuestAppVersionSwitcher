@@ -17,7 +17,7 @@
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
             <div class="menuItem" section="downgrade">Downgrade
-                <div class="button" id="reloadDowngradeIframe" onclick="UpdateDowngrades()">Reload</div></div>
+                <div class="button" id="reloadDowngradeIframe" onclick="ReloadDowngradeIFrame()">Reload</div></div>
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
             <div class="menuItem" section="mods" id="modsButton">Installed Mods</div>
@@ -261,19 +261,8 @@
                 </div>
             </div>
             <div class="contentItem hidden" style="position: relative" id="downgrade">
-                <h3>Compatible downgrades for <div class="inline packageName"></div></h3>
-                <div id="currentVersionDowngrade" class="inline"></div>
-                <br>
-                <table id="compatibleDowngrades">
-                </table>
-                <br>
-                <br>
-                <h3>Downgrades available if you install other versions</h3>
-                These versions can only be downgraded to once you install the version shown at the left before.
-                <table id="availableDowngrades">
-
-                </table>
-            
+                <b style="font-size: 4em;" id="downgradeLoginMsg">To downgrade you must first log in in the tools & options tab!</b>
+                <iframe id="downgradeframe" src=""></iframe>
             </div>
             <div class="contentItem hidden" id="download">
                 <h2>Game Downloads</h2>
@@ -700,6 +689,17 @@
                     Loading
                 </div>
                 We're processing the login. This may take a bit.
+            </div>
+            <div id="step18" class="restoreStep hidden">
+                <div class="contentHeader headerMargin">
+                    Error while logging in
+                </div>
+                <p id="loginerror"></p>
+                <div class="buttonSelectionContainer">
+                    <div class="buttonContainer buttonMargin">
+                        <div class="button" id="abort3">Close</div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="listContainer hidden" id="appListContainer">

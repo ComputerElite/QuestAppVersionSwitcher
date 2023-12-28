@@ -6,6 +6,7 @@ using System;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using Android.OS;
 using Android.Systems;
 using Android.Views;
@@ -61,6 +62,7 @@ namespace QuestAppVersionSwitcher.Core
             // Create all directories and files
             if (!started)
             {
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
                 File.WriteAllText(coreVars.QAVSDir + ".nomedia", "");
                 Logger.SetLogFile(coreVars.QAVSDir + "qavslog.log");

@@ -1187,9 +1187,9 @@ namespace QuestAppVersionSwitcher
                     serverRequest.SendString(GenericResponse.GetResponse("You got your token from the wrong place. Go to the payload tab. Don't get it from the url.", false), "application/json", 400);
                     return true;
                 }
-                if (!r.token.StartsWith("OC"))
+                if (!r.token.StartsWith("FRL"))
                 {
-                    serverRequest.SendString(GenericResponse.GetResponse("Tokens must start with 'OC'. Please get a new one", false), "application/json", 400);
+                    serverRequest.SendString(GenericResponse.GetResponse("Tokens must start with 'FRL'. Please get a new one", false), "application/json", 400);
                     return true;
                 }
                 if (r.token.Contains("|"))

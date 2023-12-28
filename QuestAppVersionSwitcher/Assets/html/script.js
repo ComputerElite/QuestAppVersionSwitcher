@@ -17,7 +17,7 @@ const browser = document.getElementById("browser")
 const toastsE = document.getElementById("toasts")
 ReloadDowngradeIFrame();
 function ReloadDowngradeIFrame() {
-    //document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
+    document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 }
 // connect to websocket one port higher than the server
 var socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
@@ -32,9 +32,6 @@ socket.onclose = function (e) {
     // reconnect
     socket = new WebSocket("ws://" + window.location.hostname + ":" + (parseInt(window.location.port) + 1) + "/");
 }
-setTimeout(() => {
-    UpdateDowngrades()
-}, 2500)
 
 function DownloadDowngrade(package, sourceSha, targetSha, targetVersion) {
     fetch("/api/downloaddiff", {
@@ -777,6 +774,15 @@ function CheckStartParams() {
     if(params.get("startlogin")) {
         StartLogin();
     }
+    if(params.get("showprocessing")) {
+        OpenRestorePopup()
+        GotoStep(17)
+    }
+    if(params.get("loginerror")) {
+        OpenRestorePopup()
+        GotoStep(18)
+        document.getElementById("loginerror").innerText = params.get("loginerror")
+    }
 
     if(params.get("token")) {
         //OpenTokenPasswordPopup()
@@ -870,7 +876,19 @@ setInterval(() => {
 }, 5000)
 
 function TokenUIUpdate() {
-    console.log("TokenUIUpdate removed due to no need for it rn")
+    fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
+        res.json().then(res => {
+            if(res.msg == "2") {
+                // Logged in
+                document.getElementById("loggedInMsg").style.visibility = "visible"
+                document.getElementById("downgradeLoginMsg").style.visibility = "hidden"
+            } else {
+                // Not logged in
+                document.getElementById("loggedInMsg").style.visibility = "hidden"
+                document.getElementById("downgradeLoginMsg").style.visibility = "visible"
+            }
+        })
+    })
 }
 
 var firstConfigFetch = true;
@@ -1189,6 +1207,7 @@ document.getElementById("changeApp2").onclick = () => ShowAppList()
 document.getElementById("changeApp3").onclick = () => ShowAppList()
 
 document.getElementById("abort").onclick = () => CloseRestorePopup()
+document.getElementById("abort3").onclick = () => CloseRestorePopup()
 
 document.getElementById("abort2").onclick = () => {
     CloseRestorePopup()

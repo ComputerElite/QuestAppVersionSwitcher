@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Android.Webkit;
 using ComputerUtils.Android;
@@ -128,11 +129,19 @@ namespace QuestAppVersionSwitcher
         
         public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
         {
-            if (view.Url.StartsWith("oculus://"))
+            if (request.Url.ToString().StartsWith("oculus://"))
             {
-                view.LoadUrl("https://127.0.0.1:" + CoreService.coreVars.serverPort + "?showprocessing=true");
-                string token = QAVSWebserver.loginClient.UriCallback(view.Url);
-                view.LoadUrl("https://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
+                view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?showprocessing=true");
+                try
+                {
+                    string token = QAVSWebserver.loginClient.UriCallback(request.Url.ToString());
+                    view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?token=" + token);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log("Error while logging in: " + e);
+                    view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loginerror=" + e);
+                }
             }
             
             return base.ShouldOverrideUrlLoading(view, request);
