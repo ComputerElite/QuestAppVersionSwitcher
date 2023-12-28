@@ -773,6 +773,7 @@ function CheckStartParams() {
     
     if(params.get("startlogin")) {
         StartLogin();
+        return
     }
     if(params.get("showprocessing")) {
         OpenRestorePopup()
