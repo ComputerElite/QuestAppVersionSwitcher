@@ -1320,7 +1320,7 @@ function AfterAPKInstall() {
                                     GotoStep("4.1")
                                 }
                             } else {
-                                
+                                GotoStep(5)
                             }
                         }
                     })
