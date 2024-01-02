@@ -13,7 +13,6 @@
                 <div style="font-size: 80%; width: 100%;">
                     Managing <div class="inline packageName">some game</div>
                 </div>
-                <div class="button" style="margin-top: 5px;" onclick="LaunchApp()">Launch Game</div>
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
             <div class="menuItem" section="downgrade">Downgrade
@@ -374,6 +373,18 @@
 
                 <div class="space">
                     <div class="contentHeader">
+                        Help
+                        <div class="contentHeaderDescription">Utilities to help debugging QuestAppVersionSwitcher</div>
+                    </div>
+                    <div class="buttonContainer">
+                        <input type="password" placeholder="Enter QuestAppVersionSwitcher password" id="logspwd" class="buttonLabel" value="" style="width: 300px;">
+                        <div class="button" id="logs">Upload logs</div>
+                        <div class="buttonLabel">ONLY do when instructed to do so. Uploads which apps you own to OculusDB for viewing by support members. <a href="https://github.com/ComputerElite/QuestAppVersionSwitcher/wiki/What-does-upload-logs-do">More info</a></div>
+                    </div>
+                    <div id="logsText" class="textBox"></div>
+                </div>
+                <div class="space">
+                    <div class="contentHeader">
                         Server control
                         <div class="contentHeaderDescription">Configure the QuestAppVersionSwitcher WebServer</div>
                     </div>
@@ -387,19 +398,6 @@
                         <div class="buttonLabel">Changes the WebServer port</div>
                     </div>
                     <div id="serverTextBox" class="textBox"></div>
-                </div>
-
-                <div class="space">
-                    <div class="contentHeader">
-                        Help
-                        <div class="contentHeaderDescription">Utilities to help debugging QuestAppVersionSwitcher</div>
-                    </div>
-                    <div class="buttonContainer">
-                        <input type="password" placeholder="Enter QuestAppVersionSwitcher password" id="logspwd" class="buttonLabel" value="" style="width: 300px;">
-                        <div class="button" id="logs">Upload logs</div>
-                        <div class="buttonLabel">ONLY do when instructed to do so. Uploads which apps you own to OculusDB for viewing by support members. <a href="https://github.com/ComputerElite/QuestAppVersionSwitcher/wiki/What-does-upload-logs-do">More info</a></div>
-                    </div>
-                    <div id="logsText" class="textBox"></div>
                 </div>
 
                 <div class="space">
