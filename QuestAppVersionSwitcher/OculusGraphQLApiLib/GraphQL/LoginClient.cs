@@ -152,7 +152,6 @@ namespace OculusGraphQLApiLib.GraphQL
     public class LoginDecryptResponse
     {
         public string access_token { get; set; } = "";
-        public long frl_account_id { get; set; } = 0;
     }
 
     public class LoginResponse
