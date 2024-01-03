@@ -139,6 +139,7 @@ namespace QuestAppVersionSwitcher
         
         public static void SaveToken(string token)
         {
+            Logger.Log("Sabing provided token", "Login");
             string password = AndroidService.GetDeviceID();
             CoreService.coreVars.token = PasswordEncryption.Encrypt(token, password);
             CoreService.coreVars.password = GetSHA256OfString(password);
@@ -163,6 +164,7 @@ namespace QuestAppVersionSwitcher
             wsServer.StartServer(CoreService.coreVars.wsPort);
             server.AddRoute("POST", "/api/login/start", request =>
             {
+                Logger.Log("Starting sso login", "Login");
                 request.SendString(JsonSerializer.Serialize(loginClient.StartLogin()), "application/json");
                 return true;
             });
@@ -1181,6 +1183,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/logout", request =>
             {
+                Logger.Log("User pressed logout, clearing token and password", "Login");
                 CoreService.coreVars.token = "";
                 CoreService.coreVars.password = "";
                 CoreService.coreVars.Save();
@@ -1210,6 +1213,7 @@ namespace QuestAppVersionSwitcher
                 {
                     r.password = AndroidService.GetDeviceID();
                 }
+                Logger.Log("User logged in manually with token", "Login");
                 CoreService.coreVars.token = PasswordEncryption.Encrypt(r.token, r.password);
                 CoreService.coreVars.password = GetSHA256OfString(r.password);
                 CoreService.coreVars.Save();

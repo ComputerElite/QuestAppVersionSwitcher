@@ -140,7 +140,7 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("Error while logging in: " + e);
+                    Logger.Log("Error while logging in: " + e, "Login");
                     view.LoadUrl("http://127.0.0.1:" + CoreService.coreVars.serverPort + "?loginerror=" + e);
                 }
             }

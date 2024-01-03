@@ -167,14 +167,14 @@ namespace QuestAppVersionSwitcher
         /// <returns></returns>
         public static DocumentFile GetAccessToFile(string dir)
         {
-            Logger.Log("Trying to get access to " + dir);
+            //Logger.Log("Trying to get access to " + dir);
             string start = "/sdcard/Android/data";
             if(dir.Contains("/Android/obb/")) start = "/sdcard/Android/obb";
             if(dir.Contains(Environment.ExternalStorageDirectory.AbsolutePath))
             {
                 dir = dir.Replace(Environment.ExternalStorageDirectory.AbsolutePath, "/sdcard");
             }
-            Logger.Log("Sanitized: " + dir);
+            //Logger.Log("Sanitized: " + dir);
 
             if (Build.VERSION.SdkInt > BuildVersionCodes.SV2)
             {
@@ -182,13 +182,13 @@ namespace QuestAppVersionSwitcher
                 start += "/" + CoreService.coreVars.currentApp;
             }
             string diff = dir.Replace(start, "");
-            Logger.Log("Start: " + start);
-            Logger.Log("Diff: " + diff);
+            //Logger.Log("Start: " + start);
+            //.Log("Diff: " + diff);
             if (diff.StartsWith("/")) diff = diff.Substring(1);
             string[] dirs = diff.Split('/');
             DocumentFile startDir = DocumentFile.FromTreeUri(AndroidCore.context, Uri.Parse(RemapPathForApi300OrAbove(start).Replace("com.android.externalstorage.documents/document/", "com.android.externalstorage.documents/tree/")));
             DocumentFile currentDir = startDir;
-            Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
+            //Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
 
             // Not sure if needed, probably remove
             if (dirs == null)
@@ -198,12 +198,12 @@ namespace QuestAppVersionSwitcher
             foreach (string dirName in dirs)
             {
                 if(dirName == "") continue;
-                Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
+                //Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
                 if (currentDir.FindFile(dirName) == null) currentDir.CreateDirectory(dirName); // Create directory if it doesn't exist
-                Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
+                //Logger.Log("Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
                 currentDir = currentDir.FindFile(dirName);
             }
-            Logger.Log("Final! Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
+            //Logger.Log("Final! Got access to " + currentDir.Name + ": " + currentDir.CanWrite());
             return currentDir;
         }
 

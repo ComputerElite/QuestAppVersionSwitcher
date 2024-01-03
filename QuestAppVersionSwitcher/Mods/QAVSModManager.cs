@@ -136,17 +136,20 @@ namespace QuestAppVersionSwitcher.Mods
                 modManager.Reset();
                 // Get modloader used
                 ModdedJson json = PatchingManager.GetModdedJson();
-                switch (json.modloaderName)
+                if (json != null)
                 {
-                    case "QuestLoader":
-                        modManager.usedModLoader = ModLoader.QuestLoader;
-                        break;
-                    case "Scotland2":
-                        modManager.usedModLoader = ModLoader.Scotland2;
-                        break;
-                    default:
-                        modManager.usedModLoader = ModLoader.QuestLoader;
-                        break;
+                    switch (json.modloaderName)
+                    {
+                        case "QuestLoader":
+                            modManager.usedModLoader = ModLoader.QuestLoader;
+                            break;
+                        case "Scotland2":
+                            modManager.usedModLoader = ModLoader.Scotland2;
+                            break;
+                        default:
+                            modManager.usedModLoader = ModLoader.QuestLoader;
+                            break;
+                    }
                 }
 
                 PatchingStatus status = PatchingManager.GetPatchingStatus(CoreService.coreVars.currentApp);

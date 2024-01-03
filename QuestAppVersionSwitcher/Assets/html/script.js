@@ -1616,8 +1616,8 @@ function Logout() {
     fetch("/api/logout", {
         method: "POST"
     }).then(res => {
-        // open logout page for webview
-        location = `https://secure.oculus.com/logout/`
+        alert("Logged out")
+        window.open(location.href.split('?')[0])
     })
 }
 
@@ -1665,7 +1665,7 @@ document.getElementById("logs").onclick = () => {
     TextBoxText("logsText", "Collecting information.. Please allow us 40 seconds to collect and upload everything")
     fetch("/api/questappversionswitcher/uploadlogs", {
         method: "POST",
-        body: encodeURIComponent(document.getElementById("logspwd").value)
+        body: ""
     }).then(res => {
         res.json().then(j => {
             if (!j.success) {

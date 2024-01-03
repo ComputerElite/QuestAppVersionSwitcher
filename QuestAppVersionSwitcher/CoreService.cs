@@ -12,8 +12,11 @@ using Android.Systems;
 using Android.Views;
 using AndroidX.Activity.Result;
 using ComputerUtils.Android;
+using ComputerUtils.Android.AndroidTools;
+using ComputerUtils.Android.Encryption;
 using Java.IO;
 using Newtonsoft.Json;
+using OculusGraphQLApiLib;
 using File = System.IO.File;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Object = Java.Lang.Object;
@@ -62,6 +65,16 @@ namespace QuestAppVersionSwitcher.Core
             // Create all directories and files
             if (!started)
             {
+                // Check if token is not FRL token, if so, reset it
+                string token = PasswordEncryption.Decrypt(CoreService.coreVars.token, AndroidService.GetDeviceID());
+                if (TokenTools.IsUserTokenValid(token))
+                {
+                    Logger.Log("Reset user token as it is not valid");
+                    CoreService.coreVars.token = "";
+                    CoreService.coreVars.Save();
+                }
+                
+                
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 FileManager.CreateDirectoryIfNotExisting(coreVars.QAVSDir);
                 File.WriteAllText(coreVars.QAVSDir + ".nomedia", "");

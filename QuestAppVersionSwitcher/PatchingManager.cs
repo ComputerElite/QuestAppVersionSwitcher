@@ -1,4 +1,5 @@
-﻿using ComputerUtils.Android.AndroidTools;
+﻿#nullable enable
+using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.ClientModels;
@@ -12,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using JetBrains.Annotations;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
 
@@ -112,13 +114,15 @@ namespace QuestAppVersionSwitcher
         /// Gets the modded json of the currently selected app
         /// </summary>
         /// <returns></returns>
+        [CanBeNull]
         public static ModdedJson GetModdedJson()
         {
             using ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
-            ModdedJson json = GetModdedJson(apk);
+            ModdedJson? json = GetModdedJson(apk);
             return json;
         }
 
+        [CanBeNull]
         public static ModdedJson GetModdedJson(ZipArchive apkArchive)
         {
             if (apkArchive.GetEntry(QAVSTagName) == null) return null;
