@@ -290,7 +290,7 @@ namespace QuestAppVersionSwitcher
         private void UpdateMaxConnections()
         {
             maxConcurrentDownloads = filesToDownload - filesDownloaded > 1 ? 2 : 1;
-            maxConcurrentConnections = 10 / maxConcurrentDownloads; // Oculus only supports 10 connections per IP, 
+            maxConcurrentConnections = 6 / maxConcurrentDownloads; // Oculus only supports 10 connections per IP, to be sure everything works we're just doing 6
         }
 
         private void DownloadError(DownloadManager manager)
