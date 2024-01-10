@@ -151,6 +151,8 @@ namespace QuestAppVersionSwitcher
                 Logger.Log("File saved at " + savePath);
                 OnDownloadComplete?.Invoke();
             }
+            
+            Dictionary<int, int> chunkDownloadFailiures = new Dictionary<int, int>();
 
             public void DownloadChunk(string url, string savePath, long startPos, long endPos, int chunkIndex, ref long[] bytesDownloadedArray)
             {
@@ -162,12 +164,13 @@ namespace QuestAppVersionSwitcher
                     HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                     Stream stream = response.GetResponseStream();
 
-                    byte[] buffer = new byte[4096];
+                    byte[] buffer = new byte[0xFFFF];
                     int bytesRead;
                     long totalBytesRead = 0;
-
+                    string fileName = savePath + "." + chunkIndex;
+                    if(File.Exists(fileName)) File.Delete(fileName);
                     using (FileStream fileStream =
-                           new FileStream(savePath + "." + chunkIndex, FileMode.Create, FileAccess.Write))
+                           new FileStream(fileName, FileMode.Create, FileAccess.Write))
                     {
                         while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
                         {
@@ -190,11 +193,19 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("Error while downloading file chunk " + chunkIndex + ": " + e);
-                    Cancel();
-                    error = true;
-                    exception = e;
-                    OnDownloadError.Invoke();
+                    if(!chunkDownloadFailiures.ContainsKey(chunkIndex)) chunkDownloadFailiures.Add(chunkIndex, 0);
+                    chunkDownloadFailiures[chunkIndex]++;
+                    if (chunkDownloadFailiures[chunkIndex] >= 3)
+                    {
+                        Logger.Log("Error while downloading file chunk " + chunkIndex + ": " + e);
+                        Cancel();
+                        error = true;
+                        exception = e;
+                        OnDownloadError.Invoke();
+                        return;
+                    }
+                    Logger.Log("Error while downloading file chunk " + chunkIndex + ": " + e + ". Retrying... (" + chunkDownloadFailiures[chunkIndex] + "/3)");
+                    DownloadChunk(url, savePath, startPos, endPos, chunkIndex, ref bytesDownloadedArray);
                 }
             }
 
