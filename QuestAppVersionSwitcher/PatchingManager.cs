@@ -431,7 +431,7 @@ namespace QuestAppVersionSwitcher
                 if (e.Attributes.Any(x => x.Name == "name" && x.Value.ToString() == "QAVS.copyOf"))
                 {
                     status.copyOf = (string)e.Attributes.FirstOrDefault(x => x.Name == "value").Value;
-                    Logger.Log("App is copy of " + status.copyOf);
+                    //Logger.Log("App is copy of " + status.copyOf);
                 }
             }
             status.isPatched = IsAPKModded(apk);

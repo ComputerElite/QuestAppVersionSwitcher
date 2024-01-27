@@ -472,7 +472,7 @@ namespace QuestAppVersionSwitcher
                     AndroidCore.context.ContentResolver.TakePersistableUriPermission(
                         activityResult.Data.Data,
                         ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission);
-                    Logger.Log(activityResult.Data.DataString);
+                    //Logger.Log(activityResult.Data.DataString);
                 }
             }
             QAVSModManager.Update();
