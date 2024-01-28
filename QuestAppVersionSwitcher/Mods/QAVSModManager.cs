@@ -151,6 +151,10 @@ namespace QuestAppVersionSwitcher.Mods
                             break;
                     }
                 }
+                else
+                {
+                    modManager.usedModLoader = ModLoader.QuestLoader;
+                }
 
                 PatchingStatus status = PatchingManager.GetPatchingStatus(CoreService.coreVars.currentApp);
                 modManager.otherValidPackageIds.Clear();
