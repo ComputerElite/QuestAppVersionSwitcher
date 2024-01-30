@@ -11,6 +11,7 @@ using ComputerUtils.Android.Webserver;
 using Java.Lang;
 using Org.BouncyCastle.Asn1.Pkcs;
 using AndroidX.Work;
+using Java.Util.Jar;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestPatcher.QMod;
 using Exception = System.Exception;
@@ -63,6 +64,12 @@ namespace QuestAppVersionSwitcher.Mods
             runningOperations.Add(operation.operationId, operation);
             BroadcastOperation(operation.operationId);
             //BroadcastModsAndStatus();
+        }
+        
+        public static void UpdateRunningOperation(int operationId, string name)
+        {
+            runningOperations[operationId].name = name;
+            BroadcastOperation(operationId);
         }
 
         public static void MarkOperationAsError(int operationId)

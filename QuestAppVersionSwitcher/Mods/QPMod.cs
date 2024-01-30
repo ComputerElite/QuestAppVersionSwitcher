@@ -348,14 +348,15 @@ namespace QuestAppVersionSwitcher.Mods
             }
             int operationId = QAVSModManager.operations;
             QAVSModManager.operations++;
-            QAVSModManager.AddRunningOperation(new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = "Downloading Dependency " + dependency.Id, taskId = taskId, operationId = operationId, modId = dependency.Id});
+            string operationPrefix = "Downloading Dependency " + dependency.Id;
+            QAVSModManager.AddRunningOperation(new QAVSOperation { type = QAVSOperationType.DependencyDownload, name = operationPrefix, taskId = taskId, operationId = operationId, modId = dependency.Id});
             
             QPMod installedDependency;
             TempFile downloadFile = new TempFile();
             Logger.Log($"Downloading dependency {dependency.Id} . . .");
             try
             {
-                ExternalFilesDownloader.DownloadUrl(dependency.DownloadUrlString, downloadFile.Path);
+                ExternalFilesDownloader.DownloadUrl(dependency.DownloadUrlString, downloadFile.Path, operationId, operationPrefix);
             }
             catch (WebException ex)
             {

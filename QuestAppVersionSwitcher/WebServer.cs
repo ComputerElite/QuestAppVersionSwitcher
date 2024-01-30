@@ -861,7 +861,10 @@ namespace QuestAppVersionSwitcher
                     BroadcaseBackupStatus();
                     try
                     {
+                        Logger.Log("Copying AppData");
                         if(Directory.Exists(gameDataDir)) FolderPermission.DirectoryCopy(gameDataDir, backupDir + package);
+                        Logger.Log("Copying mods");
+                        if(Directory.Exists(QAVSModManager.modManager.GetModExtractPath(package))) FolderPermission.DirectoryCopy(QAVSModManager.modManager.GetModExtractPath(package), backupDir + "installedMods");
                     }
                     catch (Exception e)
                     {
@@ -876,6 +879,7 @@ namespace QuestAppVersionSwitcher
 
                     if (Directory.Exists(CoreService.coreVars.AndroidObbLocation + package))
                     {
+                        Logger.Log("Copying Obbs");
                         backupStatus.currentOperation = "Copying Obbs. Please wait until it has finished. This can take up to 2 minutes";
                         BroadcaseBackupStatus();
                         Directory.CreateDirectory(backupDir + "obb/" + package);
@@ -889,6 +893,7 @@ namespace QuestAppVersionSwitcher
                 {
                     Logger.Log("Backup failed: " + e);
                     backupStatus.errorText = "Backup failed: " + e;
+                    backupStatus.error = true;
                     BroadcaseBackupStatus();
                     return true;
                 }
@@ -1171,6 +1176,13 @@ namespace QuestAppVersionSwitcher
                         serverRequest.SendString(GenericResponse.GetResponse("App data of " + package + " was unable to get restored: " + e, false), "application/json", 500);
                         return true;
                     }
+                }
+
+                if (Directory.Exists(backupDir + "installedMods"))
+                {
+                    Logger.Log("Restoring installed mods of backup " + backupname + " of " + package);
+                    Directory.Delete(QAVSModManager.modManager.GetModExtractPath(package), true);
+                    FolderPermission.DirectoryCopy(backupDir + "installedMods", QAVSModManager.modManager.GetModExtractPath(package));
                 }
                 
                 serverRequest.SendString(GenericResponse.GetResponse("Game data restored", true), "application/json");

@@ -39,8 +39,11 @@ namespace QuestAppVersionSwitcher.Mods
         public string Scotland2LibsPath => $"/sdcard/ModData/{CoreService.coreVars.currentApp}/Modloader/libs/";
 
         public string ConfigPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/modsStatus.json";
-        public string ModsExtractPath => CoreService.coreVars.QAVSModsDir + $"{CoreService.coreVars.currentApp}/installedMods/";
-
+        public string ModsExtractPath => GetModsExtractPath(CoreService.coreVars.currentApp);
+        public string GetModsExtractPath(string package)
+        {
+            return  CoreService.coreVars.QAVSModsDir + package + "/installedMods/";
+        }
         private readonly Dictionary<string, IModProvider> _modProviders = new Dictionary<string, IModProvider>();
         private readonly ModConverter _modConverter = new ModConverter();
         private readonly OtherFilesManager _otherFilesManager;

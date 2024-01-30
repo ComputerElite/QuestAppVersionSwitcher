@@ -117,7 +117,9 @@ namespace QuestAppVersionSwitcher
         [CanBeNull]
         public static ModdedJson GetModdedJson()
         {
-            using ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(CoreService.coreVars.currentApp));
+            string? apkLocation = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
+            if (apkLocation == null) return null;
+            using ZipArchive apk = ZipFile.OpenRead(apkLocation);
             ModdedJson? json = GetModdedJson(apk);
             return json;
         }
