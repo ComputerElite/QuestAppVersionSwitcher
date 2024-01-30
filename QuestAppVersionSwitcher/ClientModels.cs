@@ -87,6 +87,8 @@ namespace QuestAppVersionSwitcher.ClientModels
         public string version { get; set; } = "";
         public double percentage { get; set; } = 0.0;
         public string percentageString { get; set; } = "";
+
+        public bool downloadDone { get; set; } = false;
         public long done { get; set; } = 0;
         public long total { get; set; } = 0;
         public long speed { get; set; } = 0;

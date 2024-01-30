@@ -863,8 +863,8 @@ namespace QuestAppVersionSwitcher
                     {
                         Logger.Log("Copying AppData");
                         if(Directory.Exists(gameDataDir)) FolderPermission.DirectoryCopy(gameDataDir, backupDir + package);
-                        Logger.Log("Copying mods");
-                        if(Directory.Exists(QAVSModManager.modManager.GetModExtractPath(package))) FolderPermission.DirectoryCopy(QAVSModManager.modManager.GetModExtractPath(package), backupDir + "installedMods");
+                        Logger.Log("Copying mods from " + QAVSModManager.modManager.GetModExtractPath(package));
+                        if(Directory.Exists(QAVSModManager.modManager.GetModsExtractPath(package))) FolderPermission.DirectoryCopy(QAVSModManager.modManager.GetModsExtractPath(package), backupDir + "installedMods");
                     }
                     catch (Exception e)
                     {
@@ -1181,8 +1181,9 @@ namespace QuestAppVersionSwitcher
                 if (Directory.Exists(backupDir + "installedMods"))
                 {
                     Logger.Log("Restoring installed mods of backup " + backupname + " of " + package);
-                    Directory.Delete(QAVSModManager.modManager.GetModExtractPath(package), true);
-                    FolderPermission.DirectoryCopy(backupDir + "installedMods", QAVSModManager.modManager.GetModExtractPath(package));
+                    Directory.Delete(QAVSModManager.modManager.GetModsExtractPath(package), true);
+                    FolderPermission.DirectoryCopy(backupDir + "installedMods", QAVSModManager.modManager.GetModsExtractPath(package));
+                    QAVSModManager.Update();
                 }
                 
                 serverRequest.SendString(GenericResponse.GetResponse("Game data restored", true), "application/json");

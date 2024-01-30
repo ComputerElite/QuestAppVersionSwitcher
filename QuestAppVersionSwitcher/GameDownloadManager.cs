@@ -255,7 +255,7 @@ namespace QuestAppVersionSwitcher
         {
             UpdateMaxConnections();
             totalBytes = apkDownloadManager.total + allObbs.Select(x => x.sizeNumerical).Sum();
-            downloadedBytes = downloadedFilesTotalBytes + apkDownloadManager.done + downloadManagers.Where(x => x.isObb).Select(x => x.done).Sum();
+            downloadedBytes = downloadedFilesTotalBytes + (apkDownloadManager.downloadDone ? 0 : apkDownloadManager.done) + downloadManagers.Where(x => x.isObb).Select(x => x.done).Sum();
             
             // Speed
             double secondsPassed = (DateTime.Now - lastUpdate).TotalSeconds;

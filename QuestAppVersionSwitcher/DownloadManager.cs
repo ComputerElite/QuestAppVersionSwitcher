@@ -110,6 +110,7 @@ namespace QuestAppVersionSwitcher
                 this.percentage = 1.0;
                 this.percentageString = "100%";
                 this.textColor = "#30e34b";
+                this.downloadDone = true;
                 QAVSWebserver.BroadcastDownloads(true);
             };
             downloader.OnDownloadError = () =>
