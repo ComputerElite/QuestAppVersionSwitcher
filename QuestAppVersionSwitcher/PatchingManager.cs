@@ -474,6 +474,7 @@ namespace QuestAppVersionSwitcher
             List<string> addingPermissions = new List<string>();
             List<UsesFeature> addingFeatures = new List<UsesFeature>();
             PatchingPermissions permissions = CoreService.coreVars.patchingPermissions;
+            addingFeatures.AddRange(permissions.otherFeatures);
             if (permissions.externalStorage)
             {
                 // Technically, we only need READ_EXTERNAL_STORAGE and WRITE_EXTERNAL_STORAGE, but we also add MANAGE_EXTERNAL_STORAGE as this is what Android 11 needs instead
