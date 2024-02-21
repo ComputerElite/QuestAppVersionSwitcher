@@ -4,7 +4,7 @@ import toast, { Toaster } from 'solid-toast';
 import "normalize.css"
 import "./global.scss";
 import Sidebar from './components/Sidebar';
-import { Routes, Route, Router, hashIntegration, Navigate } from "@solidjs/router";
+import { Route, HashRouter , Navigate } from "@solidjs/router";
 import BackupPage from './pages/BackupPage';
 import DowngradePage from './pages/DowngradePage';
 import DownloadProgressPage from './pages/DownloadProgressPage';
@@ -28,7 +28,7 @@ import '@fontsource/roboto';
 import { InitWS } from './state/eventBus';
 import GetBeatSabersModsPage from './pages/BeatSaber/GetBeatSaberMods';
 
-const App: Component = () => {
+const Root: Component = (props: any) => {
   // Load app info on startup
   createEffect(async () => {
     await refetchAppInfo();
@@ -39,22 +39,13 @@ const App: Component = () => {
   return (
     <MetaProvider>
      <ThemeProvider theme={theme}>
-      <Router source={hashIntegration()} >
+  
         <div class={style['AppRoot']}>
           <Sidebar />
           <div class={style.content}>
-            <Routes>
-              <Route path="/" element={<Navigate href={"/backup"} />} />
-              <Route path="/backup" element={<BackupPage />} />
-              <Route path="/downgrade" element={<DowngradePage />} />
-              <Route path="/downloads" element={<DownloadProgressPage />} />
-              <Route path="/patching" element={<PatchingPage />} />
-              <Route path="/mods" element={<ModsPage />} />
-              <Route path="/cosmetics" element={<CosmeticsPage />} />
-              {/* <Route path="/getMods" element={<GetModsPage />} /> */}
-              <Route path="/tools" element={<ToolsPage />} />
-              <Route path="/bsmods" element={<GetBeatSabersModsPage />} />
-            </Routes>
+            {/* <Routes> */}
+              {props.children}
+            {/* </Routes> */}
           </div>
         </div>
         <Toaster
@@ -62,10 +53,24 @@ const App: Component = () => {
           position="bottom-left"
         />
         <ModalContainer/>
-      </Router>
       </ThemeProvider>
     </MetaProvider>
   );
 };
+
+const App = () => (
+  <HashRouter root={Root}>
+    <Route path="/" component={() => <Navigate href={"/backup"} />} />;
+    <Route path="/backup" component={BackupPage} />
+    <Route path="/downgrade" component={DowngradePage} />
+    <Route path="/downloads" component={DownloadProgressPage} />
+    <Route path="/patching" component={PatchingPage} />
+    <Route path="/mods" component={ModsPage} />
+    <Route path="/cosmetics" component={CosmeticsPage} />
+    {/* <Route path="/getMods" component={<GetModsPage />} /> */}
+    <Route path="/tools" component={ToolsPage} />
+    <Route path="/bsmods" component={GetBeatSabersModsPage} />
+  </HashRouter>
+)
 
 export default App;

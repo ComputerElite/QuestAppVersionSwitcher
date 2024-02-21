@@ -1,4 +1,4 @@
-import { Link } from "@solidjs/router";
+import { A } from "@solidjs/router";
 import RunButton from "../components/Buttons/RunButton";
 import { CustomModal } from "./CustomModal";
 import { For, createMemo, splitProps } from "solid-js";
@@ -58,9 +58,9 @@ export default function GetMoreMods(props: { open: boolean, onClose: () => void 
                         <Box sx={{
 
                         }}>
-                            <Link href={link.url} onClick={local.onClose}>
+                            <A href={link.url} onClick={local.onClose}>
                                 <RunButton text={link.name}>mods</RunButton>
-                            </Link>
+                            </A>
 
                         </Box>
                     )}

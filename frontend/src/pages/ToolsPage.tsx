@@ -17,7 +17,7 @@ import { FiExternalLink, FiKey, FiRefreshCcw, FiTrash2 } from "solid-icons/fi"
 import { DeleteAllMods } from "../api/mods"
 import { showConfirmModal } from "../modals/ConfirmModal"
 import { IoExitOutline } from 'solid-icons/io'
-import { Link } from "@solidjs/router"
+import { A } from "@solidjs/router"
 
 
 export const OptionHeader = (props: { children: any }) => {
@@ -290,9 +290,9 @@ export default function ToolsPage() {
                 }
               } text='Set token' />
             </Box>
-            <Link class="text-sm text-accent underline" target={!IsOnQuest() ? "_blank" : ""} href="https://computerelite.github.io/tools/Oculus/ObtainToken.html" >
+            <A class="text-sm text-accent underline" target={!IsOnQuest() ? "_blank" : ""} href="https://computerelite.github.io/tools/Oculus/ObtainToken.html" >
               Guide to get your token
-            </Link>
+            </A>
           </form>
 
         </Box>
