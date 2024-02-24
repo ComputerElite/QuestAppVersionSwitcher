@@ -45,16 +45,22 @@
             Status: <code id="patchingStatus"></code>
         </div>
     </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <button style="font-size: .7em;" onclick="ModSettingsDowngradedGame()"><i>Open modding settings</i></button>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <button style="font-size: 0.7rem" onclick="InstallDowngradedGameWithoutModding()">Just install without modding</button>
 </div>
 <div class="content hidden" id="afterpatch">
     <h1>Install Game</h1>
     <p>Your game is almost modded. Press <code>Install game</code> below and follow the instructions to finish modding your game</p>
     <button onclick="RestoreBackup()">Install game</button>
-    <br>
-    <br>
-    <br>
-    <br>
-    <button style="font-size: .7em;" onclick="ModSettings()"><i>Open modding settings</i></button>
 </div>
 <div class="content hidden" id="afterrestore">
     <h1>Game modded!</h1>
@@ -136,6 +142,12 @@
     <br>
     <br>
     <button style="font-size: .7em;" onclick="ModSettingsDowngradedGame()"><i>Open modding settings</i></button>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <button style="font-size: 0.7rem" onclick="InstallDowngradedGameWithoutModding()">Just install without modding</button>
 </div>
 <div class="content hidden" id="offline">
     <h1>It looks like you're offline!</h1>
@@ -266,8 +278,8 @@
             showSupportButton.innerHTML = "Help"
         }
     }
-
-    var patchExtras = ""
+    
+    var downgradedBackupName = ""
     function ModSettingsDowngradedGame() {
         location = start + `/?tab=patching&backuptopatch=${lastDownloadProgress.backupName}`
     }
@@ -487,6 +499,13 @@
 
     function RestoreBackup() {
         location = start + `/?package=com.beatgames.beatsaber&backup=${patchReport.backupName}&restorenow=true&noaccesscheck=true&afterrestore=${encodeURIComponent(`/flows/beat_saber_modding?tab=afterrestore`)}`
+    }
+    
+    function InstallDowngradedGameWithoutModding() {
+        patchReport = {
+            backupName: lastDownloadProgress.backupName
+        }
+        RestoreBackup()
     }
 
     function ResetPatchPage() {
