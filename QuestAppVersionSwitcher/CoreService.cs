@@ -100,6 +100,31 @@ namespace QuestAppVersionSwitcher.Core
                 QAVSWebserver.uiConfig = JsonConvert.DeserializeObject(File.ReadAllText(coreVars.QAVSUIConfigLocation));
                 QAVSModManager.Init();
                 CoreVars.cosmetics = Cosmetics.LoadCosmetics();
+                
+                // Load downgrade json
+                Logger.Log("Loading Cosmetics from https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/downgrade.json");
+                string downgrade = "{}";
+                string jsonLoc = coreVars.QAVSDir + "downgrade.json";
+                try
+                {
+                    downgrade = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/ComputerElite/QuestAppVersionSwitcher/main/Assets/downgrade.json", 5000);
+                    File.WriteAllText(jsonLoc, downgrade);
+                    Logger.Log("Caching downgrade");
+                } catch
+                {
+                    Logger.Log("Request failed, falling back to cache if existing");
+                    if (File.Exists(jsonLoc)) downgrade = File.ReadAllText(jsonLoc);
+                }
+                coreVars.onlineDowngradeJson = new OnlineDowngradeJson();
+                Logger.Log("Deserializing");
+                try
+                {
+                    coreVars.onlineDowngradeJson = JsonSerializer.Deserialize<OnlineDowngradeJson>(downgrade);
+                    Logger.Log("Deserialized successfully! UseDiffDowngrade: " + coreVars.onlineDowngradeJson.useDiffDowngrade);
+                } catch(Exception e)
+                {
+                    Logger.Log("Error deserializing downgrade.json:\n" + e.ToString());
+                }
             }
 
             qAVSWebserver.Start();

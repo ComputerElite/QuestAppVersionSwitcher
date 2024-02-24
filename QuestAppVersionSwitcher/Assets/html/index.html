@@ -15,7 +15,7 @@
                 </div>
             </div>
             <div class="menuItem selected" section="backup">Backup</div>
-            <div class="menuItem" section="downgrade">Downgrade
+            <div class="menuItem" id="downgradeMenuButton" section="downgrade">Downgrade
                 <div class="button" id="reloadDowngradeIframe" onclick="ReloadDowngradeIFrame()">Reload</div></div>
             <div class="menuItem" section="download">Download progress</div>
             <div class="menuItem" section="patching">Mod my game</div>
@@ -284,6 +284,20 @@
                 <b style="font-size: 4em;" id="downgradeLoginMsg">To downgrade you must first log in in the tools & options tab!</b>
                 <iframe id="downgradeframe" src=""></iframe>
             </div>
+            <div class="contentItem hidden" style="position: relative" id="downgradeDiff">
+                <h3>Compatible downgrades for <div class="inline packageName"></div></h3>
+                <div id="currentVersionDowngrade" class="inline"></div>
+                <br>
+                <table id="compatibleDowngrades">
+                </table>
+                <br>
+                <br>
+                <h3>Downgrades available if you install other versions</h3>
+                These versions can only be downgraded to once you install the version shown at the left before.
+                <table id="availableDowngrades">
+
+                </table>
+            </div>
             <div class="contentItem hidden" id="download">
                 <h2>Game Downloads</h2>
                 <div id="gameProgressBarContainers" style="width: 95%;">
@@ -331,6 +345,14 @@
                     <div class="button" id="reloadMods">Reload mods</div>
                     <div class="buttonLabel">Reloads installed mods</div>
                 </div>
+                <br>
+                <label class="option">
+                    <label class="switch normal">
+                        <input id="useDiffDowngrade" type="checkbox" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    Use Diff downgrading (disable means use default)
+                </label>
                 <div class="buttonContainer">
                     <div class="button" id="checkUpdate">Check for QuestAppVersionSwitcher updates</div>
                     <div class="buttonLabel">Checks if updates for QuestAppVersionSwitcher exist</div>

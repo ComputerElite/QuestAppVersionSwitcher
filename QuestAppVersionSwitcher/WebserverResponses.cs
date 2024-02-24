@@ -53,6 +53,20 @@ namespace QuestAppVersionSwitcher
             return JsonSerializer.Serialize(r);
         }
     }
+    
+    public class UseDiffResponse
+    {
+        public bool useDiff { get; set; } = false;
+        public bool success { get; set; } = true;
+
+        public static string GetResponse(bool useDiff, bool success)
+        {
+            UseDiffResponse r = new UseDiffResponse();
+            r.useDiff = useDiff;
+            r.success = success;
+            return JsonSerializer.Serialize(r);
+        }
+    }
 
     public class ModResponse : GenericResponse
     {

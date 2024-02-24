@@ -23,6 +23,7 @@ namespace QuestAppVersionSwitcher.Core
             }
         }
         public int loginStep { get; set; } = 0;
+        public bool useDiffDowngrading { get; set; } = false;
 
         public bool passwordSet
         {
@@ -45,9 +46,15 @@ namespace QuestAppVersionSwitcher.Core
         public string binaryId { get; set; } = "";
     }
 
+    public class OnlineDowngradeJson
+    {
+        public bool useDiffDowngrade { get; set; } = true;
+    }
+
     public class CoreVars : StrippedConfig // aka config
     {
         public string qavsVersion { get; set; } = "";
+        public OnlineDowngradeJson onlineDowngradeJson { get; set; } = new OnlineDowngradeJson();
         public List<string> accessFolders { get; set; } = new List<string>();
         public string token { get; set; } = "";
         public PatchingPermissions patchingPermissions = new PatchingPermissions();

@@ -9,7 +9,7 @@
 <body>
 <div class="content" id="checking">
     <h1>Checking your current Beat Saber install</h1>
-    <h3>Please wait a second</h3>
+    <h3>Please wait a bit. This may take 3 minute</h3>
     <div class="loaderContainer center">
         <div class="loaderBarRight"></div>
         <div class="loaderBarLeft"></div>
@@ -91,6 +91,27 @@
         <button onclick="Downgrade()">Downgrade</button>
     </div>
 </div>
+<div class="content hidden" id="patcheserror">
+    <h1>No patches available</h1>
+    <p>I could not find any downgrade patches for your current Beat Saber version. Make sure you got the latest version of Beat Saber installed.</p>
+</div>
+<div class="content hidden" id="downgradeLoginDiff">
+    <p>
+        Your current Beat Saber version is <code class="bsVersion"></code>. To downgrade Beat Saber install it from the store!
+    </p>
+    <button onclick="Downgrade()">Downgrade</button>
+</div>
+<div class="content hidden" id="downgradeDowngradeDiff">
+    <p>
+        Your current Beat Saber version is <code class="bsVersion"></code>. This version does not support mods yet or is not the latest moddable version.
+        <br>
+        You can downgrade your game to <code class="supportedBsVersion"></code> to use mods.
+        <br>
+        <br>
+        To downgrade your game, press the Downgrade button below.
+    </p>
+    <button onclick="Downgrade()">Downgrade</button>
+</div>
 <div class="content hidden" id="download">
     <h1>Game downloading</h1>
     <h3>Do not exit QuestAppVersionSwitcher!</h3>
@@ -151,6 +172,11 @@
     </div>
 </div>
 <script>
+    var diffDowngradeEnabled = true
+    fetch("/api/downgrade/usediff").then(res => res.json().then(res => {
+        diffDowngradeEnabled = res.useDiff
+        InitialStuff()
+    }))
     const patchInProgressContainer = document.getElementById("gameModProgressContainer")
     const patchingStatus = document.getElementById("patchingStatus")
     const modgameloader = document.getElementById("modgameloader")
@@ -174,24 +200,31 @@
         <div class="loaderCircleHole"></div>
         <div class="loaderSquare"></div>
     </div>`
+    
+    function InitialStuff() {
 
-    if(tab) {
-        if(tab == "afterrestore") {
-            fetch(start + "/api/android/device").then(res => res.json().then(j => {
-                if (j.device == "eureka") {
-                    // Logged in
-                    OpenTab("quest3")
-                } else {
-                    OpenTab(tab)
-                }
-            }))
+        if(tab) {
+            if(tab == "afterrestore") {
+                fetch(start + "/api/android/device").then(res => res.json().then(j => {
+                    if (j.device == "eureka") {
+                        // Logged in
+                        OpenTab("quest3")
+                    } else {
+                        OpenTab(tab)
+                    }
+                }))
+            } else {
+                OpenTab(tab);
+            }
         } else {
-            OpenTab(tab);
+            FirstOpen()
         }
-    } else {
-        FirstOpen()
+        ChangeApp("com.beatgames.beatsaber")
+
+        if(startDownload) StartDownloadMonitoring()
+        if(checkdowngrade) CheckDowngrade()
     }
-    ChangeApp("com.beatgames.beatsaber")
+
 
 
     function ChangeApp(package) {
@@ -233,9 +266,6 @@
             showSupportButton.innerHTML = "Help"
         }
     }
-
-    if(startDownload) StartDownloadMonitoring()
-    if(checkdowngrade) CheckDowngrade()
 
     var patchExtras = ""
     function ModSettingsDowngradedGame() {
@@ -319,11 +349,30 @@
         })
     }
 
+
+    var currentSha = ""
+    var targetSha = ""
+    var targetVersion = ""
+    var packageName = "com.beatgames.beatsaber"
+
     function Downgrade() {
+        if(diffDowngradeEnabled) {
+            fetch(start + "/api/downloaddiff", {
+                method: "POST", body: JSON.stringify({
+                    packageName: packageName,
+                    sourceSha: currentSha,
+                    targetSha: targetSha,
+                    targetVersion: targetVersion
+                })
+            })
+            OpenTab("download")
+            StartDownloadMonitoring()
+            return
+        }
         fetch(start + "/api/cleardownloads", {method: "POST"})
         location = start + `/?download=true&version=${SupportedBeatSaberVersions[0]}&noaccesscheck=true&game=2448060205267927&afterdownload=${encodeURIComponent(start + `/flows/beat_saber_modding?tab=download&startdownload=true`)}`
     }
-
+    
     function CheckDowngrade() {
         UpdateSupportedBeatSaberVersions().then(() => {
             for(const el of document.getElementsByClassName("bsVersion")) {
@@ -337,7 +386,7 @@
                 for(const b of j.backups) {
                     if(b.gameVersion == SupportedBeatSaberVersions[0] && b.isDownloadedFromOculus) {
                         // Game version is already downloaded. Show mod game button
-                        console.log("Found backup for latest version, showing mod game button")
+                        console.log("Found backup for latest modable version, showing mod game button")
                         // emulate finished download
                         lastDownloadProgress = {
                             version: b.gameVersion,
@@ -352,17 +401,41 @@
                     }
                 }
 
+                if(diffDowngradeEnabled) {
+                    // Get current version sha
 
-                // Check if user is logged in, if so display downgrade button else display login button
-                fetch(start + "/api/questappversionswitcher/loggedinstatus").then(res => res.json().then(j => {
-                    if(j.msg == 2) {
-                        document.getElementById("downgradeLogin").style.display = `none`
-                        document.getElementById("downgradeDowngrade").style.display = `block`
-                    } else {
-                        document.getElementById("downgradeLogin").style.display = `block`
-                        document.getElementById("downgradeDowngrade").style.display = `none`
-                    }
-                }))
+                    fetch(start + "/api/currentsha256").then(res => res.json().then(json => {
+                        currentSha = json.msg
+                        console.log(currentSha)
+                        fetch("https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json").then(res => res.json().then(patches => {
+                            patches = patches.versions.filter(x => x.SSHA256 == currentSha && x.TV == SupportedBeatSaberVersions[0])
+                            if (patches.length <= 0) {
+                                // No patches found
+                                OpenTab("patcheserror")
+                            } else {
+                                // Patches found
+                                OpenTab("downgradeDowngradeDiff")
+                            }
+                            targetSha = patches[0].TSHA256
+                            targetVersion = patches[0].TV
+                            console.log(targetSha)
+                            console.log(targetVersion)
+                            
+                        }))
+                    }))
+                } else {
+                    // Check if user is logged in, if so display downgrade button else display login button
+                    fetch(start + "/api/questappversionswitcher/loggedinstatus").then(res => res.json().then(j => {
+                        OpenTab("downgrade")
+                        if(j.msg == 2) {
+                            document.getElementById("downgradeLogin").style.display = `none`
+                            document.getElementById("downgradeDowngrade").style.display = `block`
+                        } else {
+                            document.getElementById("downgradeLogin").style.display = `block`
+                            document.getElementById("downgradeDowngrade").style.display = `none`
+                        }
+                    }))
+                }
             }))
         })
     }
@@ -488,7 +561,7 @@
         UpdateModdedStatus().then(() => {
             if(!moddedStatus.isInstalled) {
                 // Downgrade
-                OpenTab("downgrade")
+                OpenTab(diffDowngradeEnabled ? "downgradeLoginDiff" : "downgrade")
                 CheckDowngrade()
             } else {
                 UpdateSupportedBeatSaberVersions().then(() => {
@@ -508,7 +581,6 @@
                         }
                     } else {
                         // Downgrade
-                        OpenTab("downgrade")
                         CheckDowngrade()
                     }
                 })

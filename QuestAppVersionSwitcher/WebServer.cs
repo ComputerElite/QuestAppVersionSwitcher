@@ -162,6 +162,18 @@ namespace QuestAppVersionSwitcher
                 clients.Remove(socket);
             };
             wsServer.StartServer(CoreService.coreVars.wsPort);
+            server.AddRoute("GET", "/api/downgrade/usediff", request =>
+            {
+                request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading || CoreService.coreVars.onlineDowngradeJson.useDiffDowngrade, true), "application/json");
+                return true;
+            });
+            server.AddRoute("POST", "/api/downgrade/usediff", request =>
+            {
+                CoreService.coreVars.useDiffDowngrading = request.bodyString.ToLower() == "true";
+                CoreService.coreVars.Save();
+                request.SendString(GenericResponse.GetResponse("Saved", true), "application/json");
+                return true;
+            });
             server.AddRoute("POST", "/api/login/start", request =>
             {
                 Logger.Log("Starting sso login", "Login");

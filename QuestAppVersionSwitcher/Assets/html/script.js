@@ -10,6 +10,24 @@ const squareLoader = `
     <div class="loaderCircleHole"></div>
     <div class="loaderSquare"></div>
 </div>`
+var diffDowngradeEnabled = true
+
+fetch("/api/downgrade/usediff").then(res => res.json().then(res => {
+    diffDowngradeEnabled = res.useDiff
+    document.getElementById("downgradeMenuButton").setAttribute("section", diffDowngradeEnabled ? "downgradeDiff" : "downgrade")
+
+    if(diffDowngradeEnabled) {
+        setTimeout(() => {
+            UpdateDowngrades()
+        }, 2500)
+    }
+    ReloadDowngradeIFrame();
+}))
+
+document.getElementById("useDiffDowngrade").onclick = () => {
+    var checked = document.getElementById("useDiffDowngrade").checked
+    fetch("/api/downgrade/usediff", {method: "POST", body: checked})
+}
 
 var currentGameVersion = ""
 
@@ -17,6 +35,7 @@ const browser = document.getElementById("browser")
 const toastsE = document.getElementById("toasts")
 ReloadDowngradeIFrame();
 function ReloadDowngradeIFrame() {
+    if(diffDowngradeEnabled) return
     document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/search?query=Beat+Saber&headsets=MONTEREY%2CHOLLYWOOD${IsOnQuest() ? `&isqavs=true` : ``}`
 }
 // connect to websocket one port higher than the server
@@ -483,7 +502,6 @@ function UpdatePatchingStatus() {
         })
     })
 }
-
 var operationsOngoing = false
 const operationsElement = document.getElementById("operations")
 const ongoingCount = document.getElementById("ongoingCount")
