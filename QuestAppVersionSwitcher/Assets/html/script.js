@@ -1112,6 +1112,7 @@ function ChangeApp(package) {
             resolve()
             UpdateUI(true)
             UpdateCosmeticsTypes()
+            UpdateDowngrades()
         })
         UpdateUI(true)
     })
