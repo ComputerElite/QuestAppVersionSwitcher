@@ -66,7 +66,20 @@ function DownloadDowngrade(package, sourceSha, targetSha, targetVersion) {
 function UpdateDowngrades() {
     document.getElementById("compatibleDowngrades").innerHTML = `Loading downgrades${squareLoader}`
     fetch(`https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json`).then(res => res.json().then(res => {
-        
+        // Check if current app even has any downgrades
+        if(!res.versions.find(x => x.appid == config.currentApp)) {
+            document.getElementById("allDowngradeShit").style.display = "none"
+            document.getElementById("noDowngradeShit").style.display = "block"
+            document.getElementById("noDowngradeShit").innerHTML = `There are no patches available for <code>${config.currentApp}</code>. This means you can sadly not downgrade currently.
+<br>
+<br>If you ask yourself why it worked before or works in a video you're watching, here's the reason:4
+<br>Meta changed how downloads work and I haven't figured out a way how to download any version of any app yet. If we find a way to do that, I'll add it back. But for now you can only downgrade specific games to specific versions which is all manual work on our side to get working.
+<br>I'm sorry for the inconvenience.`
+            return
+        }
+        document.getElementById("allDowngradeShit").style.display = "block"
+        document.getElementById("noDowngradeShit").style.display = "none"
+        config.currentApp
         document.getElementById("compatibleDowngrades").innerHTML = `Checking compatibility. This may take 2 minutes${squareLoader}`
         fetch(`/api/currentsha256`).then(s => s.json().then(s => {
             var sha = s.msg
