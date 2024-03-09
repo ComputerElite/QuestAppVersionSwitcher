@@ -16,6 +16,7 @@ namespace QuestAppVersionSwitcher.Mods
             FileDownloader downloader = new FileDownloader();
             downloader.OnDownloadProgress += () =>
             {
+                if (operationId == -1) return;
                 QAVSModManager.UpdateRunningOperation(operationId,
                     operationPrefix + " (" + SizeConverter.ByteSizeToString(downloader.downloadedBytes) + " / " +
                     SizeConverter.ByteSizeToString(downloader.totalBytes) + ")");

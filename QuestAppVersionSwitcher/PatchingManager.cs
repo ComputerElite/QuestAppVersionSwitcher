@@ -14,6 +14,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using JetBrains.Annotations;
+using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
 
@@ -198,9 +199,7 @@ namespace QuestAppVersionSwitcher
             try
             {
                 WebClient c = new WebClient();
-                string libUnityIndexString =
-                    c.DownloadString(
-                        "https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/index.json");
+                string libUnityIndexString = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/index.json", 10000);
                 Dictionary<string, Dictionary<string, string>> index =
                     JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(libUnityIndexString);
                 string appId = CoreService.coreVars.currentApp;
@@ -208,9 +207,8 @@ namespace QuestAppVersionSwitcher
                 {
                     if (index[appId].ContainsKey(version))
                     {
-                        c.DownloadFile(
-                            "https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/versions/" +
-                            index[appId][version] + ".so", CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so");
+                        ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/versions/" +
+                                                            index[appId][version] + ".so", CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", -1, "");
                         return true;
                     }
                     else

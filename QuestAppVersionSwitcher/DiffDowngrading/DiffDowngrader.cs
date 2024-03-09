@@ -13,6 +13,7 @@ using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
+using QuestAppVersionSwitcher.Mods;
 
 namespace QuestAppVersionSwitcher.DiffDowngrading
 {
@@ -64,7 +65,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             this.targetVersion = r.targetVersion;
             
             // parse https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json
-            string json = new WebClient().DownloadString("https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json");
+            string json = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/ComputerElite/APKDowngrader/main/versions.json", 10000);
             DiffDowngradeEntryContainer entries = JsonSerializer.Deserialize<DiffDowngradeEntryContainer>(json);
             foreach (DiffDowngradeEntry e in entries.versions)
             {
@@ -131,6 +132,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         public void Done()
         {
             status = "Download completed. Applying diff patch to current apk. Please wait up to 5 minutes.";
+            downloadedBytes = totalBytes;
             UpdateManagersAndProgress();
             QAVSWebserver.BroadcastDownloads(true);
             string backupDir = CoreService.coreVars.QAVSBackupDir + this.packageName + "/" + this.backupName + "/";
@@ -157,6 +159,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             done = true;
             textColor = "#00FF00";
             status = "Downgrade done";
+            QAVSWebserver.BroadcastDownloads(true);
         }
 
         private long lastBytes = 0;

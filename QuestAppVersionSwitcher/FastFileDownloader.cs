@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using ComputerUtils.Android.Logging;
+using QuestAppVersionSwitcher.Core;
 
 namespace QuestAppVersionSwitcher
 {
@@ -182,6 +183,7 @@ namespace QuestAppVersionSwitcher
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "GET";
+                request.UserAgent = CoreService.ua;
                 if(startPos != -1 && endPos != -1) request.AddRange(startPos, endPos);
                 long totalBytesRead = 0;
                 try
