@@ -159,6 +159,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             done = true;
             textColor = "#00FF00";
             status = "Downgrade done";
+            downloadedBytes = totalBytes;
             QAVSWebserver.BroadcastDownloads(true);
         }
 
