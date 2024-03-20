@@ -188,15 +188,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string apkLoc = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
-                byte[] hash;
-                using (FileStream fileStream = File.OpenRead(apkLoc))
-                {
-                    using (SHA256 sha256 = SHA256.Create())
-                    {
-                        hash = sha256.ComputeHash(fileStream);
-                    }
-                }
-                serverRequest.SendString(GenericResponse.GetResponse(BitConverter.ToString(hash).Replace("-", "").ToLower(), true), "application/json");
+                serverRequest.SendString(GenericResponse.GetResponse(Utils.GetSHA256OfFile(apkLoc), true), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/downloaddiff", serverRequest =>
@@ -365,11 +357,12 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/api/patching/patchapk", request =>
             {
                 patchStatus = new PatchStatus();
-                patchStatus.totalOperations = 9;
+                patchStatus.totalOperations = 10;
                 patchStatus.currentOperation = "Copying APK. This can take a bit";
                 string package = request.queryString.Get("package");
                 string backup = request.queryString.Get("backup");
                 string apkPath = "";
+                FileManager.DeleteDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingObbDir);
                 if (package != null && backup != null)
                 {
                     
@@ -386,6 +379,7 @@ namespace QuestAppVersionSwitcher
                         return true;
                     }
                     apkPath = backupDir + "app.apk";
+                    FolderPermission.DirectoryCopy(backupDir + package, CoreService.coreVars.QAVSTmpPatchingObbDir);
                 }
                 else
                 {
@@ -396,6 +390,9 @@ namespace QuestAppVersionSwitcher
                     }
 
                     apkPath = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
+                    // ToDo: Backup obbs
+                    string obbDir = CoreService.coreVars.AndroidObbLocation + package;
+                    FolderPermission.DirectoryCopy(obbDir, CoreService.coreVars.QAVSTmpPatchingObbDir);
                 }         
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 

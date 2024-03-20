@@ -87,6 +87,7 @@
     <Compile Include="CoreService.cs" />
     <Compile Include="CoreVars.cs" />
     <Compile Include="Cosmetics\Cosmetics.cs" />
+    <Compile Include="DiffDowngrading\DiffCreator.cs" />
     <Compile Include="DiffDowngrading\DiffDowngradeEntry.cs" />
     <Compile Include="DiffDowngrading\DiffDowngrader.cs" />
     <Compile Include="DiffDowngrading\DiffDownloadRequest.cs" />
@@ -128,6 +129,7 @@
     <Compile Include="QAVSReport.cs" />
     <Compile Include="QAVSWebViewClient.cs" />
     <Compile Include="QAVSWebChromeClient.cs" />
+    <Compile Include="Utils.cs" />
     <Compile Include="WebserverResponses.cs" />
     <None Include="LICENSE-QuestPatcher" />
     <Compile Include="FastFileDownloader.cs" />
@@ -157,6 +159,7 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\diff\diff.html" />
     <AndroidAsset Include="Assets\html\flows\beat_saber_modding.html" />
     <AndroidAsset Include="Assets\html\hiddenApps.json" />
     <None Include="Resources\AboutResources.txt" />

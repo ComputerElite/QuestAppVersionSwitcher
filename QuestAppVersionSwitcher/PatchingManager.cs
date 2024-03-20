@@ -165,8 +165,8 @@ namespace QuestAppVersionSwitcher
             Console.WriteLine("Opening patched apk to get patching status");
             
             QAVSWebserver.patchStatus.doneOperations = 8;
-            QAVSWebserver.patchStatus.progress = .95;
-            QAVSWebserver.patchStatus.currentOperation = "Almost done. Hang tight";
+            QAVSWebserver.patchStatus.progress = .93;
+            QAVSWebserver.patchStatus.currentOperation = "Registering game version in QAVS";
             QAVSWebserver.BroadcastPatchingStatus();
             
             // Get app version
@@ -177,11 +177,19 @@ namespace QuestAppVersionSwitcher
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + packageId + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
-            
+            if(Directory.Exists(CoreService.coreVars.QAVSTmpPatchingObbDir)) Directory.Move(CoreService.coreVars.QAVSTmpPatchingObbDir, backupDir + packageId);
+
             File.Move(appLocation, backupDir + "app.apk");
             Logger.Log("Moved apk");
-
+            // Backup obb
+            
             QAVSWebserver.patchStatus.doneOperations = 9;
+            QAVSWebserver.patchStatus.progress = .96;
+            QAVSWebserver.patchStatus.currentOperation = "Trying to copy obbs";
+            QAVSWebserver.BroadcastPatchingStatus();
+            // ToDo: Copy obbs from Android/obb to created backup
+
+            QAVSWebserver.patchStatus.doneOperations = 10;
             QAVSWebserver.patchStatus.progress = 1;
             QAVSWebserver.patchStatus.done = true;
             QAVSWebserver.patchStatus.doneOperations = QAVSWebserver.patchStatus.totalOperations;

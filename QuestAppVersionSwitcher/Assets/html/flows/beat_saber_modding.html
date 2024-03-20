@@ -59,6 +59,11 @@
     <p>Your game is almost modded. Press <code>Install game</code> below and follow the instructions to finish modding your game</p>
     <button onclick="RestoreBackup()">Install game</button>
 </div>
+<div class="content hidden" id="saf">
+    <h1>Access needed</h1>
+    <p>To mod your game correctly you need to grant access to your Beat Saber install. To do this press <code>Use this folder</code> at the bottom of both prompts which will appear after you press <code>Grant access</code> below.</p>
+    <button onclick="SAFRequest()">Grant access</button>
+</div>
 <div class="content hidden" id="afterrestore">
     <h1>Game modded!</h1>
     <p>Your game is now modded! Press <code>Get mods</code> below to install all core mods and open the installed mods page</p>
@@ -241,7 +246,27 @@
         if(startDownload) StartDownloadMonitoring()
         if(checkdowngrade) CheckDowngrade()
     }
+    
+    nextTab = ""
+    
+    function OpenTabIfSAFAccess(tab) {
+        nextTab = tab
+        fetch("/api/gotaccess?package=com.beatgames.beatsaber").then(res => {
+            res.json().then(j => {
+                if (!j.gotAccess) {
+                    // open tab for need access
+                    OpenTab("saf")
+                } else {
+                    OpenTab(nextTab)
+                }
+            })
+        })
+    }
 
+    function SAFRequest() {
+        fetch("/api/grantaccess?package=com.beatgames.beatsaber", {method: "POST"})
+        OpenTab(nextTab)
+    }
 
 
     function ChangeApp(package) {
@@ -311,9 +336,9 @@
     }
     function DownloadDone() {
         clearInterval(downloadInterval)
-        OpenTab("downloaddone")
         document.getElementById("downloadbsversion").innerText = lastDownloadProgress.version
         fetch(start + "/api/cleardownloads", {method: "POST"})
+        OpenTabIfSAFAccess("downloaddone")
     }
     var lastDownloadProgress = {}
     function StartDownloadMonitoring() {
@@ -494,7 +519,7 @@
     }
 
     function GetMods() {
-        location = start + "/?tab=mods"
+        location = start + "/?tab=mods" 
     }
 
     function PatchDone() {
@@ -600,7 +625,7 @@
                             OpenTab("alreadymodded")
                         } else {
                             // Not modded
-                            OpenTab("modgame")
+                            OpenTabIfSAFAccess("modgame")
                             UpdateModGamePage()
                         }
                     } else {

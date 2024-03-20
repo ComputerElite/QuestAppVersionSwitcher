@@ -15,6 +15,17 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         public bool isXDelta3 { get; set; }
         public long TargetByteSize { get; set; }
         public long SourceByteSize { get; set; }
+        public List<DiffDowngradeFilePart> parts { get; set; }
+    }
+
+    public class DiffDowngradeFilePart
+    {
+        public string filename { get; set; } = "";
+        public bool isApk { get; set; } = false;
+        public long sourceByteStartIndex { get; set; } = 0;
+        public long sourceByteLength { get; set; } = 0;
+        public long targetByteStartIndex { get; set; } = 0;
+        public long targetByteLength { get; set; } = 0;
     }
 
     public class DiffDowngradeEntryContainer
