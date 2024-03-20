@@ -2,7 +2,7 @@
 using System.Text.Json;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Core;
-using xdelta3.net:
+using xdelta3.net;
 
 namespace QuestAppVersionSwitcher.DiffDowngrading
 {
