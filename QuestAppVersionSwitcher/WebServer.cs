@@ -358,10 +358,11 @@ namespace QuestAppVersionSwitcher
             {
                 patchStatus = new PatchStatus();
                 patchStatus.totalOperations = 10;
-                patchStatus.currentOperation = "Copying APK. This can take a bit";
+                patchStatus.currentOperation = "Copying everything. This may take up to 5 minutes";
                 string package = request.queryString.Get("package");
                 string backup = request.queryString.Get("backup");
                 string apkPath = "";
+                string obbDir = "";
                 FileManager.DeleteDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingObbDir);
                 if (package != null && backup != null)
                 {
@@ -379,7 +380,8 @@ namespace QuestAppVersionSwitcher
                         return true;
                     }
                     apkPath = backupDir + "app.apk";
-                    FolderPermission.DirectoryCopy(backupDir + package, CoreService.coreVars.QAVSTmpPatchingObbDir);
+                    obbDir = backupDir + "obb/" + package;
+                    if (!Directory.Exists(obbDir)) obbDir = "";
                 }
                 else
                 {
@@ -391,8 +393,7 @@ namespace QuestAppVersionSwitcher
 
                     apkPath = AndroidService.FindAPKLocation(CoreService.coreVars.currentApp);
                     // ToDo: Backup obbs
-                    string obbDir = CoreService.coreVars.AndroidObbLocation + package;
-                    FolderPermission.DirectoryCopy(obbDir, CoreService.coreVars.QAVSTmpPatchingObbDir);
+                    obbDir = CoreService.coreVars.AndroidObbLocation + CoreService.coreVars.currentApp;
                 }         
                 request.SendString(GenericResponse.GetResponse("Acknowledged. Check status at /patching/patchstatus", true), "application/json", 202);
 
@@ -406,11 +407,20 @@ namespace QuestAppVersionSwitcher
                     
                     Stream apkStream = File.Open(appLocation, FileMode.Open);
                     ApkZip apk = ApkZip.Open(apkStream);
-                    patchStatus.doneOperations = 1;
-                    patchStatus.progress = .1;
+                    patchStatus.progress = .02;
                     BroadcastPatchingStatus();
                     Thread t = new Thread(() =>
                     {
+                        if(obbDir != "") FolderPermission.DirectoryCopy(obbDir, CoreService.coreVars.QAVSTmpPatchingObbDir);
+                        // delete directory if it's empty
+                        if (Directory.Exists(CoreService.coreVars.QAVSTmpPatchingObbDir) && Directory.GetFiles(CoreService.coreVars.QAVSTmpPatchingObbDir).Length == 0 &&
+                            Directory.GetDirectories(CoreService.coreVars.QAVSTmpPatchingObbDir).Length == 0)
+                        {
+                            FileManager.DeleteDirectoryIfExisting(CoreService.coreVars.QAVSTmpPatchingObbDir);
+                        }
+                        patchStatus.doneOperations = 1;
+                        patchStatus.progress = .1;
+                        BroadcastPatchingStatus();
                         PatchingManager.PatchAPK(apk, appLocation, request.queryString.Get("force") != null);
                     });
                     t.Start();

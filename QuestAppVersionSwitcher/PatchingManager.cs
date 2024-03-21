@@ -35,7 +35,7 @@ namespace QuestAppVersionSwitcher
         public static readonly Uri AndroidNamespaceUri = new Uri("http://schemas.android.com/apk/res/android");
 
         public static readonly string mainScotlandLoaderVersion = "v0.1.0-alpha";
-        public static readonly string scotland2Version = "v0.1.2";
+        public static readonly string scotland2Version = "v0.1.4";
         public static readonly string questLoaderVersion = "v1.3.0";
 
         // Attribute resource IDs, used during manifest patching
@@ -166,7 +166,7 @@ namespace QuestAppVersionSwitcher
             
             QAVSWebserver.patchStatus.doneOperations = 8;
             QAVSWebserver.patchStatus.progress = .93;
-            QAVSWebserver.patchStatus.currentOperation = "Registering game version in QAVS";
+            QAVSWebserver.patchStatus.currentOperation = "Registering game version in QAVS. This may take 5 minutes.";
             QAVSWebserver.BroadcastPatchingStatus();
             
             // Get app version
@@ -177,7 +177,12 @@ namespace QuestAppVersionSwitcher
             string backupName = QAVSWebserver.MakeFileNameSafe(status.version) + "_patched";
             string backupDir = CoreService.coreVars.QAVSBackupDir + packageId + "/" + backupName + "/";
             FileManager.RecreateDirectoryIfExisting(backupDir);
-            if(Directory.Exists(CoreService.coreVars.QAVSTmpPatchingObbDir)) Directory.Move(CoreService.coreVars.QAVSTmpPatchingObbDir, backupDir + packageId);
+
+            if (Directory.Exists(CoreService.coreVars.QAVSTmpPatchingObbDir))
+            {
+                Directory.CreateDirectory(backupDir + "obb/");
+                Directory.Move(CoreService.coreVars.QAVSTmpPatchingObbDir, backupDir + "obb/" + packageId);
+            }
 
             File.Move(appLocation, backupDir + "app.apk");
             Logger.Log("Moved apk");

@@ -150,10 +150,7 @@
     <br>
     <br>
     <br>
-    <br>
     <button style="font-size: .7em;" onclick="ModSettingsDowngradedGame()"><i>Open modding settings</i></button>
-    <br>
-    <br>
     <br>
     <br>
     <br>
@@ -438,7 +435,7 @@
                         document.getElementById("downgradeLogin").style.display = `none`
                         document.getElementById("downgradeDowngrade").style.display = `block`
                         document.getElementById("downloadbsversion").innerText = b.gameVersion
-                        OpenTab("downloaddone")
+                        OpenTabIfSAFAccess("downloaddone")
                         return;
                     }
                 }
