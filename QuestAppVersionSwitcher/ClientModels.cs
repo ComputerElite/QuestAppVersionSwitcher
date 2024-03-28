@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ComputerUtils.Android.VarUtils;
+using QuestPatcher.QMod;
 
 namespace QuestAppVersionSwitcher.ClientModels
 {
@@ -11,6 +12,8 @@ namespace QuestAppVersionSwitcher.ClientModels
         public string version { get; set; } = "";
         public string copyOf { get; set; } = "";
         public string versionCode { get; set; } = "";
+        public ModLoader recommendedModloader { get; set; } = ModLoader.QuestLoader;
+        public string package { get; set; } = "";
         public ModdedJson moddedJson { get; set; } = null;
     }
 

@@ -370,7 +370,7 @@ namespace QuestAppVersionSwitcher
             }
             
             using ZipArchive apk = ZipFile.OpenRead(AndroidService.FindAPKLocation(app));
-            PatchingStatus s =  GetPatchingStatus(apk);
+            PatchingStatus s =  GetPatchingStatus(apk, app);
             return s;
         }
         
@@ -378,7 +378,7 @@ namespace QuestAppVersionSwitcher
         {
             string backupDir = CoreService.coreVars.QAVSBackupDir + package + "/" + backupName + "/";
             using ZipArchive apk = ZipFile.OpenRead(backupDir + "app.apk");
-            PatchingStatus s =  GetPatchingStatus(apk);
+            PatchingStatus s =  GetPatchingStatus(apk, package);
             return s;
         }
         
@@ -387,7 +387,7 @@ namespace QuestAppVersionSwitcher
         /// </summary>
         /// <param name="apk"></param>
         /// <returns></returns>
-        public static PatchingStatus GetPatchingStatus(ApkZip apk)
+        public static PatchingStatus GetPatchingStatus(ApkZip apk, string packageId)
         {
             PatchingStatus status = new PatchingStatus();
             MemoryStream manifestStream = new MemoryStream();
@@ -410,7 +410,18 @@ namespace QuestAppVersionSwitcher
             }
             manifestStream.Close();
             manifestStream.Dispose();
+            status.package = packageId;
+            status.recommendedModloader = GetRecommendedModloader(status);
             return status;
+        }
+
+        public static ModLoader GetRecommendedModloader(PatchingStatus status)
+        {
+            if (status.package == "com.beatgames.beatsaber")
+            {
+                if (new Version(status.version).CompareTo(new Version("1.28.0")) == 1) return ModLoader.Scotland2;
+            }
+            return ModLoader.QuestLoader;
         }
 
         public static PatchingStatus GetPatchingStatus(ZipArchive apk)
