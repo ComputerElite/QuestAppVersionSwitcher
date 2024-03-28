@@ -419,7 +419,7 @@ namespace QuestAppVersionSwitcher
         {
             if (status.package == "com.beatgames.beatsaber")
             {
-                if (new Version(status.version).CompareTo(new Version("1.28.0")) == 1) return ModLoader.Scotland2;
+                if (new Version(status.version.Split('_')[0]).CompareTo(new Version("1.28.0")) == 1) return ModLoader.Scotland2;
             }
             return ModLoader.QuestLoader;
         }
@@ -457,7 +457,7 @@ namespace QuestAppVersionSwitcher
             }
             status.isPatched = IsAPKModded(apk);
             status.moddedJson = GetModdedJson(apk);
-            status.package = PatchingManager.packageId;
+            status.package = packageId;
             status.recommendedModloader = GetRecommendedModloader(status);
             manifestStream.Close();
             manifestStream.Dispose();
