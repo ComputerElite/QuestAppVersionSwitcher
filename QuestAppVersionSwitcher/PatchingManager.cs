@@ -387,7 +387,7 @@ namespace QuestAppVersionSwitcher
         /// </summary>
         /// <param name="apk"></param>
         /// <returns></returns>
-        public static PatchingStatus GetPatchingStatus(ApkZip apk, string packageId)
+        public static PatchingStatus GetPatchingStatus(ApkZip apk, string packageId = "")
         {
             PatchingStatus status = new PatchingStatus();
             MemoryStream manifestStream = new MemoryStream();
@@ -424,7 +424,7 @@ namespace QuestAppVersionSwitcher
             return ModLoader.QuestLoader;
         }
 
-        public static PatchingStatus GetPatchingStatus(ZipArchive apk)
+        public static PatchingStatus GetPatchingStatus(ZipArchive apk, string packageId = "")
         {
             PatchingStatus status = new PatchingStatus();
             MemoryStream manifestStream = new MemoryStream();
@@ -434,7 +434,6 @@ namespace QuestAppVersionSwitcher
             }
             manifestStream.Position = 0;
             AxmlElement manifest = AxmlLoader.LoadDocument(manifestStream);
-            string packageId = "";
             foreach (AxmlAttribute a in manifest.Attributes)
             {
                 if (a.Name == "versionName")
@@ -458,6 +457,8 @@ namespace QuestAppVersionSwitcher
             }
             status.isPatched = IsAPKModded(apk);
             status.moddedJson = GetModdedJson(apk);
+            status.package = PatchingManager.packageId;
+            status.recommendedModloader = GetRecommendedModloader(status);
             manifestStream.Close();
             manifestStream.Dispose();
             return status;
