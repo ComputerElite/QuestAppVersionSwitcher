@@ -88,7 +88,7 @@ namespace QuestAppVersionSwitcher
 
         public static void Copy(string from, string to)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            if (!NeedsSAF())
             {
                 File.Copy(from, to, true);
                 return;
@@ -217,7 +217,7 @@ namespace QuestAppVersionSwitcher
 
         public static void Delete(string path)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            if (!NeedsSAF())
             {
                 File.Delete(path);
                 return;
@@ -229,7 +229,7 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q || !path.Contains("sdcard/Android"))
+            if (!NeedsSAF() || !path.Contains("sdcard/Android"))
             {
                 FileManager.CreateDirectoryIfNotExisting(path);
                 SetFilePermissions(path);
@@ -254,7 +254,7 @@ namespace QuestAppVersionSwitcher
         /// <param name="dir"></param>
         public static void DeleteDirectoryContent(string dir)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            if (!NeedsSAF())
             {
                 FileManager.RecreateDirectoryIfExisting(dir);
                 return;
@@ -265,10 +265,16 @@ namespace QuestAppVersionSwitcher
                 f.Delete();
             }
         }
+
+        public static bool NeedsSAF()
+        {
+            return false;
+            return Build.VERSION.SdkInt > BuildVersionCodes.Q;
+        }
         
         public static void DirectoryCopy(string sourceDirName, string destDirName)
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+            if (!NeedsSAF())
             {
                 FileManager.DirectoryCopy(sourceDirName, destDirName, true);
                 return;
@@ -434,7 +440,7 @@ namespace QuestAppVersionSwitcher
         public static List<string> GetFiles(string path)
         {
             Logger.Log("Getting files in " + path);
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q || !path.Contains("sdcard/Android"))
+            if (!NeedsSAF() || !path.Contains("sdcard/Android"))
             {
                 return Directory.GetFiles(path).ToList();
             }

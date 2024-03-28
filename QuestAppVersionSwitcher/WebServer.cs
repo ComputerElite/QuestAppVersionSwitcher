@@ -1084,9 +1084,9 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                if (Build.VERSION.SdkInt <= BuildVersionCodes.Q)
+                if (!FolderPermission.NeedsSAF())
                 {
-                    serverRequest.SendString(GotAccess.GetResponse("Android 10 doesn't need this check", true, true),
+                    serverRequest.SendString(GotAccess.GetResponse("Device doesn't require SAF. Continue as normal.", true, true),
                         "application/json");
 
                 }

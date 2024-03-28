@@ -186,13 +186,11 @@ namespace QuestAppVersionSwitcher
 
             File.Move(appLocation, backupDir + "app.apk");
             Logger.Log("Moved apk");
-            // Backup obb
             
             QAVSWebserver.patchStatus.doneOperations = 9;
             QAVSWebserver.patchStatus.progress = .96;
             QAVSWebserver.patchStatus.currentOperation = "Trying to copy obbs";
             QAVSWebserver.BroadcastPatchingStatus();
-            // ToDo: Copy obbs from Android/obb to created backup
 
             QAVSWebserver.patchStatus.doneOperations = 10;
             QAVSWebserver.patchStatus.progress = 1;
