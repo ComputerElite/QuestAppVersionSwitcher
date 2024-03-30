@@ -1,3 +1,4 @@
 {
-  "useDiffDowngrade": true
+  "useDiffDowngrade": true,
+  "recommendedVersions": ["1.28.0_4124311467"]
 }
