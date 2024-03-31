@@ -40,6 +40,7 @@ using Java.Util;
 using Newtonsoft.Json;
 using OculusGraphQLApiLib.GraphQL;
 using QuestAppVersionSwitcher.DiffDowngrading;
+using QuestPatcher.QMod;
 using QuestPatcher.Zip;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
@@ -281,6 +282,24 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("GET", "/api/patching/patchoptions", request =>
             {
                 request.SendString(JsonSerializer.Serialize(CoreService.coreVars.patchingPermissions), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/patching/recommendmodloader", request =>
+            {
+                string package = request.queryString.Get("package");
+                if (package == null)
+                {
+                    request.SendString(ModLoaderResponse.GetResponse("No package specified", ModLoader.QuestLoader, false), "application/json", 400);
+                    return true;
+                }
+                string version = request.queryString.Get("version");
+                if (version == null)
+                {
+                    request.SendString(ModLoaderResponse.GetResponse("No version specified", ModLoader.QuestLoader, false), "application/json", 400);
+                    return true;
+                }
+                ModLoader recommended = PatchingManager.GetRecommendedModloader(new PatchingStatus {version = version, package = package});
+                request.SendString(JsonSerializer.Serialize(ModLoaderResponse.GetResponse(recommended.ToString(), recommended, true)), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/patching/patchoptions", request =>
@@ -560,13 +579,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/android/device", serverRequest =>
             {
-                serverRequest.SendString(JsonSerializer.Serialize(new AndroidDevice()
-                {
-                    sdkVersion = (int)Build.VERSION.SdkInt,
-                    device = Build.Device,
-                    freeSpace = Environment.ExternalStorageDirectory.UsableSpace,
-                    totalSpace = Environment.ExternalStorageDirectory.TotalSpace,
-                }), "application/json");
+                serverRequest.SendString(JsonSerializer.Serialize(AndroidDevice.GetCurrent()), "application/json");
                 return true;
             });
 			server.AddRoute("POST", "/api/android/launch", serverRequest =>

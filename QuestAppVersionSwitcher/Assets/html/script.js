@@ -331,13 +331,19 @@ fetch("/api/android/device").then(res => res.json().then(res => {
 }))
 
 function UpdateInstalledModsQuest3Hint() {
-    var isOnQuest3 = device == "eureka" && modloader == 0 // only hide mods stuff on QuestLoader
+    var isOnQuest3 = device == "eureka" && modloader == 0 && !localStorage.installModsQ3 // only hide mods stuff on QuestLoader
     for(const e of document.getElementsByClassName("quest3hide")) {
         e.style.display = isOnQuest3 ? "none" : "block"
     }
     for(const e of document.getElementsByClassName("quest3show")) {
         e.style.display = isOnQuest3 ? "block" : "none"
     }
+}
+document.getElementById("installModsQ3").checked = localStorage.installModsQ3 == "true"
+
+document.getElementById("installModsQ3").onchange = () => {
+    localStorage.installModsQ3 = document.getElementById("installModsQ3").checked
+    UpdateInstalledModsQuest3Hint()
 }
 
 function LaunchApp() {

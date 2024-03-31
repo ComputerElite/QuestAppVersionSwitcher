@@ -268,7 +268,6 @@ namespace QuestAppVersionSwitcher
 
         public static bool NeedsSAF()
         {
-            //return false;
             return Build.VERSION.SdkInt > BuildVersionCodes.Q;
         }
         

@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Android.OS;
 using JetBrains.Annotations;
 using QuestAppVersionSwitcher.Mods;
 using QuestPatcher.QMod;
@@ -412,6 +413,7 @@ namespace QuestAppVersionSwitcher
             manifestStream.Dispose();
             status.package = packageId;
             status.recommendedModloader = GetRecommendedModloader(status);
+            status.device = AndroidDevice.GetCurrent();
             return status;
         }
 
@@ -459,6 +461,7 @@ namespace QuestAppVersionSwitcher
             status.moddedJson = GetModdedJson(apk);
             status.package = packageId;
             status.recommendedModloader = GetRecommendedModloader(status);
+            status.device = AndroidDevice.GetCurrent();
             manifestStream.Close();
             manifestStream.Dispose();
             return status;

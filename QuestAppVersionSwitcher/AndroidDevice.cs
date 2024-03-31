@@ -1,4 +1,5 @@
-﻿using ComputerUtils.Android.VarUtils;
+﻿using Android.OS;
+using ComputerUtils.Android.VarUtils;
 
 namespace QuestAppVersionSwitcher
 {
@@ -23,6 +24,17 @@ namespace QuestAppVersionSwitcher
             {
                 return SizeConverter.ByteSizeToString(totalSpace);
             }
+        }
+
+        public static AndroidDevice GetCurrent()
+        {
+            return new AndroidDevice()
+            {
+                sdkVersion = (int)Build.VERSION.SdkInt,
+                device = Build.Device,
+                freeSpace = Environment.ExternalStorageDirectory.UsableSpace,
+                totalSpace = Environment.ExternalStorageDirectory.TotalSpace,
+            };
         }
     }
 }
