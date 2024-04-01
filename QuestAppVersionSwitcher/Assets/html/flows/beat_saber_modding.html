@@ -267,7 +267,10 @@
     function VersionSelected() {
         selectedVersion = document.getElementById("gameVersions").value
         versionSpecified = true
-        FirstOpen()
+        fetch(`${start}/api/patching/recommendmodloader?package=com.beatgames.beatsaber&version=${selectedVersion}`).then(res => res.json().then(j => {
+            modloader = j.modloader
+            FirstOpen()
+        }))
     }
     
     function SelectVersion(showAll = false) {
@@ -703,13 +706,14 @@
                     if(selectedVersion == "" && SupportedBeatSaberVersions.length > 0) {
                         selectedVersion = SupportedBeatSaberVersions[0]
                     }
-                    if(SupportedBeatSaberVersions.length <= 0) {
-                        // OH NO; USER IS OFFLINE
-                        OpenTab("offline")
-                    } else if(selectedVersion == moddedStatus.version) {
-                        // Continue with modding
-                        fetch(`${start}/api/patching/recommendmodloader?package=com.beatgames.beatsaber&version=${selectedVersion}`).then(res => res.json().then(j => {
-                            modloader = j.modloader
+                    fetch(`${start}/api/patching/recommendmodloader?package=com.beatgames.beatsaber&version=${selectedVersion}`).then(res => res.json().then(j => {
+                        modloader = j.modloader
+    
+                        if(SupportedBeatSaberVersions.length <= 0) {
+                            // OH NO; USER IS OFFLINE
+                            OpenTab("offline")
+                        } else if(selectedVersion == moddedStatus.version) {
+                            // Continue with modding
                             if(moddedStatus.isPatched) {
                                 // Already modded
                                 OpenTab("alreadymodded")
@@ -722,11 +726,11 @@
                                     UpdateModGamePage()
                                 }
                             }
-                        }))
-                    } else {
-                        // Downgrade
-                        CheckDowngrade()
-                    }
+                        } else {
+                            // Downgrade
+                            CheckDowngrade()
+                        }
+                    }))
                 })
             }
         })
