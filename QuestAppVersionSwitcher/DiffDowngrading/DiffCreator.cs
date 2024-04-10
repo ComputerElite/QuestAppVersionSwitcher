@@ -34,6 +34,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             }
             
             // The diff file is now created
+            File.WriteAllText(outputDir + "version.json", JsonSerializer.Serialize(baseEntry));
             return baseEntry;
         }
 

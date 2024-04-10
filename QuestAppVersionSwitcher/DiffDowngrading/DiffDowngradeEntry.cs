@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using Android.Graphics;
-using Path = System.IO.Path;
+using System.IO;
 
 namespace QuestAppVersionSwitcher.DiffDowngrading
 {
@@ -34,7 +33,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             {
                 _diffFilename = value;
             }
-        };
+        }
 
         public string outputFilename { get; set; } = "";
         public FileDiffDowngradeEntryType type = FileDiffDowngradeEntryType.Apk;

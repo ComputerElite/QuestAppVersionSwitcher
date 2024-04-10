@@ -7,6 +7,47 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
 </head>
 <body>
-    
+    <h1>Diff creation</h1>
+    <h3>A interface for creating diff patches of your games. Make sure you have made backups in QAVS of the 2 versions you want to diff. Change app in the <a href="/">main ui</a></h3>
+    Create a diff from 
+    <select id="fromList">
+        <option value="test">1.36</option>
+    </select>
+    to
+    <select id="toList">
+        <option value="test">1.28</option>
+    </select>
+    <br>
+    <button onclick="CreateDiff()">Create diff</button>
+    <script>
+        function CreateDiff() {
+            var from = document.getElementById("fromList").value;
+            var to = document.getElementById("toList").value;
+            
+        }
+        
+        var config = {};
+        var backups = {}
+        
+        PopulateBackups()
+        function PopulateBackups() {
+            fetch(`/api/questappversionswitcher/config`).then(res => res.json().then(c => {
+                config = c
+                fetch(`/api/backups?package=${config.currentApp}`).then(res => res.json().then(b => {
+                    backups = b
+                    let names = backups.backups.map(b => b.backupName)
+                    let fromList = document.getElementById("fromList")
+                    let toList = document.getElementById("toList")
+                    fromList.innerHTML = ""
+                    toList.innerHTML = ""
+                    names.forEach(n => {
+                        let option = `<option value=${n}>${n}</option>`
+                        fromList.innerHTML += option
+                        toList.innerHTML += option
+                    })
+                }))
+            }))
+        }
+    </script>
 </body>
 </html>
