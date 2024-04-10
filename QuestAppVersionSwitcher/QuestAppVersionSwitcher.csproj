@@ -244,6 +244,9 @@
     <PackageReference Include="System.Text.Json">
       <Version>8.0.0-preview.3.23174.8</Version>
     </PackageReference>
+    <PackageReference Include="VCDiff">
+      <Version>4.0.1</Version>
+    </PackageReference>
     <PackageReference Include="Xamarin.Android.Arch.Work.Runtime">
       <Version>1.0.0.3</Version>
     </PackageReference>

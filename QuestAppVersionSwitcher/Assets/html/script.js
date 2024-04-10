@@ -469,6 +469,7 @@ document.getElementById("logintoken").onclick = () => {
 
 function UpdateVersion(version) {
     currentGameVersion = version
+    document.getElementById("currentVersion").innerText = currentGameVersion
 }
 
 var isGamePatched = false

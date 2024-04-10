@@ -7,6 +7,7 @@ using System.Threading;
 using ComputerUtils.Android.AndroidTools;
 using ComputerUtils.Android.Encryption;
 using ComputerUtils.Android.FileManaging;
+using ComputerUtils.Android.Logging;
 using ComputerUtils.Android.VarUtils;
 using JetBrains.Annotations;
 using OculusGraphQLApiLib;
@@ -144,8 +145,11 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
                 using(FileStream patch = File.OpenRead(diffFileDownloadPath)) {
                     using (FileStream output = File.Create(backupDir + "app.apk"))
                     {
-                        PleOps.XdeltaSharp.Decoder.Decoder decoder = new PleOps.XdeltaSharp.Decoder.Decoder(input, patch, output);
-                        decoder.Run();
+                        VCDiff.Decoders.VcDecoder decoder = new VCDiff.Decoders.VcDecoder(input, patch, output);
+                        long bytesWritten;
+                        Logger.Log("Decoding diff file for " + gameName + " " + version + " to " + backupDir + "app.apk");
+                        decoder.Decode(out bytesWritten);
+                        Logger.Log("Wrote " + bytesWritten + " bytes to " + backupDir + "app.apk");
                         decoder.Dispose();
                     }
                 }
