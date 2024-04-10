@@ -287,7 +287,7 @@ namespace QuestAppVersionSwitcher
             QAVSWebserver.BroadcastDownloads(false);
         }
 
-        private void UpdateMaxConnections()
+        public void UpdateMaxConnections()
         {
             maxConcurrentDownloads = filesToDownload - filesDownloaded > 1 ? 2 : 1;
             maxConcurrentConnections = 6 / maxConcurrentDownloads; // Oculus only supports 10 connections per IP, to be sure everything works we're just doing 6

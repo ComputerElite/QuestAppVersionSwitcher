@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
@@ -42,6 +43,9 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
                 return String.Format("{0:0.#}", progress * 100) + "%";
             }
         }
+        
+        public virtual List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
+        
         public override string id { get; set; } = "";
         public override string status { get; set; } = "";
         public override string textColor { get; set; } = "#FFFFFF";
@@ -58,6 +62,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         public override bool entitlementError { get; set; } = false;
         public override bool done { get; set; } = false;
         public string targetVersion { get; set; } = "";
+        public List<FileDiffDowngradeEntry> diffsToDo { get; set; } = new List<FileDiffDowngradeEntry>();
         [CanBeNull] public DiffDowngradeEntry entry { get; set; } = null;
 
         public DiffDowngrader(DiffDownloadRequest r)
@@ -80,16 +85,13 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
 
         private DownloadManager diffFileDownloadManager;
         public Thread updateThread;
-        public string diffFileDownloadPath = "";
 
         public void StartDownload()
         {
-            id = DateTime.Now.Ticks.ToString();
-            diffFileDownloadPath = CoreService.coreVars.QAVSTmpDowngradeDir + id + ".xdelta3";
             version = this.targetVersion;
             gameName = this.packageName;
             packageName = this.packageName;
-            status = "Downloading patch for " + gameName + " " + version;
+            status = "Downloading patches for " + gameName + " " + version;
 
             this.backupName = gameName + " " + version + " Downgraded";
             foreach (char r in QAVSWebserver.ReservedChars)
@@ -98,13 +100,13 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             }
             status = gameName + " " + version;
             
-            // apk download
-            filesToDownload = 1;
-            
+            // apk and obb download
+            filesToDownload = entry.otherFiles.Count + 1;
+            UpdateMaxConnections();
             
             diffFileDownloadManager = new DownloadManager();
-            diffFileDownloadManager.connections = 10;
-            diffFileDownloadManager.StartDownload(entry.download, diffFileDownloadPath);
+            diffFileDownloadManager.connections = maxConcurrentConnections;
+            diffFileDownloadManager.StartDownload(entry.download, CoreService.coreVars.QAVSTmpDowngradeDir + entry.diffFilename);
             diffFileDownloadManager.DownloadFinishedEvent += DownloadCompleted;
             diffFileDownloadManager.NotFoundDownloadErrorEvent += NotFoundDownloadError;
             diffFileDownloadManager.DownloadErrorEvent += DownloadError;
@@ -121,7 +123,45 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
 
                 Done();
             });
+            diffsToDo.AddRange(entry.otherFiles);
             updateThread.Start();
+        }
+        
+        public void UpdateManagersAndProgress()
+        {
+            UpdateMaxConnections();
+            totalBytes = diffFileDownloadManager.total + entry.otherFiles.Select(x => x.DiffByteSize).Sum();
+            downloadedBytes = downloadedFilesTotalBytes + (diffFileDownloadManager.downloadDone ? 0 : diffFileDownloadManager.done) + downloadManagers.Where(x => x.isObb).Select(x => x.done).Sum();
+            
+            // Speed
+            double secondsPassed = (DateTime.Now - lastUpdate).TotalSeconds;
+            long bytesPerSec = (long)Math.Round((downloadedBytes - lastBytes) / secondsPassed);
+            lastBytesPerSec.Add(bytesPerSec);
+            if (lastBytesPerSec.Count > 15) lastBytesPerSec.RemoveAt(0);
+            lastBytes = downloadedBytes;
+            long avg = 0;
+            foreach (long l in lastBytesPerSec) avg += l;
+            avg /= lastBytesPerSec.Count;
+            lastUpdate = DateTime.Now;
+            if(avg != 0) eTASeconds = (totalBytes - downloadedBytes) / avg;
+            speed = bytesPerSec;
+            
+            
+            for (int i = 0; i < maxConcurrentDownloads - downloadManagers.Count; i++)
+            {
+                if (diffsToDo.Count <= 0) return;
+                DownloadManager m = new DownloadManager();
+                m.connections = maxConcurrentConnections;
+                m.DownloadFinishedEvent += DownloadCompleted;
+                m.NotFoundDownloadErrorEvent += NotFoundDownloadError;
+                m.DownloadErrorEvent += DownloadError;
+                m.isCancelable = false;
+                m.isObb = true;
+                m.StartDownload(diffsToDo[0].download, CoreService.coreVars.QAVSTmpDowngradeDir + diffsToDo[0].diffFilename);
+                downloadManagers.Add(m);
+                diffsToDo.RemoveAt(0);
+            }
+            QAVSWebserver.BroadcastDownloads(false);
         }
 
         private void SetEntitlementError()
@@ -132,7 +172,9 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
 
         public void Done()
         {
-            status = "Download completed. Applying diff patch to current apk. Please wait up to 5 minutes.";
+            int totalPatches = entry.otherFiles.Count + 1;
+            int i = 1;
+            status = "Download completed. Applying diff patches to game. Please wait up to 5 minutes (" + i + "/" + totalPatches + ")";
             downloadedBytes = totalBytes;
             UpdateManagersAndProgress();
             QAVSWebserver.BroadcastDownloads(true);
@@ -140,22 +182,37 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             FileManager.RecreateDirectoryIfExisting(backupDir);
             // Get installed apk
             string appPath = AndroidService.FindAPKLocation(entry.appid);
-            using (FileStream input = File.OpenRead(appPath))
+            // apk
+            ApplyPatch(appPath, CoreService.coreVars.QAVSTmpDowngradeDir + entry.diffFilename, backupDir + "app.apk");
+            i++;
+            // obbs
+            foreach (FileDiffDowngradeEntry file in entry.otherFiles)
             {
-                using(FileStream patch = File.OpenRead(diffFileDownloadPath)) {
-                    using (FileStream output = File.Create(backupDir + "app.apk"))
+                status = "Download completed. Applying diff patches to game. Please wait up to 5 minutes (" + i + "/" + totalPatches + ")";
+                ApplyPatch(CoreService.coreVars.AndroidObbLocation + entry.appid + "/" + file.sourceFilename, CoreService.coreVars.QAVSTmpDowngradeDir + file.diffFilename, backupDir + "obb/" + entry.appid + "/" + file.outputFilename);
+                i++;
+            }
+            BackupInfo info = BackupManager.GetBackupInfo(backupDir, true); // Populate info.json correctly
+            RealDone();
+        }
+        
+        public void ApplyPatch(string sourcePath, string diffPath, string outputPath)
+        {
+            using (FileStream sourceStream = File.OpenRead(sourcePath))
+            {
+                using (FileStream diffStream = File.OpenRead(diffPath))
+                {
+                    using (FileStream output = File.Create(outputPath))
                     {
-                        VCDiff.Decoders.VcDecoder decoder = new VCDiff.Decoders.VcDecoder(input, patch, output);
+                        VCDiff.Decoders.VcDecoder decoder = new VCDiff.Decoders.VcDecoder(sourceStream, diffStream, output);
                         long bytesWritten;
-                        Logger.Log("Decoding diff file for " + gameName + " " + version + " to " + backupDir + "app.apk");
+                        Logger.Log("Decoding diff file for " + sourcePath + " with " + diffPath + " to " + outputPath);
                         decoder.Decode(out bytesWritten);
-                        Logger.Log("Wrote " + bytesWritten + " bytes to " + backupDir + "app.apk");
+                        Logger.Log("Wrote " + bytesWritten + " bytes to " + outputPath);
                         decoder.Dispose();
                     }
                 }
             }
-            BackupInfo info = BackupManager.GetBackupInfo(backupDir, true); // Populate info.json correctly
-            RealDone();
         }
 
         public void RealDone()
@@ -170,26 +227,6 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         private long lastBytes = 0;
         private List<long> lastBytesPerSec = new List<long>();
         private DateTime lastUpdate = DateTime.Now;
-
-        public void UpdateManagersAndProgress()
-        {
-            totalBytes = diffFileDownloadManager.total;
-            downloadedBytes = diffFileDownloadManager.done;
-            
-            // Speed
-            double secondsPassed = (DateTime.Now - lastUpdate).TotalSeconds;
-            long bytesPerSec = (long)Math.Round((downloadedBytes - lastBytes) / secondsPassed);
-            lastBytesPerSec.Add(bytesPerSec);
-            if (lastBytesPerSec.Count > 15) lastBytesPerSec.RemoveAt(0);
-            lastBytes = downloadedBytes;
-            long avg = 0;
-            foreach (long l in lastBytesPerSec) avg += l;
-            avg /= lastBytesPerSec.Count;
-            lastUpdate = DateTime.Now;
-            if(avg != 0) eTASeconds = (totalBytes - downloadedBytes) / avg;
-            speed = bytesPerSec;
-            QAVSWebserver.BroadcastDownloads(false);
-        }
 
         private void DownloadError(DownloadManager manager)
         {

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Android.Graphics;
+using Path = System.IO.Path;
 
 namespace QuestAppVersionSwitcher.DiffDowngrading
 {
@@ -12,23 +14,39 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         {
             return appid + "." + SV + "TO" + TV + ".";
         }
-        public List<FileDiffDowngradeEntry> otherFiles { get; set; }
+
+        public List<FileDiffDowngradeEntry> otherFiles { get; set; } = new List<FileDiffDowngradeEntry>();
     }
 
     public class FileDiffDowngradeEntry
     {
         public string sourceFilename { get; set; } = "";
-        public string diffFilename { get; set; } = "";
+        private string _diffFilename = "";
+
+        public string diffFilename
+        {
+            get
+            {
+                if (_diffFilename == "") return Path.GetFileName(download.Split('?')[0]);
+                return _diffFilename;
+            }
+            set
+            {
+                _diffFilename = value;
+            }
+        };
+
         public string outputFilename { get; set; } = "";
         public FileDiffDowngradeEntryType type = FileDiffDowngradeEntryType.Apk;
-        public bool isXDelta3 { get; set; }
-        public long TargetByteSize { get; set; }
-        public long SourceByteSize { get; set; }
-        public string SSHA256 { get; set; }
-        public string DSHA256 { get; set; }
-        public string TSHA256 { get; set; }
-        public string download { get; set; }
-        public bool isDirectDownload { get; set; }
+        public bool isXDelta3 { get; set; } = false;
+        public long TargetByteSize { get; set; } = 0;
+        public long DiffByteSize { get; set; } = 0;
+        public long SourceByteSize { get; set; } = 0;
+        public string SSHA256 { get; set; } = "";
+        public string DSHA256 { get; set; } = "";
+        public string TSHA256 { get; set; } = "";
+        public string download { get; set; } = "";
+        public bool isDirectDownload { get; set; } = false;
 
         public void Set(FileDiffDowngradeEntry e)
         {
