@@ -36,7 +36,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         }
 
         public string outputFilename { get; set; } = "";
-        public FileDiffDowngradeEntryType type = FileDiffDowngradeEntryType.Apk;
+        public FileDiffDowngradeEntryType type { get; set; } = FileDiffDowngradeEntryType.Apk;
         public bool isXDelta3 { get; set; } = false;
         public long TargetByteSize { get; set; } = 0;
         public long DiffByteSize { get; set; } = 0;
@@ -50,6 +50,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         public void Set(FileDiffDowngradeEntry e)
         {
             this.sourceFilename = e.sourceFilename;
+            this.diffFilename = e.diffFilename;
             this.outputFilename = e.outputFilename;
             this.type = e.type;
             this.isXDelta3 = e.isXDelta3;

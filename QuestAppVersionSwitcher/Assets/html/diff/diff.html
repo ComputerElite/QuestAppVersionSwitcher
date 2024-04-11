@@ -7,8 +7,10 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
 </head>
 <body>
-    <h1>Diff creation</h1>
-    <h3>A interface for creating diff patches of your games. Make sure you have made backups in QAVS of the 2 versions you want to diff. Change app in the <a href="/">main ui</a></h3>
+    <h1>Diffs</h1>
+    <h4>A interface for creating diff patches of your games. Make sure you have made backups in QAVS of the 2 versions you want to diff. Change app in the <a href="/">main ui</a></h4>
+    <br>
+    <h2>Diff creation</h2>
     Create a diff from 
     <select id="fromList">
         <option value="test">1.36</option>
@@ -19,11 +21,118 @@
     </select>
     <br>
     <button onclick="CreateDiff()">Create diff</button>
+    <div id="diffProgress"></div>
+    <br>
+    <br>
+    <h2>Backup creation</h2>
+    Create a Backup and populate it with apk and obb from your pc for creating diffs
+    <input type="text" id="backupName" placeholder="Backup name">
+    <br>
+    <button onclick="CreateBackup()">Create empty Backup</button>
+    <br>
+    <div id="createProgress"></div>
+    <br>
+    <br>
+    Selected Backup: <select id="backupList">
+        <option value="test">1.28</option>
+    </select>
+    <br>
+    <br>
+    
+    <button onclick="UploadFile()">Upload file to selected backup</button>
+    <div id="progress"></div>
+    <h4>Files</h4>
+    <table id="files">
+        <tr>
+            <th>File</th>
+            <th>Size</th>
+        </tr>
+    </table>
     <script>
         function CreateDiff() {
             var from = document.getElementById("fromList").value;
             var to = document.getElementById("toList").value;
-            
+            document.getElementById("diffProgress").innerText = "Creating, please wait a few minutes..."
+            fetch(`/api/diff/create?package=${config.currentApp}&sourceBackup=${from}&targetBackup=${to}`, {
+                method: "POST"
+            }).then(res => {
+                if (res.status === 200) {
+                    document.getElementById("diffProgress").innerText = "Diff created!"
+                }
+            })
+        }
+        
+        document.getElementById("backupList").onchange = () => {
+            LoadFiles()
+        }
+        
+        function LoadFiles() {
+            var backupName = document.getElementById("backupList").value
+            fetch(`/api/backup/files?package=${config.currentApp}&name=${backupName}`).then(res => {
+                if (res.status === 200) {
+                    res.json().then(files => {
+                        var table = `
+                        <tr>
+                            <th>File</th>
+                            <th>Size</th>
+                        </tr>
+                        `
+                        files.forEach(f => {
+                            table += `<tr><td><a href="/api/backup/getfile?package=${config.currentApp}&name=${backupName}&file=${f.path}">${f.path}</a></td><td>${f.sizeString}</td></tr>`
+                        })
+                        document.getElementById("files").innerHTML = table
+                    })
+                }
+            })
+        }
+        
+        var progress = document.getElementById("progress")
+        
+        function CreateBackup() {
+            var name = document.getElementById("backupName").value
+            fetch(`/api/backup/create?package=${config.currentApp}&name=${name}`, {
+                method: "POST"
+            }).then(res => {
+                if (res.status === 200) {
+                    document.getElementById("createProgress").innerText = "Backup created!"
+                    PopulateBackups()
+                }
+            })
+        }
+        function UploadFile() {
+            var input = document.createElement("input")
+            input.setAttribute("type", "file")
+
+            input.onchange = function (e) {
+                if (!this.files[0]) {
+                    return;
+                }
+
+                var reader = new FileReader();
+                var fileName = this.files[0].name
+                progress.innerText = "Reading file, please wait..."
+                reader.onloadend = function () {
+                    var xhr = new XMLHttpRequest()
+                    xhr.upload.addEventListener("progress", function(evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            percentComplete = parseInt(percentComplete * 100);
+                            progress.innerText = percentComplete + "%"
+
+                            if (percentComplete === 100) {
+                                progress.innerText = "File uploaded!"
+                                LoadFiles()
+                            }
+
+                        }
+                    }, false);
+                    xhr.open("POST", `/api/backup/upload?package=${config.currentApp}&name=${document.getElementById("backupList").value}&file=${fileName}`)
+                    xhr.send(reader.result)
+                }
+                reader.readAsArrayBuffer(this.files[0]);
+            }
+
+            input.click()
         }
         
         var config = {};
@@ -38,12 +147,15 @@
                     let names = backups.backups.map(b => b.backupName)
                     let fromList = document.getElementById("fromList")
                     let toList = document.getElementById("toList")
+                    let backupList = document.getElementById("backupList")
                     fromList.innerHTML = ""
                     toList.innerHTML = ""
+                    backupList.innerHTML = ""
                     names.forEach(n => {
                         let option = `<option value=${n}>${n}</option>`
                         fromList.innerHTML += option
                         toList.innerHTML += option
+                        backupList.innerHTML += option
                     })
                 }))
             }))

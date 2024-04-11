@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
+using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Core;
 using xdelta3.net;
@@ -16,25 +18,38 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             if (!sourceBackup.EndsWith(Path.DirectorySeparatorChar)) sourceBackup += Path.DirectorySeparatorChar;
             if (!targetBackup.EndsWith(Path.DirectorySeparatorChar)) targetBackup += Path.DirectorySeparatorChar;
             if (!outputDir.EndsWith(Path.DirectorySeparatorChar)) outputDir += Path.DirectorySeparatorChar;
+            FileManager.CreateDirectoryIfNotExisting(outputDir);
             
             Logger.Log("Creating diff");
-            baseEntry.SV = BackupManager.GetBackupInfo(sourceBackup).gameVersion;
-            baseEntry.TV = BackupManager.GetBackupInfo(targetBackup).gameVersion;
+            baseEntry.SV = BackupManager.GetBackupInfo(sourceBackup, true).gameVersion;
+            baseEntry.TV = BackupManager.GetBackupInfo(targetBackup, true).gameVersion;
             baseEntry.isXDelta3 = true;
             
             // Create entries
             baseEntry.Set(CreateDiffOfFile(baseEntry, sourceBackup + "app.apk", targetBackup + "app.apk", outputDir));
             // add obbs and other files
-            string[] sourceDirFiles = Directory.GetFiles(sourceBackup + "/obb/" + appId + "/");
-            string[] targetDirFiles = Directory.GetFiles(targetBackup + "/obb/" + appId + "/");
-            for(int i = 0; i < targetDirFiles.Length; i++)
+            List<string> allSourceFiles = new List<string>();
+            List<string> allTargetFiles = new List<string>();
+            if (Directory.Exists(sourceBackup + "/obb/" + appId))
+            {
+                allSourceFiles = Directory.GetFiles(sourceBackup + "/obb/" + appId + "/").ToList();
+                allSourceFiles.Insert(0, sourceBackup + "app.apk");
+            }
+            if (Directory.Exists(targetBackup + "/obb/" + appId))
+            {
+                allTargetFiles = Directory.GetFiles(targetBackup + "/obb/" + appId + "/").ToList();
+                allTargetFiles.Insert(0, targetBackup + "app.apk");
+            }
+            for(int i = 1; i < allTargetFiles.Count; i++)
             {
                 // generate one diff for every target backup obbs
-                baseEntry.otherFiles.Add(CreateDiffOfFile(baseEntry, sourceDirFiles[i % sourceDirFiles.Length], targetDirFiles[i], outputDir));
+                baseEntry.otherFiles.Add(CreateDiffOfFile(baseEntry, allSourceFiles[i % allSourceFiles.Count], allTargetFiles[i], outputDir));
             }
             
             // The diff file is now created
+            Logger.Log("Writing version.json file");
             File.WriteAllText(outputDir + "version.json", JsonSerializer.Serialize(baseEntry));
+            Logger.Log("Finished creating diff");
             return baseEntry;
         }
 

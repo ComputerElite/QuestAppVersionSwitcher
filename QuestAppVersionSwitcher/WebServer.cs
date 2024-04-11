@@ -163,6 +163,137 @@ namespace QuestAppVersionSwitcher
                 clients.Remove(socket);
             };
             wsServer.StartServer(CoreService.coreVars.wsPort);
+            server.AddRoute("POST", "/api/diff/create", request =>
+            {
+                if (request.queryString.Get("package") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    return true;
+                }
+                string package = request.queryString.Get("package");
+                if (request.queryString.Get("sourceBackup") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("sourceBackup key needed", false), "application/json", 400);
+                    return true;
+                }
+                string sourceBackup = CoreService.coreVars.QAVSBackupDir + package + Path.DirectorySeparatorChar + request.queryString.Get("sourceBackup") + Path.DirectorySeparatorChar;
+                if (request.queryString.Get("targetBackup") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("targetBackup key needed", false), "application/json", 400);
+                    return true;
+                }
+                string targetBackup = CoreService.coreVars.QAVSBackupDir + package + Path.DirectorySeparatorChar + request.queryString.Get("targetBackup") + Path.DirectorySeparatorChar;
+                string outputDir = targetBackup + "diffs" + Path.DirectorySeparatorChar + request.queryString.Get("sourceBackup") +
+                                   Path.DirectorySeparatorChar + DateTime.Now.Ticks + Path.DirectorySeparatorChar;
+                DiffCreator.CreateDiff(package, sourceBackup, targetBackup, outputDir);
+                request.SendString(GenericResponse.GetResponse("Created diff", true), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/backup/files", request =>
+            {
+                
+                if (request.queryString.Get("package") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    return true;
+                }
+                string package = request.queryString.Get("package");
+                if (request.queryString.Get("name") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("name key needed", false), "application/json", 400);
+                    return true;
+                }
+                string name = request.queryString.Get("name");
+                string directory = CoreService.coreVars.QAVSBackupDir + package + "/" + name + "/";
+                if (!Directory.Exists(directory))
+                {
+                    request.SendString(GenericResponse.GetResponse("Backup does not exist", false), "application/json", 404);
+                    return true;
+                }
+                // get all files recursively
+                request.SendString(JsonSerializer.Serialize(FileManager.GetAllFilesRecursively(directory)), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/backup/getfile", request =>
+            {
+                if (request.queryString.Get("package") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    return true;
+                }
+                string package = request.queryString.Get("package");
+                if (request.queryString.Get("name") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("name key needed", false), "application/json", 400);
+                    return true;
+                }
+                string name = request.queryString.Get("name");
+                if (request.queryString.Get("file") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("file key needed", false), "application/json", 400);
+                    return true;
+                }
+                string file = request.queryString.Get("file");
+                string directory = CoreService.coreVars.QAVSBackupDir + package + "/" + name + "/";
+                string createdFile = directory + file;
+                if (!File.Exists(createdFile))
+                {
+                    request.Send404();
+                    return true;
+                }
+                request.SendFileFS(createdFile, "application/octet-stream", 200, true, new Dictionary<string, string> {{"Content-Disposition", "attachment; filename=\"" + Path.GetFileName(file) + "\""}});
+                return true;
+            });
+            server.AddRouteStreamOnly("POST", "/api/backup/upload", request =>
+            {
+                
+                if (request.queryString.Get("package") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    return true;
+                }
+                string package = request.queryString.Get("package");
+                if (request.queryString.Get("name") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("name key needed", false), "application/json", 400);
+                    return true;
+                }
+                string name = request.queryString.Get("name");
+                if (request.queryString.Get("file") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("file key needed", false), "application/json", 400);
+                    return true;
+                }
+                string file = request.queryString.Get("file");
+                string directory = CoreService.coreVars.QAVSBackupDir + package + "/" + name + "/";
+                string createdFile = directory + (file.ToLower().EndsWith(".apk") ? "app.apk" : "obb/" + package + "/" + file);
+                FileManager.CreateDirectoryIfNotExisting(FileManager.GetParentDirIfExisting(createdFile));
+                Stream fileStream = File.Create(createdFile);
+                request.context.Request.InputStream.CopyTo(fileStream);
+                fileStream.Close();
+                request.SendString(GenericResponse.GetResponse("Created file at " + createdFile, true), "application/json");
+                return true;
+            });
+            server.AddRoute("POST", "/api/backup/create", request =>
+            {
+                
+                if (request.queryString.Get("package") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
+                    return true;
+                }
+                string package = request.queryString.Get("package");
+                if (request.queryString.Get("name") == null)
+                {
+                    request.SendString(GenericResponse.GetResponse("name key needed", false), "application/json", 400);
+                    return true;
+                }
+                string name = request.queryString.Get("name");
+                string directory = CoreService.coreVars.QAVSBackupDir + package + "/" + name;
+                Directory.CreateDirectory(directory);
+                request.SendString(GenericResponse.GetResponse("Created backup", true), "application/json");
+                return true;
+            });
             server.AddRoute("GET", "/api/downgrade/usediff", request =>
             {
                 request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading || CoreService.coreVars.onlineDowngradeJson.useDiffDowngrade, true), "application/json");
@@ -564,6 +695,7 @@ namespace QuestAppVersionSwitcher
             });
 
 			server.AddRouteFile("/", "html/index.html");
+            server.AddRouteFile("/diff", "html/diff/diff.html");
             server.AddRouteFile("/scotlandforever.mp3", "html/scotlandforever.mp3");
 			server.AddRouteFile("/setup", "html/setup.html");
             server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
