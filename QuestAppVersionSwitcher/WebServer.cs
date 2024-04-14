@@ -191,7 +191,6 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/backup/files", request =>
             {
-                
                 if (request.queryString.Get("package") == null)
                 {
                     request.SendString(GenericResponse.GetResponse("package key needed", false), "application/json", 400);
