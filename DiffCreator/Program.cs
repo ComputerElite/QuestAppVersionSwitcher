@@ -6,7 +6,7 @@ using ComputerUtils.Logging;
 using ComputerUtils.Updating;
 
 Logger.displayLogInConsole = true;
-Updater updater = new Updater("0.1.0", "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QAVS diff creator", Assembly.GetExecutingAssembly().Location);
+Updater updater = new Updater("1.15.20", "https://github.com/ComputerElite/QuestAppVersionSwitcher", "QAVS diff creator", Assembly.GetExecutingAssembly().Location);
 if (args.Length == 1 && args[0] == "--update")
 {
     Logger.Log("Starting in update mode");
