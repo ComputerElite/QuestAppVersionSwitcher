@@ -198,18 +198,17 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
         
         public void ApplyPatch(string sourcePath, string diffPath, string outputPath)
         {
-            using (FileStream sourceStream = File.OpenRead(sourcePath))
+            FileManager.CreateDirectoryIfNotExisting(FileManager.GetParentDirIfExisting(outputPath));
+            using (FileStream input = File.OpenRead(sourcePath))
             {
-                using (FileStream diffStream = File.OpenRead(diffPath))
-                {
+                using(FileStream patch = File.OpenRead(diffPath)) {
                     using (FileStream output = File.Create(outputPath))
                     {
-                        VCDiff.Decoders.VcDecoder decoder = new VCDiff.Decoders.VcDecoder(sourceStream, diffStream, output);
-                        long bytesWritten;
                         Logger.Log("Decoding diff file for " + sourcePath + " with " + diffPath + " to " + outputPath);
-                        decoder.Decode(out bytesWritten);
-                        Logger.Log("Wrote " + bytesWritten + " bytes to " + outputPath);
+                        PleOps.XdeltaSharp.Decoder.Decoder decoder = new PleOps.XdeltaSharp.Decoder.Decoder(input, patch, output);
+                        decoder.Run();
                         decoder.Dispose();
+                        Logger.Log("Decoded!");
                     }
                 }
             }
