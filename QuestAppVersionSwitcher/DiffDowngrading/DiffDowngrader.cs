@@ -189,6 +189,7 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             foreach (FileDiffDowngradeEntry file in entry.otherFiles)
             {
                 status = "Download completed. Applying diff patches to game. Please wait up to 5 minutes (" + i + "/" + totalPatches + ")";
+                QAVSWebserver.BroadcastDownloads(true);
                 ApplyPatch(CoreService.coreVars.AndroidObbLocation + entry.appid + "/" + file.sourceFilename, CoreService.coreVars.QAVSTmpDowngradeDir + file.diffFilename, backupDir + "obb/" + entry.appid + "/" + file.outputFilename);
                 i++;
             }
