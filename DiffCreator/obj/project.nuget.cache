@@ -1,0 +1,50 @@
+{
+  "version": 2,
+  "dgSpecHash": "OEoswpOuxAsxIqFFCHBjKQFJd0VDTTN0QwosOL6kYOvYl/p9ueALe+JY8cSRGtUGLVjgMCsQvCBLY15YqP1V6w==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\aforge\\2.2.5\\aforge.2.2.5.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\aforge.video\\2.2.5\\aforge.video.2.2.5.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\aforge.video.directshow\\2.2.5\\aforge.video.directshow.2.2.5.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.io.recyclablememorystream\\2.1.3\\microsoft.io.recyclablememorystream.2.1.3.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.win32.systemevents\\6.0.0\\microsoft.win32.systemevents.6.0.0.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\mimetypemapofficial\\1.0.17\\mimetypemapofficial.1.0.17.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\qrcoder\\1.4.3\\qrcoder.1.4.3.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\questpatcher.axml\\1.0.2\\questpatcher.axml.1.0.2.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\sewer56.vcdiff\\3.4.0\\sewer56.vcdiff.3.4.0.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\system.drawing.common\\6.0.0\\system.drawing.common.6.0.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'AForge 2.2.5' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "AForge",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'AForge.Video 2.2.5' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "AForge.Video",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    },
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'AForge.Video.DirectShow 2.2.5' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
+      "libraryId": "AForge.Video.DirectShow",
+      "targetGraphs": [
+        "net6.0"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,229 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "DiffCreator/1.0.0": {
+        "dependencies": {
+          "ComputerUtils": "1.0.0",
+          "QuestPatcher.Axml": "1.0.2",
+          "Sewer56.VCDiff": "3.4.0"
+        },
+        "runtime": {
+          "DiffCreator.dll": {}
+        }
+      },
+      "AForge/2.2.5": {
+        "runtime": {
+          "lib/AForge.dll": {
+            "assemblyVersion": "2.2.5.0",
+            "fileVersion": "2.2.5.0"
+          }
+        }
+      },
+      "AForge.Video/2.2.5": {
+        "dependencies": {
+          "AForge": "2.2.5"
+        },
+        "runtime": {
+          "lib/AForge.Video.dll": {
+            "assemblyVersion": "2.2.5.0",
+            "fileVersion": "2.2.5.0"
+          }
+        }
+      },
+      "AForge.Video.DirectShow/2.2.5": {
+        "dependencies": {
+          "AForge.Video": "2.2.5"
+        },
+        "runtime": {
+          "lib/AForge.Video.DirectShow.dll": {
+            "assemblyVersion": "2.2.5.0",
+            "fileVersion": "2.2.5.0"
+          }
+        }
+      },
+      "Microsoft.IO.RecyclableMemoryStream/2.1.3": {
+        "runtime": {
+          "lib/net5.0/Microsoft.IO.RecyclableMemoryStream.dll": {
+            "assemblyVersion": "2.1.3.0",
+            "fileVersion": "2.1.3.0"
+          }
+        }
+      },
+      "Microsoft.Win32.SystemEvents/6.0.0": {
+        "runtime": {
+          "lib/net6.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net6.0/Microsoft.Win32.SystemEvents.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "MimeTypeMapOfficial/1.0.17": {
+        "runtime": {
+          "lib/netcoreapp3.1/MimeTypes.dll": {
+            "assemblyVersion": "2.3.2.0",
+            "fileVersion": "2.3.2.0"
+          }
+        }
+      },
+      "QRCoder/1.4.3": {
+        "runtime": {
+          "lib/net6.0/QRCoder.dll": {
+            "assemblyVersion": "1.4.3.0",
+            "fileVersion": "1.4.3.0"
+          }
+        }
+      },
+      "QuestPatcher.Axml/1.0.2": {
+        "runtime": {
+          "lib/netstandard2.1/QuestPatcher.Axml.dll": {
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
+          }
+        }
+      },
+      "Sewer56.VCDiff/3.4.0": {
+        "dependencies": {
+          "Microsoft.IO.RecyclableMemoryStream": "2.1.3"
+        },
+        "runtime": {
+          "lib/net5.0/VCDiff.dll": {
+            "assemblyVersion": "3.4.0.0",
+            "fileVersion": "3.4.0.0"
+          }
+        }
+      },
+      "System.Drawing.Common/6.0.0": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/System.Drawing.Common.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/unix/lib/net6.0/System.Drawing.Common.dll": {
+            "rid": "unix",
+            "assetType": "runtime",
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          },
+          "runtimes/win/lib/net6.0/System.Drawing.Common.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "ComputerUtils/1.0.0": {
+        "dependencies": {
+          "AForge.Video": "2.2.5",
+          "AForge.Video.DirectShow": "2.2.5",
+          "MimeTypeMapOfficial": "1.0.17",
+          "QRCoder": "1.4.3",
+          "System.Drawing.Common": "6.0.0"
+        },
+        "runtime": {
+          "ComputerUtils.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DiffCreator/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AForge/2.2.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-clkumhM9DggqIzEXAHgVLeWO4arG5YfoPr7J4jfjJx35AoeEIJSSm49J25bwp/9mXQYLwi7y1Wunc8qgYJsGxg==",
+      "path": "aforge/2.2.5",
+      "hashPath": "aforge.2.2.5.nupkg.sha512"
+    },
+    "AForge.Video/2.2.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XqzcOXtBUagEPRqg/00oayxlCPmxP4284SdM62mVotsNoD03fs19BrzdMBfhUOOYPyd0B/IXH7tEWnSDmc2gxA==",
+      "path": "aforge.video/2.2.5",
+      "hashPath": "aforge.video.2.2.5.nupkg.sha512"
+    },
+    "AForge.Video.DirectShow/2.2.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pEch6felU/RGAbl0A7yjaQjsGxwiRFU9R+qBqR92wQo++XhzPLeQaZHnAPIBYaG7MfoqtjgCDkK4z3Tra4VQ3w==",
+      "path": "aforge.video.directshow/2.2.5",
+      "hashPath": "aforge.video.directshow.2.2.5.nupkg.sha512"
+    },
+    "Microsoft.IO.RecyclableMemoryStream/2.1.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-h1hjJ7E0ZMTbutiUXmv07rs+cTST9+w+iDNZginmArfZr47GjHevwBQK/LBcAkHm+w+IHaBd9Lsuf5dv8DnDAg==",
+      "path": "microsoft.io.recyclablememorystream/2.1.3",
+      "hashPath": "microsoft.io.recyclablememorystream.2.1.3.nupkg.sha512"
+    },
+    "Microsoft.Win32.SystemEvents/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hqTM5628jSsQiv+HGpiq3WKBl2c8v1KZfby2J6Pr7pEPlK9waPdgEO6b8A/+/xn/yZ9ulv8HuqK71ONy2tg67A==",
+      "path": "microsoft.win32.systemevents/6.0.0",
+      "hashPath": "microsoft.win32.systemevents.6.0.0.nupkg.sha512"
+    },
+    "MimeTypeMapOfficial/1.0.17": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-f6DSQSYTckCjq1ifRj0fSLiEmDv+22uo4+JjTeb3MNZK3Ban1XLjA+bTQtD+/7x2NBEAGzBLYIRpS1IU2OgIAw==",
+      "path": "mimetypemapofficial/1.0.17",
+      "hashPath": "mimetypemapofficial.1.0.17.nupkg.sha512"
+    },
+    "QRCoder/1.4.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fWuFqjm8GTlEb2GqBl3Hi8HZZeZQwBSHxvRPtPjyNbT82H0ff0JwavKRBmMaXCno1Av6McPC8aJzri0Mj2w9Jw==",
+      "path": "qrcoder/1.4.3",
+      "hashPath": "qrcoder.1.4.3.nupkg.sha512"
+    },
+    "QuestPatcher.Axml/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-q3mlJQWTswHgvi1fh2/G7Yjc5fiGW1tMKxaVhEtEWkJWqkfkvrnqOh+5SXQGdG6xpTbQaqhYEkcDAShRIeN0oQ==",
+      "path": "questpatcher.axml/1.0.2",
+      "hashPath": "questpatcher.axml.1.0.2.nupkg.sha512"
+    },
+    "Sewer56.VCDiff/3.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-q0MQGbutMUv+SARxYS3w/qdZvcBPbRNt06pJLNM6TytcwwrkPvxxKYtgIldt1NmySp04SAydY8+85zF9+2opag==",
+      "path": "sewer56.vcdiff/3.4.0",
+      "hashPath": "sewer56.vcdiff.3.4.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NfuoKUiP2nUWwKZN6twGqXioIe1zVD0RIj2t976A+czLHr2nY454RwwXs6JU9Htc6mwqL6Dn/nEL3dpVf2jOhg==",
+      "path": "system.drawing.common/6.0.0",
+      "hashPath": "system.drawing.common.6.0.0.nupkg.sha512"
+    },
+    "ComputerUtils/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
