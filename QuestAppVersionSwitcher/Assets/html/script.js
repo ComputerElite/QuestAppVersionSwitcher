@@ -19,7 +19,7 @@ fetch("/api/downgrade/usediff").then(res => res.json().then(res => {
     if(diffDowngradeEnabled) {
         setTimeout(() => {
             UpdateDowngrades()
-        }, 2500)
+        }, 2500
     }
     ReloadDowngradeIFrame();
 }))
@@ -895,21 +895,25 @@ function CheckStartParams() {
         location = oculusLink
     }
     if(download) {
-        fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
-            res.json().then(res => {
-                if(res.msg == "2") {
-                    // Logged in
-                    // Open downgrade tab
-                    OpenTab("downgrade")
-                    // Open OculusDB on correct page
-                    document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/id/${game}?downloadversion=${version}`
-                } else {
-                    // Not logged in
-                    OpenGetPasswordPopup()
-                    GotoStep(13)
-                }
+        if(diffDowngradeEnabled) {
+            OpenTab("downgradeDiff")
+        } else {
+            fetch("/api/questappversionswitcher/loggedinstatus").then(res => {
+                res.json().then(res => {
+                    if(res.msg == "2") {
+                        // Logged in
+                        // Open downgrade tab
+                        OpenTab("downgrade")
+                        // Open OculusDB on correct page
+                        document.getElementById("downgradeframe").src = `https://oculusdb.rui2015.me/id/${game}?downloadversion=${version}`
+                    } else {
+                        // Not logged in
+                        OpenGetPasswordPopup()
+                        GotoStep(13)
+                    }
+                })
             })
-        })
+        }
     }
 
     if(modnow) {
