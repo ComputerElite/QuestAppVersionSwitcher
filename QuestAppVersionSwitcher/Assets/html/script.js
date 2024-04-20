@@ -19,7 +19,7 @@ fetch("/api/downgrade/usediff").then(res => res.json().then(res => {
     if(diffDowngradeEnabled) {
         setTimeout(() => {
             UpdateDowngrades()
-        }, 2500
+        }, 2500)
     }
     ReloadDowngradeIFrame();
 }))
