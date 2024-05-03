@@ -44,8 +44,6 @@ namespace QuestAppVersionSwitcher.DiffDowngrading
             }
         }
         
-        public virtual List<DownloadManager> downloadManagers { get; set; } = new List<DownloadManager>();
-        
         public override string id { get; set; } = "";
         public override string status { get; set; } = "";
         public override string textColor { get; set; } = "#FFFFFF";

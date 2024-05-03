@@ -74,6 +74,15 @@
     <p>Your game is modded! Press <code>Get mods</code> below to get to the installed mods page</p>
     <button onclick="GetMods()">Get mods</button>
 </div>
+<div class="content hidden" id="mbf">
+    <h1>You cannot use QAVS to mod this version of Beat Saber!</h1>
+    <p>Instead you will have to use ModsBeforeFriday on your phone or pc. Simply google it.</p>
+    <p>If you need help you can head to the BSMG discord server at <a>https://discord.gg/beatsabermods</a></p>
+    <br>
+    <br>
+    <br>
+    <button style="font-size: 0.7rem" onclick="ContinueWithoutMBF()">Continue anyway (will not work)</button>
+</div>
 <div class="content hidden" id="downgrade">
     <h1>Downgrade</h1>
     <div id="downgradeLogin">
@@ -263,6 +272,22 @@
         <div class="loaderCircleHole"></div>
         <div class="loaderSquare"></div>
     </div>`
+    
+    var skipMBFCheck = false
+    function ContinueWithoutMBF() {
+        skipMBFCheck = true
+        FirstOpen()
+    }
+    
+    function ShouldUseMBF() {
+        if(skipMBFCheck) return false
+        // ToDo: check headset
+        // if version > 1.28.0 use MBF
+        major = parseInt(selectedVersion.split(".")[0])
+        minor = parseInt(selectedVersion.split(".")[1])
+        if(major > 1 || minor > 28) return true
+        return false
+    }   
     
     function VersionSelected() {
         selectedVersion = document.getElementById("gameVersions").value
@@ -690,6 +715,10 @@
         if(!selectedVersion) {
             // let user select the version they want to use
             SelectVersion()
+            return
+        }
+        if(ShouldUseMBF()) {
+            OpenTab("mbf")
             return
         }
         UpdateModdedStatus().then(() => {
