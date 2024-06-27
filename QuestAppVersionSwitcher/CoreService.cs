@@ -3,6 +3,7 @@ using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
 using QuestAppVersionSwitcher.Mods;
 using System;
+using System.IO;
 using System.Net.Security;
 using System.Net;
 using System.Reflection;

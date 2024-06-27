@@ -5,6 +5,7 @@ using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using ComputerUtils.Android.AndroidTools;
@@ -25,6 +26,8 @@ using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AdvancedSharpAdbClient;
 using Android.App;
 using Android.OS;
 using Android.Provider;
@@ -36,17 +39,24 @@ using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
 using Fleck;
+using Java.IO;
+using Java.Lang;
 using Java.Util;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using OculusGraphQLApiLib.GraphQL;
 using QuestAppVersionSwitcher.DiffDowngrading;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
+using AdbServer = QuestAppVersionSwitcher.Adb.AdbServer;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
+using File = System.IO.File;
+using IOException = System.IO.IOException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Math = System.Math;
 using Path = System.IO.Path;
+using Process = System.Diagnostics.Process;
 using WebView = Android.Webkit.WebView;
 
 namespace QuestAppVersionSwitcher
@@ -1505,11 +1515,48 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("Couldn't set up multicase: " + e, LoggingType.Warning);
+                    Logger.Log("Couldn't set up multicast: " + e, LoggingType.Warning);
                 }
             });
             t.Start();
+            singleton = new AdbServer();
+            singleton.Start();
+            Thread.Sleep(1000);
+            try
+            {
+                var adbClient = new AdvancedSharpAdbClient.AdbClient();
+                var device = adbClient.GetDevices().FirstOrDefault();
+                var receiver = new AdvancedSharpAdbClient.Receivers.ConsoleOutputReceiver();
+                Logger.Log("Executing command");
+                adbClient.ExecuteRemoteCommand("ls -lah /sdcard/", device, receiver);
+
+                Logger.Log(receiver.ToString());
+                Logger.Log("Executed command");
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.ToString(), LoggingType.Error);
+            }
         }
+
+        private static AdbServer singleton;
+        
+        private static async Task<string> ReadStreamAsync([CanBeNull] Stream stream)
+        {
+            using (var reader = new BufferedReader(new InputStreamReader(stream)))
+            {
+                string line;
+                string res = "";
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    res += line + "\n";
+                }
+
+                return res;
+            }
+        }
+        
+        
 
         private void ChangeApp(string packageName, string name = "")
         {
