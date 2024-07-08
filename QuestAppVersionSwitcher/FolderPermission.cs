@@ -16,6 +16,7 @@ using AndroidX.RecyclerView.Widget;
 using ComputerUtils.Android;
 using ComputerUtils.Android.FileManaging;
 using ComputerUtils.Android.Logging;
+using DanTheMan827.OnDeviceADB;
 using Google.Android.Material.Dialog;
 using Java.IO;
 using Java.Lang;
@@ -49,7 +50,7 @@ namespace QuestAppVersionSwitcher
 
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
-            
+            return true;
             Logger.Log("Checking access for " + dirInExtenalStorage + ": " + CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage));
             
             // Temporary hack while I figure out how to get the permission status
@@ -91,6 +92,12 @@ namespace QuestAppVersionSwitcher
             if (!NeedsSAF())
             {
                 File.Copy(from, to, true);
+                return;
+            }
+            else
+            {
+                // Use adb
+                AdbWrapper.RunAdbCommand("shell cp \"" + from + "\" \"" + to + "\"");
                 return;
             }
             try
@@ -276,6 +283,12 @@ namespace QuestAppVersionSwitcher
             if (!NeedsSAF())
             {
                 FileManager.DirectoryCopy(sourceDirName, destDirName, true);
+                return;
+            }
+            else
+            {
+                // Do it via adb
+                AdbWrapper.RunAdbCommand("shell cp -r \"" + sourceDirName + "\" \"" + destDirName + "\"");
                 return;
             }
             // If the destination directory exists, delete it 

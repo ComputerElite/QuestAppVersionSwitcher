@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ComputerUtils.Android;
 using ComputerUtils.Android.Logging;
 
-namespace QuestAppVersionSwitcher.Adb
+namespace DanTheMan827.OnDeviceADB
 {
      
     /// <summary>
@@ -19,6 +19,7 @@ namespace QuestAppVersionSwitcher.Adb
         private static string? NativeLibsDir => AndroidCore.context.ApplicationInfo?.NativeLibraryDir;
         private CancellationTokenSource? CancelToken { get; set; }
         private Process? ServerProcess { get; set; }
+        public static AdbServer Instance { get; set; }
 
         /// <summary>
         /// Path to the adb binary.
@@ -36,8 +37,9 @@ namespace QuestAppVersionSwitcher.Adb
             Debug.Assert(CacheDir != null);
             Debug.Assert(NativeLibsDir != null);
             Debug.Assert(AdbPath != null);
+            Instance = this;
         }
-        private void StartServer()
+        private void StartServer(string arguments)
         {
             Thread t = new Thread(() =>
             {
@@ -46,7 +48,7 @@ namespace QuestAppVersionSwitcher.Adb
                 Debug.Assert(this.CancelToken == null);
 
                 // Create and configure the ProcessStartInfo.
-                var adbInfo = new ProcessStartInfo(AdbPath, "pair localhost");
+                var adbInfo = new ProcessStartInfo(AdbPath, arguments);
                 adbInfo.WorkingDirectory = FilesDir;
                 adbInfo.UseShellExecute = false;
                 adbInfo.RedirectStandardOutput = true;
@@ -55,7 +57,7 @@ namespace QuestAppVersionSwitcher.Adb
                 adbInfo.EnvironmentVariables["TMPDIR"] = CacheDir;
 
                 // Start the process
-                Logger.Log("Starting adb server process from " + adbInfo.FileName);
+                Logger.Log("Starting adb server process from " + adbInfo.FileName + " with arguments " + adbInfo.Arguments);
                 ServerProcess = Process.Start(adbInfo);
 
                 if (ServerProcess == null)
@@ -85,12 +87,21 @@ namespace QuestAppVersionSwitcher.Adb
             t.Start();
         }
 
+        private void KillServer()
+        {
+            
+            if (ServerProcess != null && !ServerProcess.HasExited)
+            {
+                ServerProcess.Kill();
+            }
+        }
+
         private void DisposeVariables(bool attemptKill)
         {
             // Stop the server
             if (attemptKill && ServerProcess != null && !ServerProcess.HasExited)
             {
-                ServerProcess.Kill();
+                KillServer();
             }
 
             // Cleanup the token and process
@@ -108,7 +119,7 @@ namespace QuestAppVersionSwitcher.Adb
         {
             if (!IsRunning)
             {
-                StartServer();
+                StartServer("connect 127.0.0.1");
             }
         }
 
@@ -118,5 +129,11 @@ namespace QuestAppVersionSwitcher.Adb
         public void Stop() => DisposeVariables(true);
 
         public void Dispose() => Stop();
+
+        public void Pair(string rPort, string rCode)
+        {
+            KillServer();
+            StartServer("pair 127.0.0.1:" + rPort + " " + rCode);
+        }
     }
 }

@@ -1,0 +1,43 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QAVS - Setup</title>
+    <link rel="stylesheet" type="text/css" href="newstyle.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    <input type="number" placeholder="port" id="port">
+    <input type="text" placeholder="code" id="code">
+    <button onclick="pair()">Pair</button>
+    <input type="text" placeholder="command" id="command">
+    <button onclick="send()">Send command</button>
+    <textarea id="response"></textarea>
+<script>
+    function pair() {
+        var port = document.getElementById('port').value;
+        var code = document.getElementById('code').value;
+        fetch(`/api/adb/pair`, {
+            method: "POST",
+            body: JSON.stringify({port: port, code: code})
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data)
+            })
+    }
+    
+    function send() {
+        var command = document.getElementById('command').value;
+        fetch(`/api/adb/command`, {
+            method: 'POST',
+            body: JSON.stringify({command: command})
+        })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('response').value = data;
+            })
+    }
+    
+</script>
+</body>
+</html>

@@ -38,6 +38,7 @@ using Thread = System.Threading.Thread;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
+using DanTheMan827.OnDeviceADB;
 using Fleck;
 using Java.IO;
 using Java.Lang;
@@ -48,7 +49,7 @@ using OculusGraphQLApiLib.GraphQL;
 using QuestAppVersionSwitcher.DiffDowngrading;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
-using AdbServer = QuestAppVersionSwitcher.Adb.AdbServer;
+using AdbServer = DanTheMan827.OnDeviceADB.AdbServer;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
 using File = System.IO.File;
@@ -305,7 +306,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/downgrade/usediff", request =>
             {
-                request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading || CoreService.coreVars.onlineDowngradeJson.useDiffDowngrade, true), "application/json");
+                request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading, true), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/downgrade/usediff", request =>
@@ -707,6 +708,7 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/diff", "html/diff/diff.html");
             server.AddRouteFile("/scotlandforever.mp3", "html/scotlandforever.mp3");
 			server.AddRouteFile("/setup", "html/setup.html");
+            server.AddRouteFile("/pair", "html/pair.html");
             server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
             server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
             server.AddRouteFile("/script.js", "html/script.js");
@@ -1484,8 +1486,51 @@ namespace QuestAppVersionSwitcher
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
                 return true;
             });
+            server.AddRoute("POST", "/api/adb/pair", request =>
+            {
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                singleton.Pair(r.port, r.code);
+                request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/adb/port", request =>
+            {
+                request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/command", request =>
+            {
+                
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                ExitInfo i = AdbWrapper.RunAdbCommand(r.command);
+                request.SendString(i.ExitCode + "\n" + i.Output+ "\n" + i.Error);
+                /*
+                var adbClient = new AdvancedSharpAdbClient.AdbClient();
+                if (adbClient.GetDevices().Count() <= 0)
+                {
+                    request.SendString("No devices found,please pair device", "application/json");
+                    return true;
+                }
+                var device = adbClient.GetDevices().FirstOrDefault();
+                var receiver = new AdvancedSharpAdbClient.Receivers.ConsoleOutputReceiver();
+                Logger.Log("Executing command " + r.command);
+                adbClient.ExecuteRemoteCommand(r.command, device, receiver);
+
+                Logger.Log(receiver.ToString());
+                Logger.Log("Executed command");
+                request.SendString(receiver.ToString(), "application/json");
+                */
+                return true;
+            });
 			server.AddRouteFile("/facts.png", "facts.png");
-            server.StartServer(CoreService.coreVars.serverPort);
+            try
+            {
+                server.StartServer(CoreService.coreVars.serverPort);
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Failed to start server:\n"+ e.ToString(), LoggingType.Warning);
+            }
 
             if (CoreService.coreVars.loginStep == 1)
             {
@@ -1519,8 +1564,10 @@ namespace QuestAppVersionSwitcher
                 }
             });
             t.Start();
+            
             singleton = new AdbServer();
             singleton.Start();
+            /*
             Thread.Sleep(1000);
             try
             {
@@ -1537,6 +1584,7 @@ namespace QuestAppVersionSwitcher
             {
                 Logger.Log(e.ToString(), LoggingType.Error);
             }
+            */
         }
 
         private static AdbServer singleton;

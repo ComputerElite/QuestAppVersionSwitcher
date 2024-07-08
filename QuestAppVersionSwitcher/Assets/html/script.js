@@ -1083,6 +1083,9 @@ function UpdateDownloads(json) {
     document.getElementById("gameProgressBarContainers").innerHTML = gdms
 }
 
+document.getElementById("adb").onclick =()=> {
+    location = "/pair"
+}
 
 document.getElementById("setup").onclick = () => {
     location = "/setup?open=true"

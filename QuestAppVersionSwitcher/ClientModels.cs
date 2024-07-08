@@ -18,6 +18,14 @@ namespace QuestAppVersionSwitcher.ClientModels
         public ModdedJson moddedJson { get; set; } = null;
     }
 
+    public class AdbRequest
+    {
+        public string command { get; set; } = "";
+        public string port { get; set; } = "";
+        public string code { get; set; } = "";
+
+    }
+
     public class DownloadStatus
     {
         public List<GameDownloadManager> gameDownloads { get; set; } = new List<GameDownloadManager>();
