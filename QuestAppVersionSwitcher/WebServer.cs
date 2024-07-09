@@ -728,8 +728,13 @@ namespace QuestAppVersionSwitcher
 			server.AddRoute("POST", "/api/android/launch", serverRequest =>
             {
                 serverRequest.SendString(GenericResponse.GetResponse("Launching " + CoreService.coreVars.currentApp, true), "application/json");
-
-                AndroidService.LaunchApp(CoreService.coreVars.currentApp);
+                // get package from query string if any
+                string appToLaunch = CoreService.coreVars.currentApp;
+                if (serverRequest.queryString.Get("package") != null)
+                {
+                    appToLaunch = serverRequest.queryString.Get("package");
+                }
+                AndroidService.LaunchApp(appToLaunch);
                 Timer t = new Timer();
                 t.Schedule(new LaunchAppTask(), 2000);
                 return true;
@@ -1489,8 +1494,25 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/api/adb/pair", request =>
             {
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
-                singleton.Pair(r.port, r.code);
-                request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
+                try
+                {
+                    singleton.Pair(r.port, r.code);
+                    request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
+                    try
+                    {
+                        Logger.Log("Trying to put device into tcpip mode");
+                        AdbWrapper.RunAdbCommand("tcpip 5555");
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log("Failed to put device into tcpip mode: " + e, LoggingType.Warning);
+                    }
+                } catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to pair: " + e, false), "application/json");
+                    return true;
+                }
+                
                 return true;
             });
             server.AddRoute("GET", "/api/adb/port", request =>

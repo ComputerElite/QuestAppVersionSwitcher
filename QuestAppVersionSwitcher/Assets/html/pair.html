@@ -6,13 +6,22 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
 </head>
 <body>
+<h2>Pairing</h2>
+<button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="port" id="port">
     <input type="text" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
     <input type="text" placeholder="command" id="command">
+<h2>Commands</h2>
     <button onclick="send()">Send command</button>
     <textarea id="response"></textarea>
 <script>
+    function settings() {
+        fetch(`/api/android/launch?package=com.android.settings`, {
+            method: "POST"
+        })
+    }
+    
     function pair() {
         var port = document.getElementById('port').value;
         var code = document.getElementById('code').value;
