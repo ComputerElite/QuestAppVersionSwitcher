@@ -1491,6 +1491,14 @@ namespace QuestAppVersionSwitcher
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
                 return true;
             });
+            server.AddRoute("POST", "/api/adb/opensettings", request =>
+            {
+                var intent = new Intent(Android.Provider.Settings.ActionSettings);
+                intent.AddFlags(ActivityFlags.NewTask);
+                AndroidCore.context.StartActivity(intent);
+                request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
+                return true;
+            });
             server.AddRoute("POST", "/api/adb/pair", request =>
             {
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);

@@ -21,7 +21,7 @@ Open settings -> system info -> build number -> tap 7 times -> go back -> develo
 If it does QAVS should work fine completely
 <script>
     function settings() {
-        fetch(`/api/android/launch?package=com.android.settings`, {
+        fetch(`/api/adb/opensettings`, {
             method: "POST"
         })
     }
