@@ -1,4 +1,5 @@
-﻿using ComputerUtils.Android.Logging;
+﻿using System;
+using ComputerUtils.Android.Logging;
 
 namespace DanTheMan827.OnDeviceADB
 {
@@ -54,6 +55,31 @@ namespace DanTheMan827.OnDeviceADB
                 // Grant necessary permissions to all connected devices.
                 AdbWrapper.GrantPermissions();
             }
+        }
+
+        public static void TryConnect()
+        {
+            Logger.Log("Trying to enable wireless adb");
+            try
+            {
+                var port = AdbWrapper.EnableAdbWiFi(true);
+
+                // If the port is above 0 we were successful.
+                if (port > 0)
+                {
+                    Logger.Log("Found adb port in log, connecting: " + port, "ADB Wrapper");
+                    // Connect to the loopback IP on the detected port.
+                    var device = AdbWrapper.Connect("127.0.0.1", port);
+                }
+                else
+                {
+                    Logger.Log("Failed to find adb port in log", "ADB Wrapper");
+                }
+            } catch (Exception e)
+            {
+                Logger.Log("Failed to enable wireless adb: " + e.Message);
+            }
+           
         }
     }
 }

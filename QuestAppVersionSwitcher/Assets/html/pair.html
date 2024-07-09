@@ -9,8 +9,10 @@
 <h2>Pairing</h2>
 <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="port" id="port">
-    <input type="text" placeholder="code" id="code">
+    <input type="number" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
+    <button onclick="persistent()">Maker persistent (after pairing)</button>
+<button onclick="port()">Get adb port from logcat (requires persistence)</button>
     <input type="text" placeholder="command" id="command">
 <h2>Commands</h2>
     <button onclick="send()">Send command</button>
@@ -20,6 +22,19 @@ Open settings -> system info -> build number -> tap 7 times -> go back -> develo
 <br>
 If it does QAVS should work fine completely
 <script>
+    function persistent() {
+        fetch(`/api/adb/makepersistent`, {
+            method: "POST"
+        })
+    }
+    
+    function port() {
+        fetch("/api/adb/port")
+            .then(response => response.text())
+            .then(data => {
+                alert(data)
+            })
+    }
     function settings() {
         fetch(`/api/adb/opensettings`, {
             method: "POST"

@@ -1245,7 +1245,7 @@ namespace QuestAppVersionSwitcher
                     return true;
                 }
                 string package = serverRequest.queryString.Get("package");
-                if (!FolderPermission.NeedsSAF())
+                if (!FolderPermission.NeedsSAF(""))
                 {
                     serverRequest.SendString(GotAccess.GetResponse("Device doesn't require SAF. Continue as normal.", true, true),
                         "application/json");
@@ -1528,6 +1528,19 @@ namespace QuestAppVersionSwitcher
                 request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
                 return true;
             });
+            server.AddRoute("POST", "/api/adb/makepersistent", request =>
+            {
+                try
+                {
+                    AdbWrapper.GrantPermissions();
+                    request.SendString(GenericResponse.GetResponse("Granted permissions", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to grant permissions: " + e, false), "application/json");
+                }
+                return true;
+            });
             server.AddRoute("POST", "/api/adb/command", request =>
             {
                 
@@ -1597,6 +1610,7 @@ namespace QuestAppVersionSwitcher
             
             singleton = new AdbServer();
             singleton.Start();
+            QAVSAdbInteractor.TryConnect();
             /*
             Thread.Sleep(1000);
             try

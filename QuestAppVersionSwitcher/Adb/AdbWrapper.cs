@@ -84,14 +84,15 @@ namespace DanTheMan827.OnDeviceADB
             }
         
             proc.WaitForExit();
-            Logger.Log("Exit code: " + proc.ExitCode + "\n Error: " + proc.StandardError.ReadToEnd() + "\n\n Output: " + proc.StandardOutput.ReadToEnd(), "AdbWrapper");
-
-            return new ExitInfo()
+            ExitInfo i = new ExitInfo()
             {
                 ExitCode = proc.ExitCode,
                 Error = proc.StandardError.ReadToEnd(),
                 Output = proc.StandardOutput.ReadToEnd()
             };
+            Logger.Log("Exit code: " + i.ExitCode + "\n Error: " + i.Error + "\n\n Output: " + i.Output, "AdbWrapper");
+
+            return i;
         }
 
         /// <summary>

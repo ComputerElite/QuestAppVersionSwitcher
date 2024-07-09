@@ -90,7 +90,7 @@ namespace QuestAppVersionSwitcher
 
         public static void Copy(string from, string to)
         {
-            if (!NeedsSAF())
+            if (!NeedsSAF(from, to))
             {
                 File.Copy(from, to, true);
                 return;
@@ -225,7 +225,7 @@ namespace QuestAppVersionSwitcher
 
         public static void Delete(string path)
         {
-            if (!NeedsSAF())
+            if (!NeedsSAF(path))
             {
                 File.Delete(path);
                 return;
@@ -237,7 +237,7 @@ namespace QuestAppVersionSwitcher
 
         public static void CreateDirectoryIfNotExisting(string path)
         {
-            if (!NeedsSAF() || !path.Contains("sdcard/Android"))
+            if (!NeedsSAF(path) || !path.Contains("sdcard/Android"))
             {
                 FileManager.CreateDirectoryIfNotExisting(path);
                 SetFilePermissions(path);
@@ -262,7 +262,7 @@ namespace QuestAppVersionSwitcher
         /// <param name="dir"></param>
         public static void DeleteDirectoryContent(string dir)
         {
-            if (!NeedsSAF())
+            if (!NeedsSAF(dir))
             {
                 FileManager.RecreateDirectoryIfExisting(dir);
                 return;
@@ -274,14 +274,15 @@ namespace QuestAppVersionSwitcher
             }
         }
 
-        public static bool NeedsSAF()
+        public static bool NeedsSAF(string from, string to = "")
         {
-            return Build.VERSION.SdkInt > BuildVersionCodes.Q;
+            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q) return false;
+            return from.Contains("/Android/") || to.Contains("/Android/");
         }
         
         public static void DirectoryCopy(string sourceDirName, string destDirName)
         {
-            if (!NeedsSAF())
+            if (!NeedsSAF(sourceDirName, destDirName))
             {
                 FileManager.DirectoryCopy(sourceDirName, destDirName, true);
                 return;
@@ -453,27 +454,19 @@ namespace QuestAppVersionSwitcher
         public static List<string> GetFiles(string path)
         {
             Logger.Log("Getting files in " + path);
-            if (!NeedsSAF() || !path.Contains("sdcard/Android"))
+            if (!NeedsSAF(path) || !path.Contains("sdcard/Android"))
             {
                 return Directory.GetFiles(path).ToList();
             }
-
-            if (path.EndsWith(Path.DirectorySeparatorChar)) path = path.Substring(0, path.Length - 1);
-            DocumentFile directory;
-            try
-            {
-                directory = GetAccessToFile(path);
-            }
-            catch (System.Exception e)
-            {
-                Logger.Log("Error while getting access to directory " + e, LoggingType.Error);
-                return new List<string>();
-            }
+            // Use adb
             List<string> files = new List<string>();
-            foreach (DocumentFile f in directory.ListFiles())
+            string[] lines = AdbWrapper.RunAdbCommand("shell ls -1 \"" + path + "\"").Output.Split('\n');
+            foreach (string line in lines)
             {
-                if (!f.IsDirectory) files.Add(f.Name);
+                if (line == "") continue;
+                files.Add(line);
             }
+
             return files;
         }
     }
