@@ -15,6 +15,10 @@
 <h2>Commands</h2>
     <button onclick="send()">Send command</button>
     <textarea id="response"></textarea>
+<h2>Quick guide</h2>
+Open settings -> system info -> build number -> tap 7 times -> go back -> developer options -> enable wireless adb and open menu -> pair with the code and port you see on the headset-> run a commands like <code>ls /sdcard/</code> to see if it worked.
+<br>
+If it does QAVS should work fine completely
 <script>
     function settings() {
         fetch(`/api/android/launch?package=com.android.settings`, {
