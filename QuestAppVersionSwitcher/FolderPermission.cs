@@ -50,6 +50,7 @@ namespace QuestAppVersionSwitcher
 
         public static bool GotAccessTo(string dirInExtenalStorage)
         {
+            // ToDo: Check if adb works
             return true;
             Logger.Log("Checking access for " + dirInExtenalStorage + ": " + CoreService.coreVars.accessFolders.Contains(dirInExtenalStorage));
             

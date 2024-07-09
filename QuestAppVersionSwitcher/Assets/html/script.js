@@ -830,6 +830,10 @@ function CheckStartParams() {
         OpenRestorePopup()
         GotoStep(17)
     }
+    if(params.get("step16")) {
+        OpenRestorePopup()
+        GotoStep(16)
+    }
     if(params.get("loginerror")) {
         OpenRestorePopup()
         GotoStep(18)
@@ -1455,15 +1459,11 @@ document.getElementById("deleteAllMods").onclick = () => {
 }
 
 document.getElementById("grantAccess2").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
-        CloseRestorePopup();
-    })
+    location = "/pair"
 }
 
 document.getElementById("grantAccess3").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
-        GotoStep(16)
-    })
+    location = "/pair?after=step16"
 }
 
 document.getElementById("requestManageStorageAppPermission").onclick = () => {
