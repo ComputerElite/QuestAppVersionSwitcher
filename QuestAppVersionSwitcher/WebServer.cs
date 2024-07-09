@@ -1528,6 +1528,19 @@ namespace QuestAppVersionSwitcher
                 request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
                 return true;
             });
+            server.AddRoute("POST", "/api/adb/togglewireless", request =>
+            {
+                try
+                {
+                    AdbWrapper.EnableAdbWiFi(true);
+                    request.SendString(GenericResponse.GetResponse("cycled wireless adb", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to cycle wireless adb: " + e, false), "application/json");
+                }
+                return true;
+            });
             server.AddRoute("POST", "/api/adb/makepersistent", request =>
             {
                 try

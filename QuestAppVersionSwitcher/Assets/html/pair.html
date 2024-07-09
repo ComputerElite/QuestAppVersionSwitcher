@@ -13,6 +13,7 @@
     <button onclick="pair()">Pair</button>
     <button onclick="persistent()">Maker persistent (after pairing)</button>
 <button onclick="port()">Get adb port from logcat (requires persistence)</button>
+<button onclick="wireless()">Toggle wireless (requires persistence)</button>
     <input type="text" placeholder="command" id="command">
 <h2>Commands</h2>
     <button onclick="send()">Send command</button>
@@ -22,6 +23,11 @@ Open settings -> system info -> build number -> tap 7 times -> go back -> develo
 <br>
 If it does QAVS should work fine completely
 <script>
+    function wireless() {
+        fetch(`/api/adb/togglewireless`, {
+            method: "POST"
+        })
+    }
     function persistent() {
         fetch(`/api/adb/makepersistent`, {
             method: "POST"
