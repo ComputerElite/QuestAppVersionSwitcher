@@ -223,8 +223,8 @@ namespace DanTheMan827.OnDeviceADB
         {
             StartServer();
 
-            RunAdbCommand("-s " + device + " shell pm grant" + Application.Context.PackageName + " android.permission.WRITE_SECURE_SETTINGS");
-            RunAdbCommand("-s " + device + " shell pm grant" + Application.Context.PackageName + " android.permission.READ_LOGS");
+            RunAdbCommand("-s " + device + " shell pm grant " + Application.Context.PackageName + " android.permission.WRITE_SECURE_SETTINGS");
+            RunAdbCommand("-s " + device + " shell pm grant " + Application.Context.PackageName + " android.permission.READ_LOGS");
         }
 
         /// <summary>
