@@ -29,6 +29,8 @@
 <div class="content hidden" id="pair">
     <h1>Pairing</h1>
     <p>Your quest is not connected via adb yet. Input the port and code shown in the wireless adb pairing page.</p>
+
+    <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="port" id="port">
     <input type="number" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
@@ -36,7 +38,9 @@
 <div class="content hidden" id="remember">
     <h1>Connect</h1>
     <p>QAVS has successfully paired with your Quest. We will now connect QAVS with your Quest. For that, input the wireless port from the adb wireless settings page.</p>
-    
+
+
+    <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="wireless port" id="adbport">
     <button onclick="connect()">Connect</button>
 </div>
