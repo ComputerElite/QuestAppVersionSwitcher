@@ -57,11 +57,12 @@ namespace DanTheMan827.OnDeviceADB
             }
         }
 
-        public static void TryConnect()
+        public static bool TryConnect()
         {
             Logger.Log("Trying to enable wireless adb");
             try
             {
+                AdbWrapper.KillServer();
                 var port = AdbWrapper.EnableAdbWiFi(true);
 
                 // If the port is above 0 we were successful.
@@ -70,6 +71,7 @@ namespace DanTheMan827.OnDeviceADB
                     Logger.Log("Found adb port in log, connecting: " + port, "ADB Wrapper");
                     // Connect to the loopback IP on the detected port.
                     var device = AdbWrapper.Connect("127.0.0.1", port);
+                    return true;
                 }
                 else
                 {
@@ -79,7 +81,13 @@ namespace DanTheMan827.OnDeviceADB
             {
                 Logger.Log("Failed to enable wireless adb: " + e.Message);
             }
-           
+
+            return false;
+        }
+
+        public static void Connect()
+        {
+            
         }
     }
 }

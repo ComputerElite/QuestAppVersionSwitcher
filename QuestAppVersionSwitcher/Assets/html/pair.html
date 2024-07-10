@@ -12,12 +12,12 @@
     <input type="number" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
     <button onclick="persistent()">Maker persistent (after pairing)</button>
-<button onclick="port()">Get adb port from logcat (requires persistence)</button>
-<button onclick="wireless()">Toggle wireless (requires persistence)</button>
+    <button onclick="port()">Get adb port from logcat (requires persistence)</button>
+    <button onclick="wireless()">Toggle wireless (requires persistence)</button>
+    <h2>Commands</h2> 
     <input type="text" placeholder="command" id="command">
-<h2>Commands</h2>
     <button onclick="send()">Send command</button>
-    <textarea id="response"></textarea>
+    <textarea id="response" readonly></textarea>
 <h2>Quick guide</h2>
 Open settings -> system info -> build number -> tap 7 times -> go back -> developer options -> enable wireless adb and open menu -> pair with the code and port you see on the headset-> run a commands like <code>ls /sdcard/</code> to see if it worked.
 <br>
@@ -59,7 +59,7 @@ If it does QAVS should work fine completely
                 alert(data)
             })
     }
-    
+
     function send() {
         var command = document.getElementById('command').value;
         fetch(`/api/adb/command`, {
@@ -71,7 +71,6 @@ If it does QAVS should work fine completely
                 document.getElementById('response').value = data;
             })
     }
-    
 </script>
 </body>
 </html>

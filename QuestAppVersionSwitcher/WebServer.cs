@@ -52,6 +52,7 @@ using QuestPatcher.Zip;
 using AdbServer = DanTheMan827.OnDeviceADB.AdbServer;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
+using Error = Java.Lang.Error;
 using File = System.IO.File;
 using IOException = System.IO.IOException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -709,6 +710,7 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/scotlandforever.mp3", "html/scotlandforever.mp3");
 			server.AddRouteFile("/setup", "html/setup.html");
             server.AddRouteFile("/pair", "html/pair.html");
+            server.AddRouteFile("/adb", "html/adb.html");
             server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
             server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
             server.AddRouteFile("/script.js", "html/script.js");
@@ -1239,35 +1241,20 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/gotaccess", serverRequest =>
             {
-                if (serverRequest.queryString.Get("package") == null)
-                {
-                    serverRequest.SendString(GotAccess.GetResponse("package key needed", false, false), "application/json", 400);
-                    return true;
-                }
-                string package = serverRequest.queryString.Get("package");
                 if (!FolderPermission.NeedsSAF(""))
                 {
                     serverRequest.SendString(GotAccess.GetResponse("Device doesn't require SAF. Continue as normal.", true, true),
                         "application/json");
-
-                }
-                else if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
-                {
-                    bool gotAccess =
-                        FolderPermission.GotAccessTo(
-                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") &&
-                        FolderPermission.GotAccessTo(
-                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
-                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
                 }
                 else
                 {
-                    bool gotAccess =
-                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
-                                                     "/Android/obb/" + package) &&
-                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
-                                                     "/Android/data/" + package);
-                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
+                    // Check if any adb devices are connected
+                    if (AdbWrapper.GetDevices().Length <= 0)
+                    {
+                        serverRequest.SendString(GotAccess.GetResponse("No adb devices connected", false, true), "application/json", 400);
+                        return true;
+                    }
+                    serverRequest.SendString(GotAccess.GetResponse("Ya got access mate! Adb workin'", true, true), "application/json");
                 }
                 return true;
             });
@@ -1491,10 +1478,24 @@ namespace QuestAppVersionSwitcher
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
                 return true;
             });
+            server.AddRoute("GET", "/api/adb/devices", request =>
+            {
+                request.SendString(JsonSerializer.Serialize(AdbWrapper.GetDevices()), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/adb/autoconnect", request =>
+            {
+                bool connected = QAVSAdbInteractor.TryConnect();
+                request.SendString(GenericResponse.GetResponse(connected ? "Connected successfully" : "Failed to connect to quest, probably a lack of permission", connected), "application/json");
+                return true;
+            });
             server.AddRoute("POST", "/api/adb/opensettings", request =>
             {
-                var intent = new Intent(Android.Provider.Settings.ActionSettings);
-                intent.AddFlags(ActivityFlags.NewTask);
+                var intent = new Intent();
+                intent.SetAction(Intent.ActionMain);
+                intent.AddCategory("android.intent.category.LAUNCHER");
+                intent.SetPackage("com.android.settings");
+                intent.SetFlags(ActivityFlags.NewTask);
                 AndroidCore.context.StartActivity(intent);
                 request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
                 return true;
@@ -1504,28 +1505,33 @@ namespace QuestAppVersionSwitcher
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
                 try
                 {
-                    singleton.Pair(r.port, r.code);
+                    ExitInfo i = AdbWrapper.RunAdbCommand("pair 127.0.0.1:" + r.port + " " + r.code);
+                    if(i.ExitCode != 0) throw new Exception("Failed to pair: " + i);
                     request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
-                    try
-                    {
-                        Logger.Log("Trying to put device into tcpip mode");
-                        AdbWrapper.RunAdbCommand("tcpip 5555");
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log("Failed to put device into tcpip mode: " + e, LoggingType.Warning);
-                    }
                 } catch (Exception e)
                 {
                     request.SendString(GenericResponse.GetResponse("Failed to pair: " + e, false), "application/json");
-                    return true;
                 }
-                
                 return true;
             });
             server.AddRoute("GET", "/api/adb/port", request =>
             {
                 request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/connect", request =>
+            {
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                try
+                {
+                    ExitInfo i = AdbWrapper.RunAdbCommand("connect 127.0.0.1:" + r.port);
+                    if(i.ExitCode != 0 || AdbWrapper.GetDevices().Length <= 0) throw new Exception("Failed to connect: " + i);
+                    request.SendString(GenericResponse.GetResponse("Connected with localhost ", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to connect " + e, false), "application/json");
+                }
                 return true;
             });
             server.AddRoute("POST", "/api/adb/togglewireless", request =>
@@ -1559,23 +1565,7 @@ namespace QuestAppVersionSwitcher
                 
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
                 ExitInfo i = AdbWrapper.RunAdbCommand(r.command);
-                request.SendString(i.ExitCode + "\n" + i.Output+ "\n" + i.Error);
-                /*
-                var adbClient = new AdvancedSharpAdbClient.AdbClient();
-                if (adbClient.GetDevices().Count() <= 0)
-                {
-                    request.SendString("No devices found,please pair device", "application/json");
-                    return true;
-                }
-                var device = adbClient.GetDevices().FirstOrDefault();
-                var receiver = new AdvancedSharpAdbClient.Receivers.ConsoleOutputReceiver();
-                Logger.Log("Executing command " + r.command);
-                adbClient.ExecuteRemoteCommand(r.command, device, receiver);
-
-                Logger.Log(receiver.ToString());
-                Logger.Log("Executed command");
-                request.SendString(receiver.ToString(), "application/json");
-                */
+                request.SendString(JsonSerializer.Serialize(i), "application/json");
                 return true;
             });
 			server.AddRouteFile("/facts.png", "facts.png");
@@ -1624,24 +1614,6 @@ namespace QuestAppVersionSwitcher
             singleton = new AdbServer();
             singleton.Start();
             QAVSAdbInteractor.TryConnect();
-            /*
-            Thread.Sleep(1000);
-            try
-            {
-                var adbClient = new AdvancedSharpAdbClient.AdbClient();
-                var device = adbClient.GetDevices().FirstOrDefault();
-                var receiver = new AdvancedSharpAdbClient.Receivers.ConsoleOutputReceiver();
-                Logger.Log("Executing command");
-                adbClient.ExecuteRemoteCommand("ls -lah /sdcard/", device, receiver);
-
-                Logger.Log(receiver.ToString());
-                Logger.Log("Executed command");
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.ToString(), LoggingType.Error);
-            }
-            */
         }
 
         private static AdbServer singleton;

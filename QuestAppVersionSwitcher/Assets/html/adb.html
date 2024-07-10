@@ -1,0 +1,178 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QAVS - Setup</title>
+    <link rel="stylesheet" type="text/css" href="newstyle.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+
+<div class="content" id="checking">
+    <h1>Checking adb</h1>
+    <h3>Please wait a bit. This may take a few seconds</h3>
+    <div class="loaderContainer center">
+        <div class="loaderBarRight"></div>
+        <div class="loaderBarLeft"></div>
+        <div class="loaderBarTop"></div>
+        <div class="loaderBarBottom"></div>
+        <div class="loaderSpinningCircle"></div>
+        <div class="loaderMiddleCircle"></div>
+        <div class="loaderCircleHole"></div>
+        <div class="loaderSquare"></div>
+    </div>
+</div>
+<div class="content hidden" id="connected">
+    <h1>Quest connected!</h1>
+    <p>Your quest is connected via adb. You can return now</p>
+    <button onclick="AdbConnected()">Continue</button>
+</div>
+<div class="content hidden" id="pair">
+    <h1>Pairing</h1>
+    <p>Your quest is not connected via adb yet. Input the port and code shown in the wireless adb pairing page.</p>
+    <input type="number" placeholder="port" id="port">
+    <input type="number" placeholder="code" id="code">
+    <button onclick="pair()">Pair</button>
+</div>
+<div class="content hidden" id="remember">
+    <h1>Connect</h1>
+    <p>QAVS has successfully paired with your Quest. We will now connect QAVS with your Quest. For that, input the wireless port from the adb wireless settings page.</p>
+    
+    <input type="number" placeholder="wireless port" id="adbport">
+    <button onclick="connect()">Connect</button>
+</div>
+<div class="content hidden" id="connecting">
+    <h1>Connecting, please wait a bit</h1>
+
+    <div class="loaderContainer center">
+        <div class="loaderBarRight"></div>
+        <div class="loaderBarLeft"></div>
+        <div class="loaderBarTop"></div>
+        <div class="loaderBarBottom"></div>
+        <div class="loaderSpinningCircle"></div>
+        <div class="loaderMiddleCircle"></div>
+        <div class="loaderCircleHole"></div>
+        <div class="loaderSquare"></div>
+    </div>
+</div>
+<div class="content hidden" id="persistent">
+    <h1>Making connecting persistent, please wait a bit</h1>
+    <div class="loaderContainer center">
+        <div class="loaderBarRight"></div>
+        <div class="loaderBarLeft"></div>
+        <div class="loaderBarTop"></div>
+        <div class="loaderBarBottom"></div>
+        <div class="loaderSpinningCircle"></div>
+        <div class="loaderMiddleCircle"></div>
+        <div class="loaderCircleHole"></div>
+        <div class="loaderSquare"></div>
+    </div>
+</div>
+<a href="/pair">Advanced ui</a>
+<script>
+    FirstOpen()
+    // get after query string
+    var urlParams = new URLSearchParams(window.location.search);
+    var after = urlParams.get('after')
+    
+    function AdbConnected() {
+        location = decodeURIComponent(after || "/");
+    }
+    
+    function connect() {
+        OpenTab("connecting")
+        fetch("/api/adb/connect", {
+            method: "POST",
+            body: JSON.stringify({port: document.getElementById('adbport').value})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    OpenTab("persistent")
+                    persistent()
+                } else {
+                    alert("Failed to connect. Please try again. If it doesn't work, try to restart the headset then try again.")
+                }
+            })
+    }
+    
+    function FirstOpen() {
+        // Check if device is connected already
+        fetch(`/api/adb/devices`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    // Found devices
+                    OpenTab("connected")
+                } else {
+                    OpenTab("pair")
+                }
+            })
+    }
+    function wireless() {
+        fetch(`/api/adb/togglewireless`, {
+            method: "POST"
+        })
+    }
+    function persistent() {
+        fetch(`/api/adb/makepersistent`, {
+            method: "POST"
+        }).then(res => res.json()).then(data => {
+            if(data.success) {
+                OpenTab("connected")
+            } else {
+                alert("Failed to make persistent. Please try again. If it doesn't work, try to restart the headset then try again.")
+            }
+        })
+    }
+
+    function port() {
+        fetch("/api/adb/port")
+            .then(response => response.text())
+            .then(data => {
+                alert(data)
+            })
+    }
+    function settings() {
+        fetch(`/api/adb/opensettings`, {
+            method: "POST"
+        })
+    }
+
+    function pair() {
+        var port = document.getElementById('port').value;
+        var code = document.getElementById('code').value;
+        fetch(`/api/adb/pair`, {
+            method: "POST",
+            body: JSON.stringify({port: port, code: code})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    OpenTab("remember")
+                } else {
+                    alert("Failed to pair. Please try again. If it doesn't work, try to restart the headset then try again.")
+                }
+            })
+    }
+
+    function send() {
+        var command = document.getElementById('command').value;
+        fetch(`/api/adb/command`, {
+            method: 'POST',
+            body: JSON.stringify({command: command})
+        })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('response').value = data;
+            })
+    }
+
+
+    function OpenTab(section) {
+        Array.prototype.forEach.call(document.getElementsByClassName("content"), e => {
+            e.className = "content" + (e.id == section ? "" : " hidden")
+        })
+    }
+</script>
+</body>
+</html>

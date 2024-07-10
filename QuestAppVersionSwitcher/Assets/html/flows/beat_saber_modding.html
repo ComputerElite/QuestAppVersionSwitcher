@@ -61,8 +61,8 @@
 </div>
 <div class="content hidden" id="saf">
     <h1>Access needed</h1>
-    <p>To mod your game correctly you need to grant access to your Beat Saber install. To do this press <code>Use this folder</code> at the bottom of both prompts which will appear after you press <code>Grant access</code> below.</p>
-    <button onclick="SAFRequest()">Grant access</button>
+    <p>To mod your game correctly you need to grant access to your Beat Saber install. To do this follow the provided instructions after pressing <code>Grant access</code> below</p>
+    <button onclick="ADBRequest()">Grant access</button>
 </div>
 <div class="content hidden" id="afterrestore">
     <h1>Game modded!</h1>
@@ -361,9 +361,8 @@
         })
     }
 
-    function SAFRequest() {
-        fetch("/api/grantaccess?package=com.beatgames.beatsaber", {method: "POST"})
-        OpenTab(nextTab)
+    function ADBRequest() {
+        location = start + `/adb?after=${encodeURIComponent(`/flows/beat_saber_modding?tab=${nextTab}`)}`
     }
 
 

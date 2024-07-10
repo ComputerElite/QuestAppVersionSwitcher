@@ -119,7 +119,7 @@ namespace DanTheMan827.OnDeviceADB
         {
             if (!IsRunning)
             {
-                StartServer("connect 127.0.0.1");
+                StartServer("server nodaemon");
             }
         }
 

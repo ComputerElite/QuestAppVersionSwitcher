@@ -11,5 +11,10 @@ namespace DanTheMan827.OnDeviceADB
         public int ExitCode { get; set; }
         public string Output { get; set; }
         public string Error { get; set; }
+
+        public override string ToString()
+        {
+            return $"Exit code: {ExitCode}\nOutput: {Output}\nError: {Error}";
+        }
     }
 }

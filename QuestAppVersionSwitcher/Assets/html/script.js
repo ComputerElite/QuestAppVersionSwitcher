@@ -1357,7 +1357,7 @@ function AfterAPKInstall() {
                         // 4: restore app data
                         // 5: done'd
                         if(j.isPatchedApk) {
-                            if(j.moddedJson && j.moddedJson.modloaderName == "QuestLoader") {
+                            if(j.moddedJson && j.moddedJson.modloaderName == "QuestLoader" && !a.gotAccess) {
                                 GotoStep("4.1") // QuestLoader needs access to Android/data
                             } else {
                                 GotoStep("4.2") // No need to ask for access
@@ -1459,20 +1459,16 @@ document.getElementById("deleteAllMods").onclick = () => {
 }
 
 document.getElementById("grantAccess2").onclick = () => {
-    location = "/pair"
+    location = "/adb"
 }
 
 document.getElementById("grantAccess3").onclick = () => {
-    location = "/pair?after=step16"
+    location = `/adb?after=${encodeURIComponent(start + `/?step16=true`)}`
 }
 
 document.getElementById("requestManageStorageAppPermission").onclick = () => {
     fetch("/api/grantmanagestorageappaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
     })
-}
-
-document.getElementById("requestAppPermission").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"})
 }
 
 document.getElementById("restoreappdata").onclick = () => {
