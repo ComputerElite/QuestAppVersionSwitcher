@@ -1088,7 +1088,7 @@ function UpdateDownloads(json) {
 }
 
 document.getElementById("adb").onclick =()=> {
-    location = "/pair"
+    location = "/adb"
 }
 
 document.getElementById("setup").onclick = () => {
