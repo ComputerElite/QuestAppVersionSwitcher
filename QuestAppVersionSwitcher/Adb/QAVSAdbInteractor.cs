@@ -1,4 +1,7 @@
 ﻿using System;
+using Android.Content.PM;
+using AndroidX.Core.App;
+using ComputerUtils.Android;
 using ComputerUtils.Android.Logging;
 
 namespace DanTheMan827.OnDeviceADB
@@ -60,6 +63,13 @@ namespace DanTheMan827.OnDeviceADB
         public static bool TryConnect()
         {
             Logger.Log("Trying to enable wireless adb");
+            bool hasPermission = ActivityCompat.CheckSelfPermission(AndroidCore.context, "android.permission.WRITE_SECURE_SETTINGS") == Permission.Granted;
+            if (!hasPermission)
+            {
+                Logger.Log("Missing permission: android.permission.WRITE_SECURE_SETTINGS");
+                return false;
+            }
+            
             try
             {
                 AdbWrapper.KillServer();

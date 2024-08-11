@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj": {}
+    "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\DiffCreator\\DiffCreator.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj": {
+    "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj",
+        "projectUniqueName": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj",
         "projectName": "ComputerUtils",
-        "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj",
+        "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj",
         "packagesPath": "C:\\Users\\ComputerElite\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\obj\\",
+        "outputPath": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -77,23 +77,37 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400-preview.0.24324.5\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj": {
+    "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\DiffCreator\\DiffCreator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj",
+        "projectUniqueName": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\DiffCreator\\DiffCreator.csproj",
         "projectName": "DiffCreator",
-        "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj",
+        "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\DiffCreator\\DiffCreator.csproj",
         "packagesPath": "C:\\Users\\ComputerElite\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\obj\\",
+        "outputPath": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\DiffCreator\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -115,8 +129,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj": {
-                "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj"
+              "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj": {
+                "projectPath": "C:\\Users\\ComputerElite\\Documents\\rider\\qavs-main\\ComputerUtils\\ComputerUtils\\ComputerUtils.csproj"
               }
             }
           }
@@ -151,12 +165,30 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[6.0.30, 6.0.30]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.30, 6.0.30]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400-preview.0.24324.5\\RuntimeIdentifierGraph.json"
         }
       }
     }
