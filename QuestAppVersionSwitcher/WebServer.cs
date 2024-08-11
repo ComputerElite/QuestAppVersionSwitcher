@@ -717,6 +717,7 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRouteFile("/newstyle.css", "html/newstyle.css");
+            server.AddRouteFolderWithFiles("/images", "html/images");
             server.AddRoute("GET", "/api/android/installedapps", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
@@ -1241,7 +1242,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/gotaccess", serverRequest =>
             {
-                if (!FolderPermission.NeedsSAF(""))
+                if (!FolderPermission.DoesDeviceNeedSAF())
                 {
                     serverRequest.SendString(GotAccess.GetResponse("Device doesn't require SAF. Continue as normal.", true, true),
                         "application/json");

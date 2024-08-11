@@ -34,6 +34,14 @@
     <input type="number" placeholder="port" id="port">
     <input type="number" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
+    <h2>Guide</h2>
+    <div>
+        <img id="guideImage">
+        <p id="guideText"></p>
+
+        <button onclick="UpdateGuide(-1)">&lt;</button>
+        <button onclick="UpdateGuide(1)">&gt;</button>
+    </div>
 </div>
 <div class="content hidden" id="remember">
     <h1>Connect</h1>
@@ -43,6 +51,11 @@
     <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="wireless port" id="adbport">
     <button onclick="connect()">Connect</button>
+    <h2>Guide</h2>
+    <div>
+        <img src="/images/adb/11.jpg">
+        <p>You will find the port in the wireless debugging settings.In this screenshot the port is 46137. Input the one from your settings into the wireless port above and hit connect.</p>
+    </div>
 </div>
 <div class="content hidden" id="connecting">
     <h1>Connecting, please wait a bit</h1>
@@ -76,10 +89,51 @@
     FirstOpen()
     // get after query string
     var urlParams = new URLSearchParams(window.location.search);
-    var after = urlParams.get('after')
+    var shouldGoBack = urlParams.get('goback') == true
     
     function AdbConnected() {
-        location = decodeURIComponent(after || "/");
+        location = localStorage.redirect || "/";
+    }
+    
+    var currentPage = 0
+    const pages = [{
+        img: "/images/adb/1.jpg",
+        txt: "Open the settings on your Quest with the button above"
+    },{
+        img: "/images/adb/2.jpg",
+        txt: "Scroll down and press on 'About headset'"
+    },{
+        img: "/images/adb/3.jpg",
+        txt: "Scroll down and press 'Build number' 7 times"
+    },{
+        img: "/images/adb/4.jpg",
+        txt: "Go back and press on 'System'"
+    },{
+        img: "/images/adb/5.jpg",
+        txt: "Press on 'Developer options'"
+    },{
+        img: "/images/adb/6.jpg",
+        txt: "Enable 'Disable adb authorization timeout'"
+    },{
+        img: "/images/adb/7.jpg",
+        txt: "Click on 'Wireless debugging'. Make sure to click into the blank space"
+    },{
+        img: "/images/adb/8.jpg",
+        txt: "Enable wireless debugging"
+    },{
+        img: "/images/adb/9.jpg",
+        txt: "Click on 'Pair device with pairing code'"
+    },{
+        img: "/images/adb/10.jpg",
+        txt: "Enter the pairing code you see in your pop up ('713691' in picture) and the port from your pop up ('41389' in picture) in the fields above (in QAVS) and press the 'Pair' button"
+    }]
+    UpdateGuide(0)
+    function UpdateGuide(pageIncrement) {
+        currentPage += pageIncrement
+        if (currentPage < 0) currentPage = 0
+        if (currentPage >= pages.length) currentPage = pages.length - 1
+        document.getElementById('guideImage').src = pages[currentPage].img
+        document.getElementById('guideText').innerText = pages[currentPage].txt
     }
     
     function connect() {

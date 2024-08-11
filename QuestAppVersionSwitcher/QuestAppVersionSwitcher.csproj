@@ -169,6 +169,17 @@
     <AndroidAsset Include="Assets\html\diff\diff.html" />
     <AndroidAsset Include="Assets\html\flows\beat_saber_modding.html" />
     <AndroidAsset Include="Assets\html\hiddenApps.json" />
+    <AndroidAsset Include="Assets\html\images\adb\1.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\10.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\11.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\2.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\3.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\4.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\5.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\6.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\7.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\8.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\9.jpg" />
     <AndroidAsset Include="Assets\html\pair.html" />
     <AndroidAsset Include="Assets\libadb.so" />
     <None Include="Resources\AboutResources.txt" />

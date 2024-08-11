@@ -256,6 +256,7 @@
     var checkdowngrade = params.get('checkdowngrade');
     var startDownload = params.get('startdownload');
     var versionSpecified = false
+    var selectedVersion = ""
     if(params.get("version")) {
         selectedVersion = params.get("version")
         versionSpecified = true
@@ -326,7 +327,7 @@
         if(tab) {
             if(tab == "afterrestore") {
                 fetch(start + "/api/android/device").then(res => res.json().then(j => {
-                    if (j.device == "eureka") {
+                    if (j.device == "eureka" && false) { // disable device check, qavs has adb now :3
                         // Logged in
                         OpenTab("quest3")
                     } else {
@@ -362,7 +363,8 @@
     }
 
     function ADBRequest() {
-        location = start + `/adb?after=${encodeURIComponent(`/flows/beat_saber_modding?tab=${nextTab}`)}`
+        localStorage.redirect = start + `/flows/beat_saber_modding?tab=${nextTab}`
+        location = start + `/adb?goback=true`
     }
 
 
@@ -476,7 +478,7 @@
     }
 
     function Login() {
-        localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true`
+        localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true&version=${selectedVersion}`
         location = "/?startlogin=true"
     }
 
@@ -705,7 +707,6 @@
         document.getElementById("modgamebsversion").innerText = moddedStatus.version;
     }
     
-    var selectedVersion = ""
     var modloader = 0
 
     function FirstOpen() {
@@ -747,7 +748,7 @@
                                 OpenTab("alreadymodded")
                             } else {
                                 // Not modded
-                                if(modloader == 1 && moddedStatus.device.sdkVersion >= 32) {
+                                if(modloader == 1 && moddedStatus.device.sdkVersion >= 32 && false) { // QAVS got adb now :3
                                     OpenTab("sl2")
                                 } else {
                                     OpenTabIfSAFAccess("modgame")

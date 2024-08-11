@@ -276,8 +276,13 @@ namespace QuestAppVersionSwitcher
 
         public static bool NeedsSAF(string from, string to = "")
         {
-            if (Build.VERSION.SdkInt <= BuildVersionCodes.Q) return false;
+            if (DoesDeviceNeedSAF()) return false;
             return from.Contains("/Android/") || to.Contains("/Android/");
+        }
+        
+        public static bool DoesDeviceNeedSAF()
+        {
+            return Build.VERSION.SdkInt > BuildVersionCodes.Q;
         }
         
         public static void DirectoryCopy(string sourceDirName, string destDirName)
