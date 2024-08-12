@@ -276,7 +276,7 @@ namespace QuestAppVersionSwitcher
 
         public static bool NeedsSAF(string from, string to = "")
         {
-            if (DoesDeviceNeedSAF()) return false;
+            if (!DoesDeviceNeedSAF()) return false;
             return from.Contains("/Android/") || to.Contains("/Android/");
         }
         
