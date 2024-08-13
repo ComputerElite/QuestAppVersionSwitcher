@@ -211,7 +211,7 @@ namespace QuestAppVersionSwitcher
             try
             {
                 WebClient c = new WebClient();
-                string libUnityIndexString = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/index.json", 10000);
+                string libUnityIndexString = ExternalFilesDownloader.DownloadStringWithTimeout("https://raw.githubusercontent.com/QuestPackageManager/QuestUnstrippedUnity/main/index.json", 10000);
                 Dictionary<string, Dictionary<string, string>> index =
                     JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(libUnityIndexString);
                 string appId = CoreService.coreVars.currentApp;
@@ -219,7 +219,7 @@ namespace QuestAppVersionSwitcher
                 {
                     if (index[appId].ContainsKey(version))
                     {
-                        ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/Lauriethefish/QuestUnstrippedUnity/main/versions/" +
+                        ExternalFilesDownloader.DownloadUrl("https://raw.githubusercontent.com/QuestPackageManager/QuestUnstrippedUnity/main/versions/" +
                                                             index[appId][version] + ".so", CoreService.coreVars.QAVSTmpPatchingDir + "libunity.so", -1, "");
                         return true;
                     }
