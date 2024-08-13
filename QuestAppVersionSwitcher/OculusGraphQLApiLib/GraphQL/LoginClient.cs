@@ -20,6 +20,9 @@ namespace OculusGraphQLApiLib.GraphQL
         public const string webviewTokensDecrypt = "https://meta.graph.meta.com/webview_blobs_decrypt";
         public const string frlToken = "https://meta.graph.meta.com/graphql";
 
+        public const string authenticate =
+            "https://graph.oculus.com/authenticate_application?app_id=1481000308606657&access_token=";
+
       
 
 
@@ -59,8 +62,12 @@ namespace OculusGraphQLApiLib.GraphQL
             Logger.Log("Got user token, requesting correct token", "Login");
             response = DoPostRequest(frlToken, JsonSerializer.Serialize(c.options));
             PlainData<XFRProfile> p = JsonSerializer.Deserialize<PlainData<XFRProfile>>(response);
-            Logger.Log("Got user scoped token, returning", "Login");
-            return p.data.xfr_create_profile_token.profile_tokens[0].access_token;
+            Logger.Log("Got user scoped token, getting quest scoped token next, credit to kaitlyn", "Login");
+            string secondToken = p.data.xfr_create_profile_token.profile_tokens[0].access_token;
+            string authenticateResponse = DoPostRequest(authenticate + secondToken, "");
+            LoginDecryptResponse loginDecryptResponse = JsonSerializer.Deserialize<LoginDecryptResponse>(authenticateResponse);
+            Logger.Log("Got scoped quest token, returning", "Login");
+            return loginDecryptResponse.access_token;
         }
 
         public string DoPostRequest(string uri, string requestBody)

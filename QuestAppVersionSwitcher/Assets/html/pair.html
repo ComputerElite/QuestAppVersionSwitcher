@@ -1,0 +1,76 @@
+﻿<html>
+<head>
+    <meta charset="UTF-8">
+    <title>QAVS - Setup</title>
+    <link rel="stylesheet" type="text/css" href="newstyle.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<h2>Pairing</h2>
+<button onclick="settings()">Open android settings</button>
+    <input type="number" placeholder="port" id="port">
+    <input type="number" placeholder="code" id="code">
+    <button onclick="pair()">Pair</button>
+    <button onclick="persistent()">Maker persistent (after pairing)</button>
+    <button onclick="port()">Get adb port from logcat (requires persistence)</button>
+    <button onclick="wireless()">Toggle wireless (requires persistence)</button>
+    <h2>Commands</h2> 
+    <input type="text" placeholder="command" id="command">
+    <button onclick="send()">Send command</button>
+    <textarea id="response" readonly></textarea>
+<h2>Quick guide</h2>
+Open settings -> system info -> build number -> tap 7 times -> go back -> developer options -> enable wireless adb and open menu -> pair with the code and port you see on the headset-> run a commands like <code>ls /sdcard/</code> to see if it worked.
+<br>
+If it does QAVS should work fine completely
+<script>
+    function wireless() {
+        fetch(`/api/adb/togglewireless`, {
+            method: "POST"
+        })
+    }
+    function persistent() {
+        fetch(`/api/adb/makepersistent`, {
+            method: "POST"
+        })
+    }
+    
+    function port() {
+        fetch("/api/adb/port")
+            .then(response => response.text())
+            .then(data => {
+                alert(data)
+            })
+    }
+    function settings() {
+        fetch(`/api/adb/opensettings`, {
+            method: "POST"
+        })
+    }
+    
+    function pair() {
+        var port = document.getElementById('port').value;
+        var code = document.getElementById('code').value;
+        fetch(`/api/adb/pair`, {
+            method: "POST",
+            body: JSON.stringify({port: port, code: code})
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data)
+            })
+    }
+
+    function send() {
+        var command = document.getElementById('command').value;
+        fetch(`/api/adb/command`, {
+            method: 'POST',
+            body: JSON.stringify({command: command})
+        })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('response').value = data;
+            })
+    }
+</script>
+</body>
+</html>

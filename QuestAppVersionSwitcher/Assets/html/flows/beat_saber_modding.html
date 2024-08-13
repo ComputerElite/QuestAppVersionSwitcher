@@ -61,8 +61,8 @@
 </div>
 <div class="content hidden" id="saf">
     <h1>Access needed</h1>
-    <p>To mod your game correctly you need to grant access to your Beat Saber install. To do this press <code>Use this folder</code> at the bottom of both prompts which will appear after you press <code>Grant access</code> below.</p>
-    <button onclick="SAFRequest()">Grant access</button>
+    <p>To mod your game correctly you need to grant access to your Beat Saber install. To do this follow the provided instructions after pressing <code>Grant access</code> below</p>
+    <button onclick="ADBRequest()">Grant access</button>
 </div>
 <div class="content hidden" id="afterrestore">
     <h1>Game modded!</h1>
@@ -256,6 +256,7 @@
     var checkdowngrade = params.get('checkdowngrade');
     var startDownload = params.get('startdownload');
     var versionSpecified = false
+    var selectedVersion = ""
     if(params.get("version")) {
         selectedVersion = params.get("version")
         versionSpecified = true
@@ -326,7 +327,7 @@
         if(tab) {
             if(tab == "afterrestore") {
                 fetch(start + "/api/android/device").then(res => res.json().then(j => {
-                    if (j.device == "eureka") {
+                    if (j.device == "eureka" && false) { // disable device check, qavs has adb now :3
                         // Logged in
                         OpenTab("quest3")
                     } else {
@@ -361,9 +362,9 @@
         })
     }
 
-    function SAFRequest() {
-        fetch("/api/grantaccess?package=com.beatgames.beatsaber", {method: "POST"})
-        OpenTab(nextTab)
+    function ADBRequest() {
+        localStorage.redirect = start + `/flows/beat_saber_modding?tab=${nextTab}`
+        location = start + `/adb?goback=true`
     }
 
 
@@ -477,7 +478,7 @@
     }
 
     function Login() {
-        localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true`
+        localStorage.redirect = start + `/flows/beat_saber_modding?tab=downgrade&checkdowngrade=true&version=${selectedVersion}`
         location = "/?startlogin=true"
     }
 
@@ -706,7 +707,6 @@
         document.getElementById("modgamebsversion").innerText = moddedStatus.version;
     }
     
-    var selectedVersion = ""
     var modloader = 0
 
     function FirstOpen() {
@@ -717,7 +717,7 @@
             SelectVersion()
             return
         }
-        if(ShouldUseMBF()) {
+        if(ShouldUseMBF() && false) { // QAVS got adb now :3
             OpenTab("mbf")
             return
         }
@@ -748,7 +748,7 @@
                                 OpenTab("alreadymodded")
                             } else {
                                 // Not modded
-                                if(modloader == 1 && moddedStatus.device.sdkVersion >= 32) {
+                                if(modloader == 1 && moddedStatus.device.sdkVersion >= 32 && false) { // QAVS got adb now :3
                                     OpenTab("sl2")
                                 } else {
                                     OpenTabIfSAFAccess("modgame")

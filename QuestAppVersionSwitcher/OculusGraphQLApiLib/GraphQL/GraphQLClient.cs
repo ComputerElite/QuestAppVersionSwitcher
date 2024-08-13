@@ -218,6 +218,14 @@ namespace OculusGraphQLApiLib
             return JsonSerializer.Deserialize<Data<AndroidBinary>>(c.Request(), jsonOptions);
         }
 
+        public static Data<AndroidBinary> GetMoreBinaryDetails(string binaryId)
+        {
+            GraphQLClient c = OculusTemplate();
+            c.options.doc_id = "24072064135771905";
+            c.options.variables = "{\"binaryID\":\"" + binaryId + "\"}";
+            return JsonSerializer.Deserialize<Data<AndroidBinary>>(c.Request(), jsonOptions);
+        }
+
         public static PlainData<AppBinaryInfoContainer> GetAssetFiles(string appId, long versionCode)
         {
             GraphQLClient c = OculusTemplate();

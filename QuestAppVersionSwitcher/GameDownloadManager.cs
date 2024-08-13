@@ -190,7 +190,20 @@ namespace QuestAppVersionSwitcher
             }
             catch (Exception e)
             {
-                obbsToDo = request.obbList;
+                if (request.obbList.Count <= 0)
+                {
+                    Logger.Log("Failed to get obbs the correct way, falling back to more binary details");
+                    AndroidBinary binary = GraphQLClient.GetMoreBinaryDetails(request.binaryId).data.node;
+                    if (binary.obb_binary != null)
+                    {
+                        obbsToDo.Add(new ObbEntry
+                        {
+                            id = binary.obb_binary.id,
+                            name = binary.obb_binary.file_name,
+                            sizeNumerical = binary.obb_binary.sizeNumerical
+                        });
+                    }
+                } else obbsToDo = request.obbList;
             }
 
             allObbs = new List<ObbEntry>(obbsToDo);

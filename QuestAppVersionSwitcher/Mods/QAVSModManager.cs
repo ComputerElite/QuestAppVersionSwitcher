@@ -160,7 +160,7 @@ namespace QuestAppVersionSwitcher.Mods
                 }
                 else
                 {
-                    modManager.usedModLoader = ModLoader.QuestLoader;
+                    modManager.usedModLoader = ModLoader.Scotland2;
                 }
 
                 PatchingStatus status = PatchingManager.GetPatchingStatus(CoreService.coreVars.currentApp);

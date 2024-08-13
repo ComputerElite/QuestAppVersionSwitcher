@@ -11,6 +11,7 @@ const squareLoader = `
     <div class="loaderSquare"></div>
 </div>`
 var diffDowngradeEnabled = true
+const params = new URLSearchParams(window.location.search)
 
 fetch("/api/downgrade/usediff").then(res => res.json().then(res => {
     diffDowngradeEnabled = res.useDiff
@@ -298,7 +299,7 @@ function UpdateMods() {
     document.getElementById("libsList").innerHTML = libs
 }
 function IsOnQuest() {
-    return location.host.startsWith("127.0.0.1") ||location.host.startsWith("localhost")
+    return location.host.startsWith("127.0.0.1") || location.host.startsWith("localhost") || (params ? params.has("dev") : false)
 }
 
 function GetPort() {
@@ -804,7 +805,6 @@ function PatchGame() {
 UpdateUI()
 TokenUIUpdate()
 const oculusLink = "https://auth.oculus.com/login/?redirect_uri=https%3A%2F%2Fdeveloper.oculus.com%2Fmanage%2F"
-const params = new URLSearchParams(window.location.search)
 var afterRestore = ""
 var afterDownload = ""
 
@@ -819,6 +819,10 @@ function CheckStartParams() {
     var tab = params.get("tab")
     var logout = params.get("logout")
     var backuptopatchParam = params.get("backuptopatch")
+    var selectedbackupParam= params.get("selectedbackup")
+    if(selectedbackupParam) {
+        AfterRestoreAdbAccess(selectedbackupParam)
+    }
     afterRestore = params.get("afterrestore")
     afterDownload = params.get("afterdownload")
     
@@ -829,6 +833,10 @@ function CheckStartParams() {
     if(params.get("showprocessing")) {
         OpenRestorePopup()
         GotoStep(17)
+    }
+    if(params.get("step16")) {
+        OpenRestorePopup()
+        GotoStep(16)
     }
     if(params.get("loginerror")) {
         OpenRestorePopup()
@@ -1083,6 +1091,9 @@ function UpdateDownloads(json) {
     document.getElementById("gameProgressBarContainers").innerHTML = gdms
 }
 
+document.getElementById("adb").onclick =()=> {
+    location = "/adb"
+}
 
 document.getElementById("setup").onclick = () => {
     location = "/setup?open=true"
@@ -1350,7 +1361,7 @@ function AfterAPKInstall() {
                         // 4: restore app data
                         // 5: done'd
                         if(j.isPatchedApk) {
-                            if(j.moddedJson && j.moddedJson.modloaderName == "QuestLoader") {
+                            if(j.moddedJson && j.moddedJson.modloaderName == "QuestLoader" && !a.gotAccess) {
                                 GotoStep("4.1") // QuestLoader needs access to Android/data
                             } else {
                                 GotoStep("4.2") // No need to ask for access
@@ -1404,29 +1415,29 @@ document.getElementById("grantAccess").onclick = () => {
     fetch("/api/android/ispackageinstalled?package=" + config.currentApp).then(res => {
         res.json().then(j => {
             if (j.isAppInstalled) {
-                fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
-                    res.json().then(j => {
-                        if (j.success) {
-                            fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
-                                res.json().then(j => {
-                                    if(j.isPatchedApk) {
-                                        GotoStep("4.2")
-                                    } else {
-                                        if (j.containsAppData || j.containsObbs) {
-                                            GotoStep(4)
-                                        } else {
-                                            GotoStep(5)
-                                        }
-                                    }
-                                })
-                            })
-                        } else TextBoxError("step3box", j.msg)
-                    })
-                })
+                localStorage.redirect = `/?selectedbackup=${selectedBackup}`
+                location = `/adb?goback=true`
             }
             else {
                 TextBoxError("step3box", config.currentApp + " is not installed. Please try again. Disable library sharing and remove all account from your quest except your primary one.")
                 GotoStep(3)
+            }
+        })
+    })
+}
+
+function AfterRestoreAdbAccess(selectedBackup) {
+    fetch("/api/backupinfo?package=" + config.currentApp + "&backupname=" + selectedBackup).then(res => {
+        res.json().then(j => {
+            OpenRestorePopup()
+            if(j.isPatchedApk) {
+                GotoStep("4.2")
+            } else {
+                if (j.containsAppData || j.containsObbs) {
+                    GotoStep(4)
+                } else {
+                    GotoStep(5)
+                }
             }
         })
     })
@@ -1452,24 +1463,17 @@ document.getElementById("deleteAllMods").onclick = () => {
 }
 
 document.getElementById("grantAccess2").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
-        CloseRestorePopup();
-    })
+    location = "/adb"
 }
 
 document.getElementById("grantAccess3").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
-        GotoStep(16)
-    })
+    localStorage.redirect = `/?step16=true`
+    location = `/adb?goback=true`
 }
 
 document.getElementById("requestManageStorageAppPermission").onclick = () => {
     fetch("/api/grantmanagestorageappaccess?package=" + config.currentApp, {method: "POST"}).then(res => {
     })
-}
-
-document.getElementById("requestAppPermission").onclick = () => {
-    fetch("/api/grantaccess?package=" + config.currentApp, {method: "POST"})
 }
 
 document.getElementById("restoreappdata").onclick = () => {
@@ -1523,7 +1527,7 @@ document.getElementById("skip2").onclick = () => {
 
 document.getElementById("restoreBackup").onclick = () => {
     if(!IsOnQuest()) {
-        TextBoxError("restoreTextBox", "You can only restore backups in your quest")
+        TextBoxError("restoreTextBox", "Backups can only be restored in your Quest directly. Please use QAVS in your quest.")
         return
     }
     if (backupInProgress) {

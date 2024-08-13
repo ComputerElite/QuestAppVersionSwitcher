@@ -81,6 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActivityResultCallbackRegistry.cs" />
+    <Compile Include="Adb\AdbException.cs" />
+    <Compile Include="Adb\AdbServer.cs" />
+    <Compile Include="Adb\AdbWifiState.cs" />
+    <Compile Include="Adb\AdbWrapper.cs" />
+    <Compile Include="Adb\ExitInfo.cs" />
+    <Compile Include="Adb\QAVSAdbInteractor.cs" />
     <Compile Include="AndroidDevice.cs" />
     <Compile Include="BackupManager.cs" />
     <Compile Include="ClientModels.cs" />
@@ -159,9 +165,23 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\html\adb.html" />
     <AndroidAsset Include="Assets\html\diff\diff.html" />
     <AndroidAsset Include="Assets\html\flows\beat_saber_modding.html" />
     <AndroidAsset Include="Assets\html\hiddenApps.json" />
+    <AndroidAsset Include="Assets\html\images\adb\1.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\10.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\11.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\2.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\3.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\4.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\5.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\6.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\7.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\8.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\9.jpg" />
+    <AndroidAsset Include="Assets\html\pair.html" />
+    <AndroidAsset Include="Assets\libadb.so" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
@@ -199,6 +219,12 @@
     <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="adb">
+      <Version>33.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="AdvancedSharpAdbClient">
+      <Version>3.3.12</Version>
+    </PackageReference>
     <PackageReference Include="Fleck">
       <Version>1.2.0</Version>
     </PackageReference>
@@ -215,13 +241,16 @@
       <Version>1.0.2</Version>
     </PackageReference>
     <PackageReference Include="QuestPatcher.QMod">
-      <Version>2.1.0</Version>
+      <Version>2.2.1</Version>
     </PackageReference>
     <PackageReference Include="QuestPatcher.Zip">
       <Version>1.1.1</Version>
     </PackageReference>
     <PackageReference Include="SemanticVersioning">
       <Version>2.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="sharpadbclient">
+      <Version>2.3.23</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Compression">
       <Version>4.3.0</Version>
@@ -283,6 +312,21 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <AndroidAsset Include="Assets\html\script.js" />
+    <AndroidNativeLibrary Include="libs\arm64-v8a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="libs\armeabi-v7a\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <Content Include="Adb\LICENSE" />
+    <Content Include="Adb\README.md" />
+    <Content Include="libs\readme.md" />
+    <AndroidNativeLibrary Include="libs\x86\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="libs\x86_64\libadb.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj">

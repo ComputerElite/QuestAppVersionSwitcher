@@ -5,6 +5,7 @@ using QuestAppVersionSwitcher.ClientModels;
 using QuestAppVersionSwitcher.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using ComputerUtils.Android.AndroidTools;
@@ -25,6 +26,8 @@ using QuestAppVersionSwitcher.Mods;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using AdvancedSharpAdbClient;
 using Android.App;
 using Android.OS;
 using Android.Provider;
@@ -35,18 +38,27 @@ using Thread = System.Threading.Thread;
 using OculusGraphQLApiLib;
 using OculusGraphQLApiLib.Results;
 using ComputerUtils.Updating;
+using DanTheMan827.OnDeviceADB;
 using Fleck;
+using Java.IO;
+using Java.Lang;
 using Java.Util;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using OculusGraphQLApiLib.GraphQL;
 using QuestAppVersionSwitcher.DiffDowngrading;
 using QuestPatcher.QMod;
 using QuestPatcher.Zip;
+using AdbServer = DanTheMan827.OnDeviceADB.AdbServer;
 using DownloadStatus = QuestAppVersionSwitcher.ClientModels.DownloadStatus;
 using Environment = Android.OS.Environment;
+using Error = Java.Lang.Error;
+using File = System.IO.File;
+using IOException = System.IO.IOException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Math = System.Math;
 using Path = System.IO.Path;
+using Process = System.Diagnostics.Process;
 using WebView = Android.Webkit.WebView;
 
 namespace QuestAppVersionSwitcher
@@ -295,7 +307,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/downgrade/usediff", request =>
             {
-                request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading || CoreService.coreVars.onlineDowngradeJson.useDiffDowngrade, true), "application/json");
+                request.SendString(UseDiffResponse.GetResponse(CoreService.coreVars.useDiffDowngrading, true), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/downgrade/usediff", request =>
@@ -697,12 +709,15 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/diff", "html/diff/diff.html");
             server.AddRouteFile("/scotlandforever.mp3", "html/scotlandforever.mp3");
 			server.AddRouteFile("/setup", "html/setup.html");
+            server.AddRouteFile("/pair", "html/pair.html");
+            server.AddRouteFile("/adb", "html/adb.html");
             server.AddRouteFile("/flows/beat_saber_modding", "html/flows/beat_saber_modding.html");
             server.AddRouteFile("/inject.js", "html/qavs_inject.js", new Dictionary<string, string> { {"{0}", CoreService.coreVars.serverPort.ToString() } });
             server.AddRouteFile("/script.js", "html/script.js");
             server.AddRouteFile("/hiddenApps.json", "html/hiddenApps.json");
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRouteFile("/newstyle.css", "html/newstyle.css");
+            server.AddRouteFolderWithFiles("/images", "html/images");
             server.AddRoute("GET", "/api/android/installedapps", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");
@@ -716,8 +731,13 @@ namespace QuestAppVersionSwitcher
 			server.AddRoute("POST", "/api/android/launch", serverRequest =>
             {
                 serverRequest.SendString(GenericResponse.GetResponse("Launching " + CoreService.coreVars.currentApp, true), "application/json");
-
-                AndroidService.LaunchApp(CoreService.coreVars.currentApp);
+                // get package from query string if any
+                string appToLaunch = CoreService.coreVars.currentApp;
+                if (serverRequest.queryString.Get("package") != null)
+                {
+                    appToLaunch = serverRequest.queryString.Get("package");
+                }
+                AndroidService.LaunchApp(appToLaunch);
                 Timer t = new Timer();
                 t.Schedule(new LaunchAppTask(), 2000);
                 return true;
@@ -1222,35 +1242,20 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/gotaccess", serverRequest =>
             {
-                if (serverRequest.queryString.Get("package") == null)
-                {
-                    serverRequest.SendString(GotAccess.GetResponse("package key needed", false, false), "application/json", 400);
-                    return true;
-                }
-                string package = serverRequest.queryString.Get("package");
-                if (!FolderPermission.NeedsSAF())
+                if (!FolderPermission.DoesDeviceNeedSAF())
                 {
                     serverRequest.SendString(GotAccess.GetResponse("Device doesn't require SAF. Continue as normal.", true, true),
                         "application/json");
-
-                }
-                else if (Build.VERSION.SdkInt <= BuildVersionCodes.SV2)
-                {
-                    bool gotAccess =
-                        FolderPermission.GotAccessTo(
-                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/obb") &&
-                        FolderPermission.GotAccessTo(
-                            Environment.ExternalStorageDirectory.AbsolutePath + "/Android/data");
-                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
                 }
                 else
                 {
-                    bool gotAccess =
-                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
-                                                     "/Android/obb/" + package) &&
-                        FolderPermission.GotAccessTo(Environment.ExternalStorageDirectory.AbsolutePath +
-                                                     "/Android/data/" + package);
-                    serverRequest.SendString(GotAccess.GetResponse("", gotAccess, true), "application/json");
+                    // Check if any adb devices are connected
+                    if (AdbWrapper.GetDevices().Length <= 0)
+                    {
+                        serverRequest.SendString(GotAccess.GetResponse("No adb devices connected", false, true), "application/json", 400);
+                        return true;
+                    }
+                    serverRequest.SendString(GotAccess.GetResponse("Ya got access mate! Adb workin'", true, true), "application/json");
                 }
                 return true;
             });
@@ -1474,8 +1479,105 @@ namespace QuestAppVersionSwitcher
                 AndroidService.InitiateInstallApk(backupDir + "app.apk");
                 return true;
             });
+            server.AddRoute("GET", "/api/adb/devices", request =>
+            {
+                request.SendString(JsonSerializer.Serialize(AdbWrapper.GetDevices()), "application/json");
+                return true;
+            });
+            server.AddRoute("GET", "/api/adb/autoconnect", request =>
+            {
+                bool connected = QAVSAdbInteractor.TryConnect();
+                request.SendString(GenericResponse.GetResponse(connected ? "Connected successfully" : "Failed to connect to quest, probably a lack of permission", connected), "application/json");
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/opensettings", request =>
+            {
+                var intent = new Intent();
+                intent.SetAction(Intent.ActionMain);
+                intent.AddCategory("android.intent.category.LAUNCHER");
+                intent.SetPackage("com.android.settings");
+                intent.SetFlags(ActivityFlags.NewTask);
+                AndroidCore.context.StartActivity(intent);
+                request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/pair", request =>
+            {
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                try
+                {
+                    ExitInfo i = AdbWrapper.RunAdbCommand("pair 127.0.0.1:" + r.port + " " + r.code);
+                    if(i.ExitCode != 0) throw new Exception("Failed to pair: " + i);
+                    request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
+                } catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to pair: " + e, false), "application/json");
+                }
+                return true;
+            });
+            server.AddRoute("GET", "/api/adb/port", request =>
+            {
+                request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/connect", request =>
+            {
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                try
+                {
+                    ExitInfo i = AdbWrapper.RunAdbCommand("connect 127.0.0.1:" + r.port);
+                    if(i.ExitCode != 0 || AdbWrapper.GetDevices().Length <= 0) throw new Exception("Failed to connect: " + i);
+                    request.SendString(GenericResponse.GetResponse("Connected with localhost ", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to connect " + e, false), "application/json");
+                }
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/togglewireless", request =>
+            {
+                try
+                {
+                    AdbWrapper.EnableAdbWiFi(true);
+                    request.SendString(GenericResponse.GetResponse("cycled wireless adb", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to cycle wireless adb: " + e, false), "application/json");
+                }
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/makepersistent", request =>
+            {
+                try
+                {
+                    AdbWrapper.GrantPermissions();
+                    request.SendString(GenericResponse.GetResponse("Granted permissions", true), "application/json");
+                }
+                catch (Exception e)
+                {
+                    request.SendString(GenericResponse.GetResponse("Failed to grant permissions: " + e, false), "application/json");
+                }
+                return true;
+            });
+            server.AddRoute("POST", "/api/adb/command", request =>
+            {
+                
+                AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
+                ExitInfo i = AdbWrapper.RunAdbCommand(r.command);
+                request.SendString(JsonSerializer.Serialize(i), "application/json");
+                return true;
+            });
 			server.AddRouteFile("/facts.png", "facts.png");
-            server.StartServer(CoreService.coreVars.serverPort);
+            try
+            {
+                server.StartServer(CoreService.coreVars.serverPort);
+            }
+            catch (Exception e)
+            {
+                Logger.Log("Failed to start server:\n"+ e.ToString(), LoggingType.Warning);
+            }
 
             if (CoreService.coreVars.loginStep == 1)
             {
@@ -1505,11 +1607,34 @@ namespace QuestAppVersionSwitcher
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("Couldn't set up multicase: " + e, LoggingType.Warning);
+                    Logger.Log("Couldn't set up multicast: " + e, LoggingType.Warning);
                 }
             });
             t.Start();
+            
+            singleton = new AdbServer();
+            singleton.Start();
+            QAVSAdbInteractor.TryConnect();
         }
+
+        private static AdbServer singleton;
+        
+        private static async Task<string> ReadStreamAsync([CanBeNull] Stream stream)
+        {
+            using (var reader = new BufferedReader(new InputStreamReader(stream)))
+            {
+                string line;
+                string res = "";
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    res += line + "\n";
+                }
+
+                return res;
+            }
+        }
+        
+        
 
         private void ChangeApp(string packageName, string name = "")
         {
