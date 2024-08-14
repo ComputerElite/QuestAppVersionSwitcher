@@ -1484,6 +1484,14 @@ namespace QuestAppVersionSwitcher
                 request.SendString(JsonSerializer.Serialize(AdbWrapper.GetDevices()), "application/json");
                 return true;
             });
+            server.AddRoute("POST", "/api/adb/downloadlauncher", request =>
+            {
+                request.SendString(GenericResponse.GetResponse("Downloading and installing launcher", true), "application/json");
+                string launcherPath = CoreService.coreVars.QAVSTmpDowngradeDir+ "launcher.apk";
+                ExternalFilesDownloader.DownloadUrl("https://github.com/threethan/LightningLauncher/releases/download/7.2.3/LightningLauncher.apk", launcherPath, -1, "");
+                AndroidService.InitiateInstallApk(launcherPath);
+                return true;
+            });
             server.AddRoute("GET", "/api/adb/autoconnect", request =>
             {
                 bool connected = QAVSAdbInteractor.TryConnect();
@@ -1492,11 +1500,11 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/adb/opensettings", request =>
             {
-                var intent = new Intent();
-                intent.SetAction(Intent.ActionMain);
-                intent.AddCategory("android.intent.category.LAUNCHER");
-                intent.SetPackage("com.android.settings");
-                intent.SetFlags(ActivityFlags.NewTask);
+                Intent intent = AndroidCore.context.PackageManager.GetLaunchIntentForPackage("com.android.settings");
+                intent.AddFlags(ActivityFlags.NewTask);
+                intent.AddFlags(ActivityFlags.ClearTop);
+                intent.AddFlags(ActivityFlags.MultipleTask);
+                intent.AddFlags(ActivityFlags.ResetTaskIfNeeded);
                 AndroidCore.context.StartActivity(intent);
                 request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
                 return true;

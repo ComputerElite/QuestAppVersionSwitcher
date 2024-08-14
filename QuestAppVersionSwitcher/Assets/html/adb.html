@@ -26,11 +26,19 @@
     <p>Your quest is connected via adb. You can return now</p>
     <button onclick="AdbConnected()">Continue</button>
 </div>
+<div class="content hidden" id="launcher">
+    <h1>Prerequisites</h1>
+    <p>Before pairing you have to install Lightning Launcher. For that use the button below. It'll start the download and then initiate the install.</p>
+    <button onclick="Launcher()">Download and install Lightning Launcher</button>
+    <div id="launcherInstall" class="hidden">
+        <h2>Installing Lightning Launcher</h2>
+        Please wait a few seconds until the download completes. If you have any issues, please press the download button again.
+    </div>
+</div>
 <div class="content hidden" id="pair">
     <h1>Pairing</h1>
     <p>Your quest is not connected via adb yet. Input the port and code shown in the wireless adb pairing page.</p>
 
-    <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="port" id="port">
     <input type="number" placeholder="code" id="code">
     <button onclick="pair()">Pair</button>
@@ -39,8 +47,8 @@
         <img id="guideImage">
         <p id="guideText"></p>
 
-        <button onclick="UpdateGuide(-1)">&lt;</button>
-        <button onclick="UpdateGuide(1)">&gt;</button>
+        <button class="navigationButton" onclick="UpdateGuide(-1)">&lt;</button>
+        <button class="navigationButton" onclick="UpdateGuide(1)">&gt;</button>
     </div>
 </div>
 <div class="content hidden" id="remember">
@@ -48,13 +56,16 @@
     <p>QAVS has successfully paired with your Quest. We will now connect QAVS with your Quest. For that, input the wireless port from the adb wireless settings page.</p>
 
 
-    <button onclick="settings()">Open android settings</button>
     <input type="number" placeholder="wireless port" id="adbport">
     <button onclick="connect()">Connect</button>
+    <br>
+    <b>QAVS may crash while connecting to your Quest. If this happens just restart QAVS. It should be connected afterwards</b>
+    <p>If this happens repeatedly reboot your Quest</p>
     <h2>Guide</h2>
     <div>
         <img src="/images/adb/11.jpg">
         <p>You will find the port in the wireless debugging settings.In this screenshot the port is 46137. Input the one from your settings into the wireless port above and hit connect.</p>
+    
     </div>
 </div>
 <div class="content hidden" id="connecting">
@@ -84,6 +95,9 @@
         <div class="loaderSquare"></div>
     </div>
 </div>
+<br>
+<br>
+<br>
 <a href="/pair">Advanced ui</a>
 <script>
     FirstOpen()
@@ -103,8 +117,11 @@
         img: "/images/adb/0.jpg",
         txt: "Place the window on the left side like in the picture"
     },{
-        img: "/images/adb/1.jpg",
-        txt: "Open the settings on your Quest with the button above"
+        img: "/images/adb/0.1.jpg",
+        txt: "Open Lightning Launcher by opening your Library (1), going to 'Unknown sources' (2) and then opening 'Lightning Launcher' (3)"
+    },{
+        img: "/images/adb/0.2.jpg",
+        txt: "In Lightning Launcher press on 'Apps' (1) and then on 'Android Settings' (2)"
     },{
         img: "/images/adb/2.jpg",
         txt: "Scroll down and press on 'About headset'"
@@ -125,7 +142,7 @@
         txt: "Click on 'Wireless debugging'. Make sure to click into the blank space"
     },{
         img: "/images/adb/8.jpg",
-        txt: "Enable wireless debugging"
+        txt: "Enable wireless debugging and always allow it in your network when prompted"
     },{
         img: "/images/adb/9.jpg",
         txt: "Click on 'Pair device with pairing code'"
@@ -168,10 +185,64 @@
                     // Found devices
                     OpenTab("connected")
                 } else {
-                    OpenTab("pair")
+                    InitiatePair()
                 }
             })
     }
+    
+    function Launcher() {
+        document.getElementById('launcherInstall').className = ""
+        fetch("/api/adb/downloadlauncher", {method: "POST"}).then(res => {
+            if(res.ok) {
+                InstallationMonitor()
+            } else {
+                alert("Failed to start download. Please try again.")
+                document.getElementById('launcherInstall').className = "hidden"
+            }
+        })
+    }
+    
+    function InstallationMonitor() {
+        let install = setInterval(() => {
+            IsLauncherInstalled().then(isInstalled => {
+                if(isInstalled) {
+                    document.getElementById('launcherInstall').className = "hidden"
+                    clearInterval(install)
+                    OpenTab("pair")
+                }
+            }).catch(err => {
+                document.getElementById('launcherInstall').className = "hidden"
+                clearInterval(install)
+                alert("Failed to check if Lightning Launcher is installed. I will assume that it is. If it isn't, install Lightning Launcher manually via SideQuest")
+                OpenTab("pair")
+            })
+        }, 1000)
+    }
+    
+    function IsLauncherInstalled() {
+        return new Promise((resolve, reject) => {
+            fetch("/api/android/installedapps").then(res => res.json()).then(res => {
+                resolve(res.some(app => app.PackageName == "com.threethan.launcher"))
+            }).catch(err => {
+                reject(err)
+            })
+        })
+    }
+    
+    function InitiatePair() {
+        // Check if lightning launcher is installed
+        IsLauncherInstalled().then(isInstalled => {
+            if(isInstalled) {
+                OpenTab("pair")
+            } else {
+                OpenTab("launcher")
+            }
+        }).catch(err => {
+            alert("Failed to check if Lightning Launcher is installed. I will assume that it is not.")
+            OpenTab("launcher")
+        })
+    }
+    
     function wireless() {
         fetch(`/api/adb/togglewireless`, {
             method: "POST"

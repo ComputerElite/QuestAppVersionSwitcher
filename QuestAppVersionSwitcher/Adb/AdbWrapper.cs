@@ -84,11 +84,29 @@ namespace DanTheMan827.OnDeviceADB
             }
         
             proc.WaitForExit();
+            string error = "";
+            try
+            {
+                error = proc.StandardError.ReadToEnd();
+            }
+            catch (Exception e)
+            {
+                error = "Internal QAVS error getting standard error: " + e;
+            }
+            string output = "";
+            try
+            {
+                output = proc.StandardOutput.ReadToEnd();
+            }
+            catch (Exception e)
+            {
+                output = "Internal QAVS error getting standard output: " + e;
+            }
             ExitInfo i = new ExitInfo()
             {
                 ExitCode = proc.ExitCode,
-                Error = proc.StandardError.ReadToEnd(),
-                Output = proc.StandardOutput.ReadToEnd()
+                Error = error,
+                Output = output
             };
             Logger.Log("Exit code: " + i.ExitCode + "\n Error: " + i.Error + "\n\n Output: " + i.Output, "AdbWrapper");
 

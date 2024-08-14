@@ -73,6 +73,10 @@ code {
     border: 1px solid #4aaf8b;
 }
 
+img {
+    height: 600px;
+}
+
 .highlight {
     color: #4aaf8b;
 }
@@ -87,6 +91,10 @@ h3 {
 
 .selection {
     text-align: center;
+}
+
+.navigationButton {
+    width: 100px;
 }
 
 .hidden {

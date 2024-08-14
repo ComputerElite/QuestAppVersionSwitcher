@@ -170,6 +170,8 @@
     <AndroidAsset Include="Assets\html\flows\beat_saber_modding.html" />
     <AndroidAsset Include="Assets\html\hiddenApps.json" />
     <AndroidAsset Include="Assets\html\images\adb\-1.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\0.1.jpg" />
+    <AndroidAsset Include="Assets\html\images\adb\0.2.jpg" />
     <AndroidAsset Include="Assets\html\images\adb\0.jpg" />
     <AndroidAsset Include="Assets\html\images\adb\1.jpg" />
     <AndroidAsset Include="Assets\html\images\adb\10.jpg" />

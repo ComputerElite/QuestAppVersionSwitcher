@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2f7b7155cadcbcfbb5b89a24c52b474aea4dfdc5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a7e38eb39f068612272f220c93ff04601cfeb33e")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
