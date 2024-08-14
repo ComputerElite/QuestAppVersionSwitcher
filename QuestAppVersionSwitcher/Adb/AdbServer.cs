@@ -17,7 +17,6 @@ namespace DanTheMan827.OnDeviceADB
         private static string? FilesDir => AndroidCore.context?.FilesDir?.Path;
         private static string? CacheDir => AndroidCore.context?.CacheDir?.Path;
         private static string? NativeLibsDir => AndroidCore.context.ApplicationInfo?.NativeLibraryDir;
-        private CancellationTokenSource? CancelToken { get; set; }
         private Process? ServerProcess { get; set; }
         public static AdbServer Instance { get; set; }
 
@@ -43,10 +42,6 @@ namespace DanTheMan827.OnDeviceADB
         {
             Thread t = new Thread(() =>
             {
-                // Asserts
-                Debug.Assert(this.ServerProcess == null);
-                Debug.Assert(this.CancelToken == null);
-
                 // Create and configure the ProcessStartInfo.
                 var adbInfo = new ProcessStartInfo(AdbPath, arguments);
                 adbInfo.WorkingDirectory = FilesDir;
@@ -64,10 +59,7 @@ namespace DanTheMan827.OnDeviceADB
                 {
                     Logger.Log("Adb server failed to start", LoggingType.Error);
                 }
-
-                // Dispose any token source that may exist (there shouldn't be any)
-                CancelToken?.Dispose();
-
+                
                 // Wait for the server to exit
                 while (!ServerProcess.StandardError.EndOfStream)
                 {
@@ -107,9 +99,6 @@ namespace DanTheMan827.OnDeviceADB
             // Cleanup the token and process
             ServerProcess?.Dispose();
             ServerProcess = null;
-
-            CancelToken?.Dispose();
-            CancelToken = null;
         }
 
         /// <summary>
