@@ -1501,7 +1501,7 @@ namespace QuestAppVersionSwitcher
             server.AddRoute("POST", "/api/adb/opensettings", request =>
             {
                 Intent intent = AndroidCore.context.PackageManager.GetLaunchIntentForPackage("com.android.settings");
-                intent.AddFlags(ActivityFlags.NewTask || ActivityFlags.MultipleTask|| ActivityFlags.LaunchAdjacent);
+                intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.LaunchAdjacent);
                 AndroidCore.context.StartActivity(intent);
                 request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
                 return true;
