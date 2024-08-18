@@ -1502,10 +1502,10 @@ namespace QuestAppVersionSwitcher
             {
                 Intent intent = AndroidCore.context.PackageManager.GetLaunchIntentForPackage("com.android.settings");
                 intent.AddFlags(ActivityFlags.NewTask);
-                intent.AddFlags(ActivityFlags.ClearTop);
+                //intent.AddFlags(ActivityFlags.ClearTop);
                 intent.AddFlags(ActivityFlags.MultipleTask);
                 intent.AddFlags(ActivityFlags.ResetTaskIfNeeded);
-                intent.AddFlags(ActivityFlags);
+                intent.AddFlags(ActivityFlags.LaunchAdjacent);
                 AndroidCore.context.StartActivity(intent);
                 request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
                 return true;
