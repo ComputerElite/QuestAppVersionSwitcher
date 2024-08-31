@@ -126,6 +126,11 @@ namespace QuestAppVersionSwitcher.Mods
                     Logger.Log($"Starting late mod file copy {lateModPath} . . .");
                     copyPaths.Add(new KeyValuePair<string, string>(Path.Combine(extractPath, lateModPath), Path.Combine(_modManager.Scotland2LateModsPath, Path.GetFileName(lateModPath))));
                 }
+
+                directoriesToCreate.Add(_modManager.Scotland2LibsPath);
+                directoriesToCreate.Add(_modManager.Scotland2ModsPath);
+                directoriesToCreate.Add(_modManager.Scotland2LateModsPath);
+                
             }
             
 
@@ -142,7 +147,8 @@ namespace QuestAppVersionSwitcher.Mods
 
             foreach (string d in directoriesToCreate)
             {
-                FileManager.CreateDirectoryIfNotExisting(d);
+                FolderPermission.CreateDirectoryIfNotExisting(d);
+                //FileManager.CreateDirectoryIfNotExisting(d);
             }
             foreach(KeyValuePair<string, string> k in copyPaths)
             {
