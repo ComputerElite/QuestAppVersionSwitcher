@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7fecefacd0e8ee469009f867ead532600c3c2b80")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+908b40566d9e2471302da2e82daea010af1c59ed")]
 [assembly: System.Reflection.AssemblyProductAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DiffCreator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -647,57 +647,60 @@
     }
 
     function PatchGame() {
-        const patchOptions = {
-            otherPermissions: [],
-            debug: false,
-            handTracking: true,
-            handTrackingVersion: 0, // Default
-            externalStorage: true,
-            openXR: true,
-            modloader: modloader // QuestLoader = 0, Scotland2 = 1 
-        }
-        document.getElementById("modgamebutton").style.display = "none"
-        patchInProgressContainer.style.display = "block"
-        modgameloader.style.display = "block"
-        patchingStatus.className = ""
-        patchingStatus.classList.add("text")
-        fetch(start + `/api/patching/patchoptions`, {
-            method: "POST",
-            body: JSON.stringify(patchOptions)
-        }).then(res => {
-            fetch(start + "/api/patching/patchapk" + patchExtras, {
-                method: "POST"
+        fetch(`${start}/api/patching/recommendmodloader?package=com.beatgames.beatsaber&version=${selectedVersion}`).then(res => res.json().then(j => {
+            modloader = j.modloader
+            const patchOptions = {
+                otherPermissions: [],
+                debug: false,
+                handTracking: true,
+                handTrackingVersion: 0, // Default
+                externalStorage: true,
+                openXR: true,
+                modloader: modloader // QuestLoader = 0, Scotland2 = 1 
+            }
+            document.getElementById("modgamebutton").style.display = "none"
+            patchInProgressContainer.style.display = "block"
+            modgameloader.style.display = "block"
+            patchingStatus.className = ""
+            patchingStatus.classList.add("text")
+            fetch(start + `/api/patching/patchoptions`, {
+                method: "POST",
+                body: JSON.stringify(patchOptions)
             }).then(res => {
-                res.json().then(j => {
-                    if (j.success) {
-                        patchingStatus.innerHTML = j.msg
-                        var i = setInterval(() => {
-                            fetch(start + "/api/patching/patchstatus").then(res => {
-                                res.json().then(j => {
-                                    patchReport = j
-                                    if (j.done) {
-                                        patchingStatus.innerHTML = j.currentOperation
-                                        patchingStatus.classList.remove("text")
-                                        patchingStatus.classList.add("success")
-                                        clearInterval(i)
-                                        PatchDone()
-                                    } else if (j.error) {
-                                        patchingStatus.innerHTML = j.errorText
-                                        patchingStatus.classList.remove("text")
-                                        patchingStatus.classList.add("error")
-                                        ResetPatchPage()
-                                        clearInterval(i)
-                                    } else {
-                                        patchingStatus.innerHTML =  j.progressString + " - " + j.currentOperation
-                                    }
+                fetch(start + "/api/patching/patchapk" + patchExtras, {
+                    method: "POST"
+                }).then(res => {
+                    res.json().then(j => {
+                        if (j.success) {
+                            patchingStatus.innerHTML = j.msg
+                            var i = setInterval(() => {
+                                fetch(start + "/api/patching/patchstatus").then(res => {
+                                    res.json().then(j => {
+                                        patchReport = j
+                                        if (j.done) {
+                                            patchingStatus.innerHTML = j.currentOperation
+                                            patchingStatus.classList.remove("text")
+                                            patchingStatus.classList.add("success")
+                                            clearInterval(i)
+                                            PatchDone()
+                                        } else if (j.error) {
+                                            patchingStatus.innerHTML = j.errorText
+                                            patchingStatus.classList.remove("text")
+                                            patchingStatus.classList.add("error")
+                                            ResetPatchPage()
+                                            clearInterval(i)
+                                        } else {
+                                            patchingStatus.innerHTML = j.progressString + " - " + j.currentOperation
+                                        }
+                                    })
                                 })
-                            })
-                        }, 500);
-                    } else {
-                        patchingStatus.innerHTML =  j.msg
-                        ResetPatchPage()
-                        patchingStatus.classList.add("error")
-                    }
+                            }, 500);
+                        } else {
+                            patchingStatus.innerHTML = j.msg
+                            ResetPatchPage()
+                            patchingStatus.classList.add("error")
+                        }
+                    })
                 })
             })
         })
