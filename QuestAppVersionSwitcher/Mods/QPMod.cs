@@ -149,6 +149,7 @@ namespace QuestAppVersionSwitcher.Mods
                 try
                 {
                     string dir = Directory.GetParent(k.Value).FullName;
+                    Logger.Log("Copying file " + k.Key + " to " + k.Value);
                     // If file is in android folder use SAF
                     if (k.Value.Contains("Android/data") || k.Value.Contains("Android/obb"))
                     {
