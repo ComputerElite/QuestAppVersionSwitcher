@@ -58,6 +58,30 @@ namespace DanTheMan827.OnDeviceADB
             RunAdbCommand("kill-server");
             StopServer();
         }
+        
+        public static List<AndroidDevice> GetDevices() {
+            List<AndroidDevice> devices = new List<AndroidDevice>();
+            string[] d = adbS("devices -l", false).Split("\n");
+            foreach (string l in d)
+            {
+                if (l.StartsWith("List of")) continue;
+                string[] options = l.Split(' ');
+                if (options[0].Trim() == "") continue;
+                AndroidDevice device = new AndroidDevice();
+                device.id = options[0];
+                foreach(string o in options)
+                {
+                    string[] p = o.Split(":");
+                    if (p[0] == "model")
+                    {
+                        device.name = p[1];
+                        break;
+                    }
+                }
+                devices.Add(device);
+            }
+            return devices;
+        }
 
         /// <summary>
         /// Runs an ADB command asynchronously.
@@ -327,6 +351,26 @@ namespace DanTheMan827.OnDeviceADB
             arguments.AddRange(command);
 
             return RunAdbCommand(String.Join(' ', arguments.ToArray()));
+        }
+    }
+    
+    
+    public class AndroidDevice
+    {
+        public string id { get; set; } = "";
+        public string name { get; set; } = "";
+
+        public AndroidDevice(string id, string name)
+        {
+            this.id = id;
+            this.name = name;
+        }
+
+        public AndroidDevice() { }
+
+        public override string ToString()
+        {
+            return id + ": " + name;
         }
     }
 }
