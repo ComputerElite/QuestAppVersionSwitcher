@@ -59,15 +59,15 @@ namespace DanTheMan827.OnDeviceADB
             StopServer();
         }
         
-        public static List<AndroidDevice> GetDevices() {
-            List<AndroidDevice> devices = new List<AndroidDevice>();
+        public static List<AdbDevice> GetDevices() {
+            List<AdbDevice> devices = new List<AdbDevice>();
             string[] d = adbS("devices -l", false).Split("\n");
             foreach (string l in d)
             {
                 if (l.StartsWith("List of")) continue;
                 string[] options = l.Split(' ');
                 if (options[0].Trim() == "") continue;
-                AndroidDevice device = new AndroidDevice();
+                AdbDevice device = new AdbDevice();
                 device.id = options[0];
                 foreach(string o in options)
                 {
@@ -88,9 +88,12 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="arguments">The arguments to pass to adb.</param>
         /// <returns>An ExitInfo object containing the exit code, error message, and output of the command.</returns>
-        public static ExitInfo RunAdbCommand(string arguments)
+        public static ExitInfo RunAdbCommand(string arguments, AdbDevice? device)
         {
             StartServer();
+            if(device != null) {
+                arguments = "-s \"" + device.id + "\" " + arguments;
+            }
 
             var procStartInfo = new ProcessStartInfo(AdbPath)
             {
@@ -355,18 +358,18 @@ namespace DanTheMan827.OnDeviceADB
     }
     
     
-    public class AndroidDevice
+    public class AdbDevice
     {
         public string id { get; set; } = "";
         public string name { get; set; } = "";
 
-        public AndroidDevice(string id, string name)
+        public AdbDevice(string id, string name)
         {
             this.id = id;
             this.name = name;
         }
 
-        public AndroidDevice() { }
+        public AdbDevice() { }
 
         public override string ToString()
         {

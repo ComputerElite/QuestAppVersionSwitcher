@@ -8,6 +8,7 @@ namespace DanTheMan827.OnDeviceADB
 {
     public class QAVSAdbInteractor
     {
+        public static AdbDevice device;
         private static bool _hasInitialized = false;
         public static void Initialize()
         {
@@ -53,6 +54,8 @@ namespace DanTheMan827.OnDeviceADB
 
                     // Restore the saved wireless debugging state.
                     AdbWrapper.AdbWifiState = adbWifiState;
+                } else {
+                    device = devices[0];
                 }
 
                 // Grant necessary permissions to all connected devices.
