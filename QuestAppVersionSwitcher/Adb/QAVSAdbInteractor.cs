@@ -25,10 +25,10 @@ namespace DanTheMan827.OnDeviceADB
 
                 // Get the list of connected devices.
                 var devices = AdbWrapper.GetDevices();
-                Logger.Log("Found " + devices.Length + " adb devices.", "AdbServer");
+                Logger.Log("Found " + devices.Count + " adb devices.", "AdbServer");
 
                 // If no devices are connected, enable ADB over WiFi.
-                if (devices.Length == 0)
+                if (devices.Count == 0)
                 {
                     // Store the current wireless debugging state.
                     var adbWifiState = AdbWrapper.AdbWifiState;

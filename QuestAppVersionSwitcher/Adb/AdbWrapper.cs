@@ -61,7 +61,8 @@ namespace DanTheMan827.OnDeviceADB
         
         public static List<AdbDevice> GetDevices() {
             List<AdbDevice> devices = new List<AdbDevice>();
-            string[] d = adbS("devices -l", false).Split("\n");
+            ExitInfo i = RunAdbCommand("devices -l")
+            string[] d = i.Output.Split("\n");
             foreach (string l in d)
             {
                 if (l.StartsWith("List of")) continue;
@@ -88,7 +89,7 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="arguments">The arguments to pass to adb.</param>
         /// <returns>An ExitInfo object containing the exit code, error message, and output of the command.</returns>
-        public static ExitInfo RunAdbCommand(string arguments, AdbDevice? device)
+        public static ExitInfo RunAdbCommand(string arguments, AdbDevice? device = null)
         {
             StartServer();
             if(device != null) {
@@ -206,7 +207,7 @@ namespace DanTheMan827.OnDeviceADB
         /// <param name="host">The host of the ADB device.</param>
         /// <param name="port">The port to connect to (default is 5555).</param>
         /// <returns>The connected host.</returns>
-        public static string Connect(string host, int port = 5555)
+        public static AdbDevice Connect(string host, int port = 5555)
         {
             StartServer();
 
@@ -218,7 +219,7 @@ namespace DanTheMan827.OnDeviceADB
                 throw new AdbException(output.Output);
             }
 
-            return match.Groups[1].Value.Trim();
+            return new AdbDevice { id= match.Groups[1].Value.Trim()};
         }
 
         /// <summary>
