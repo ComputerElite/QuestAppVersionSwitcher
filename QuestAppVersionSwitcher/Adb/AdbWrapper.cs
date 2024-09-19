@@ -226,7 +226,7 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="device">The device identifier (optional).</param>
         /// <returns>True if all devices were disconnected; otherwise, false.</returns>
-        public static bool Disconnect(string? device = null)
+        public static bool Disconnect(AdbDevice? device = null)
         {
             StartServer();
 
@@ -236,40 +236,20 @@ namespace DanTheMan827.OnDeviceADB
             }
             else
             {
-                return (RunAdbCommand("disconnect " + device)).Output.Contains("disconnected ");
+                return (RunAdbCommand("disconnect " + device.id)).Output.Contains("disconnected ");
             }
-        }
-
-        /// <summary>
-        /// Gets the list of connected ADB devices asynchronously.
-        /// </summary>
-        /// <returns>An array of device identifiers.</returns>
-        public static string[] GetDevices()
-        {
-            StartServer();
-
-            var output = RunAdbCommand("devices");
-
-            if (output.ExitCode != 0 || !output.Output.Contains("List of devices attached"))
-            {
-                throw new AdbException(output.Output);
-            }
-
-            var matches = Regex.Matches(output.Output, "^(.*?)\\tdevice$", RegexOptions.Multiline);
-
-            return matches.Select(match => match.Groups[1].Value.Trim()).ToArray();
         }
 
         /// <summary>
         /// Grants necessary permissions to an ADB device asynchronously.
         /// </summary>
         /// <param name="device">The device identifier.</param>
-        public static void GrantPermissions(string device)
+        public static void GrantPermissions(AdbDevice device)
         {
             StartServer();
 
-            RunAdbCommand("-s " + device + " shell pm grant " + Application.Context.PackageName + " android.permission.WRITE_SECURE_SETTINGS");
-            RunAdbCommand("-s " + device + " shell pm grant " + Application.Context.PackageName + " android.permission.READ_LOGS");
+            RunAdbCommand("shell pm grant " + Application.Context.PackageName + " android.permission.WRITE_SECURE_SETTINGS", device);
+            RunAdbCommand("shell pm grant " + Application.Context.PackageName + " android.permission.READ_LOGS", device);
         }
 
         /// <summary>
@@ -292,7 +272,7 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="device">The device identifier (optional).</param>
         /// <param name="port">The port to use (default is 5555).</param>
-        public static void TcpIpMode(string? device = null, int port = 5555)
+        public static void TcpIpMode(AdbDevice? device = null, int port = 5555)
         {
             StartServer();
                 
@@ -302,7 +282,7 @@ namespace DanTheMan827.OnDeviceADB
             }
             else
             {
-                RunAdbCommand("-s " + device + " tcpip" + port.ToString());
+                RunAdbCommand("tcpip" + port.ToString(), device);
                 Disconnect(device);
             }
 
@@ -314,47 +294,6 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="port">The port to use (default is 5555).</param>
         public static void TcpIpMode(int port = 5555) => TcpIpMode(null, port);
-
-        /// <summary>
-        /// Sets ADB to USB mode asynchronously.
-        /// </summary>
-        /// <param name="device">The device identifier (optional).</param>
-        public static void UsbMode(string? device = null)
-        {
-            StartServer();
-
-            if (device == null)
-            {
-                RunAdbCommand($"usb");
-            }
-            else
-            {
-                RunAdbCommand("-s " + device + " usb");
-                Disconnect(device);
-            }
-        }
-
-        /// <summary>
-        /// Executes an ADB shell command and returns the output.
-        /// </summary>
-        /// <param name="device">The device identifier (optional).</param>
-        /// <param name="command">The command and arguments to run.</param>
-        /// <returns></returns>
-        public static ExitInfo RunShellCommand(string? device = null, params string[] command)
-        {
-            var arguments = new List<string>();
-
-            if (device != null)
-            {
-                arguments.Add("-s");
-                arguments.Add(device);
-            }
-
-            arguments.Add("shell");
-            arguments.AddRange(command);
-
-            return RunAdbCommand(String.Join(' ', arguments.ToArray()));
-        }
     }
     
     
