@@ -1250,7 +1250,7 @@ namespace QuestAppVersionSwitcher
                 else
                 {
                     // Check if any adb devices are connected
-                    if (AdbWrapper.GetDevices().Length <= 0)
+                    if (AdbWrapper.GetDevices().Count <= 0)
                     {
                         serverRequest.SendString(GotAccess.GetResponse("No adb devices connected", false, true), "application/json", 400);
                         return true;
@@ -1531,7 +1531,7 @@ namespace QuestAppVersionSwitcher
                 try
                 {
                     ExitInfo i = AdbWrapper.RunAdbCommand("connect 127.0.0.1:" + r.port);
-                    if(i.ExitCode != 0 || AdbWrapper.GetDevices().Length <= 0) throw new Exception("Failed to connect: " + i);
+                    if(i.ExitCode != 0 || AdbWrapper.GetDevices().Count <= 0) throw new Exception("Failed to connect: " + i);
                     request.SendString(GenericResponse.GetResponse("Connected with localhost ", true), "application/json");
                 }
                 catch (Exception e)
