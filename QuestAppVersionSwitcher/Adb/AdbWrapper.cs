@@ -61,7 +61,7 @@ namespace DanTheMan827.OnDeviceADB
         
         public static List<AdbDevice> GetDevices() {
             List<AdbDevice> devices = new List<AdbDevice>();
-            ExitInfo i = RunAdbCommand("devices -l")
+            ExitInfo i = RunAdbCommand("devices -l");
             string[] d = i.Output.Split("\n");
             foreach (string l in d)
             {
