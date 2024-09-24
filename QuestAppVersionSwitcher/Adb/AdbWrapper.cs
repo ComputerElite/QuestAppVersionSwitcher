@@ -94,7 +94,7 @@ namespace DanTheMan827.OnDeviceADB
             StartServer();
             if(device != null) {
                 arguments = "-s \"" + device.id + "\" " + arguments;
-                if(!Logger.notAllowedStrings.Contains(device.id)) Logger.notAllowedStrings.Add(device.id);
+                if(!Logger.notAllowedStrings.ContainsKey(device.id)) Logger.notAllowedStrings.Add(device.id, "<device-id-censored>");
             }
 
             var procStartInfo = new ProcessStartInfo(AdbPath)
