@@ -50,12 +50,13 @@ namespace DanTheMan827.OnDeviceADB
 
                         // Launch the server.
                         AdbWrapper.StartServer();
+                        this.device = device;
                     }
 
                     // Restore the saved wireless debugging state.
                     AdbWrapper.AdbWifiState = adbWifiState;
                 } else {
-                    device = devices[0];
+                    this.device = devices[0];
                 }
 
                 // Grant necessary permissions to all connected devices.
