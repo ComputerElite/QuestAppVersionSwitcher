@@ -332,7 +332,7 @@ fetch("/api/android/device").then(res => res.json().then(res => {
 }))
 
 function UpdateInstalledModsQuest3Hint() {
-    var isOnQuest3 = device == "eureka" && modloader == 0 && !localStorage.installModsQ3 // only hide mods stuff on QuestLoader
+    var isOnQuest3 = false; // Quest 3 should work now //device == "eureka" && modloader == 0 && !localStorage.installModsQ3 // only hide mods stuff on QuestLoader
     for(const e of document.getElementsByClassName("quest3hide")) {
         e.style.display = isOnQuest3 ? "none" : "block"
     }
