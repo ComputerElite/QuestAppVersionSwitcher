@@ -340,12 +340,15 @@ function UpdateInstalledModsQuest3Hint() {
         e.style.display = isOnQuest3 ? "block" : "none"
     }
 }
+/*
+// This button is commented out in the ui duh. You fucking idiot
 document.getElementById("installModsQ3").checked = localStorage.installModsQ3 == "true"
 
 document.getElementById("installModsQ3").onchange = () => {
     localStorage.installModsQ3 = document.getElementById("installModsQ3").checked
     UpdateInstalledModsQuest3Hint()
 }
+*/
 
 function LaunchApp() {
     fetch("/api/android/launch", {
