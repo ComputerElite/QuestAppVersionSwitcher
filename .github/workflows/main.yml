@@ -17,23 +17,7 @@ jobs:
         path: 'QAVS'
         submodules: recursive
 
-    - name: Generate .jks signing key on the fly
-      shell: pwsh
-      run: |
-        & keytool -genkeypair `
-          -alias "${{ secrets.ALIAS }}" `
-          -keyalg RSA `
-          -keysize 2048 `
-          -validity 365 `
-          -keystore signing_key.jks `
-          -dname "CN=Your Name, OU=Org Unit, O=Org, L=City, S=State, C=US" `
-          -storepass "${{ secrets.KEY_STORE_PASSWORD }}" `
-          -keypass "${{ secrets.KEY_PASSWORD }}"
-        
-        # Convert the .jks file to base64 and save it to an environment variable
-        $base64Key = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes("signing_key.jks"))
-        echo "SIGNING_KEY=$base64Key" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
-        
+
     - name: Cache NuGet packages
       uses: actions/cache@v3
       with:
@@ -61,14 +45,13 @@ jobs:
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
       run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage  /p:Configuration=Release
-
     
     - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       id: sign_app
       with:
         releaseDirectory: QAVS/QuestAppVersionSwitcher/bin/Release
-        signingKeyBase64: ${{ env.SIGNING_KEY }}
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
       env:
