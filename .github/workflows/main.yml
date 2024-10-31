@@ -45,13 +45,29 @@ jobs:
     - name: Build
       working-directory: 'QAVS\QuestAppVersionSwitcher'
       run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage  /p:Configuration=Release
+
+    - name: Generate .jks signing key on the fly
+      run: |
+        keytool -genkeypair \
+          -alias "${{ secrets.ALIAS }}" \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 365 \
+          -keystore signing_key.jks \
+          -dname "CN=Your Name, OU=Org Unit, O=Org, L=City, S=State, C=US" \
+          -storepass "${{ secrets.KEY_STORE_PASSWORD }}" \
+          -keypass "${{ secrets.KEY_PASSWORD }}"
+        
+        # Convert the .jks to base64 and set it as an environment variable
+        base64 -w 0 signing_key.jks > signing_key.jks.base64
+        echo "SIGNING_KEY=$(cat signing_key.jks.base64)" >> $GITHUB_ENV
     
     - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       id: sign_app
       with:
         releaseDirectory: QAVS/QuestAppVersionSwitcher/bin/Release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        signingKeyBase64: ${{ env.SIGNING_KEY }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
       env:
