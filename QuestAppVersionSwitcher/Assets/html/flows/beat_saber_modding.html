@@ -612,7 +612,7 @@
         UpdateModdedStatus().then(res => {
             fetch(start + `/api/mods/installfromurl`, {
                 method: "POST",
-                body: `https://oculusdb.rui2015.me/api/coremodsdownload/${moddedStatus.version}.qmod`
+                body: `https://raw.githubusercontent.com/QuestPackageManager/bs-coremods/main/core_mods.json?${new Date().getTime()}`
             }).then(res => {
                 localStorage.openMainDefault = true
                 location = start + "/?tab=mods"
@@ -774,7 +774,7 @@
     function UpdateSupportedBeatSaberVersions() {
         return new Promise((resolve, reject) => {
             SupportedBeatSaberVersions = []
-            fetch("https://computerelite.github.io/tools/Beat_Saber/coreMods.json").then(res => res.json().then(j => {
+            fetch(`https://raw.githubusercontent.com/QuestPackageManager/bs-coremods/main/core_mods.json?${new Date().getTime()}`).then(res => res.json().then(j => {
                 for(const [key, value] of Object.entries(j)) {
                     SupportedBeatSaberVersions.push(key);
                 }
