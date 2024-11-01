@@ -607,8 +607,11 @@
     }
 
     var patchReport = {}
+    var isInstallingCores = false;
 
     function InstallCoreModsAndGetMods() {
+        if (isInstallingCores) return;
+        isInstallingCores = true;
         UpdateModdedStatus().then(res => {
             fetch(`https://raw.githubusercontent.com/QuestPackageManager/bs-coremods/main/core_mods.json?${new Date().getTime()}`).then(res => {
                 if (!res.ok) {
