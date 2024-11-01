@@ -630,26 +630,35 @@
                     return [];
                 }
             }).then(mods => {
-                // For each mod's download link, perform a POST request
-                mods.forEach((url, index) => {
-                    setTimeout(() => {
-                        fetch(start + "/api/mods/installfromurl", {
-                            method: "POST",
-                            body: url
-                        })
-                        .then(postRes => {
-                            if (!postRes.ok) {
-                                console.error(`Failed to post link: ${postRes.status} ${postRes.statusText}`);
-                            } else {
-                                console.log(`Successfully posted link: ${url}`);
-                            }
-                        })
-                        .catch(error => console.error("Error posting link:", error));
-                    }, 200 * index);
+                // Create an array of promises for each mod's download link
+                const requests = mods.map((url, index) => {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            fetch(start + "/api/mods/installfromurl", {
+                                method: "POST",
+                                body: url
+                            })
+                            .then(postRes => {
+                                if (!postRes.ok) {
+                                    console.error(`Failed to post link: ${postRes.status} ${postRes.statusText}`);
+                                } else {
+                                    console.log(`Successfully posted link: ${url}`);
+                                }
+                                resolve();  // Resolve the promise when done
+                            })
+                            .catch(error => {
+                                console.error("Error posting link:", error);
+                                resolve();  // Resolve even if there's an error
+                            });
+                        }, 200 * index);
+                    });
                 });
+
+                // Wait for all requests to complete before changing location
+                return Promise.all(requests);
             }).then(() => {
-                localStorage.openMainDefault = true
-                location = start + "/?tab=mods"
+                localStorage.openMainDefault = true;
+                location = start + "/?tab=mods";
             });
         })
     }
