@@ -610,13 +610,45 @@
 
     function InstallCoreModsAndGetMods() {
         UpdateModdedStatus().then(res => {
-            fetch(start + `/api/mods/installfromurl`, {
-                method: "POST",
-                body: `https://raw.githubusercontent.com/QuestPackageManager/bs-coremods/main/core_mods.json?${new Date().getTime()}`
-            }).then(res => {
+            fetch(`https://raw.githubusercontent.com/QuestPackageManager/bs-coremods/main/core_mods.json?${new Date().getTime()}`).then(res => {
+                if (!res.ok) {
+                    console.error(`Failed to fetch core mods: ${res.status} ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                // Find the mods for the specified version
+                const versionData = data[moddedStatus.version];
+                
+                if (versionData && versionData.mods) {
+                    // Extract download links for each mod
+                    const downloadLinks = versionData.mods.map(mod => mod.downloadLink);
+                    console.log(`Download links for version ${moddedStatus.version}:`, downloadLinks);
+                    return downloadLinks;
+                } else {
+                    console.log(`No mods found for version ${moddedStatus.version}`);
+                    return [];
+                }
+            }).then(mods => {
+                // For each mod's download link, perform a POST request
+                mods.forEach(url => {
+                    fetch(start + "/api/mods/installfromurl", {
+                        method: "POST",
+                        body: url
+                    })
+                    .then(postRes => {
+                        if (!postRes.ok) {
+                            console.error(`Failed to post link: ${postRes.status} ${postRes.statusText}`);
+                        } else {
+                            console.log(`Successfully posted link: ${url}`);
+                        }
+                    })
+                    .catch(error => console.error("Error posting link:", error));
+                });
+            }).then(() => {
                 localStorage.openMainDefault = true
                 location = start + "/?tab=mods"
-            })
+            });
         })
     }
 
