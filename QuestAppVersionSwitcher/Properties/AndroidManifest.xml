@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.16.9" package="com.ComputerElite.questappversionswitcher" android:installLocation="preferExternal" android:versionCode="154">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.16.10" package="com.ComputerElite.questappversionswitcher" android:installLocation="preferExternal" android:versionCode="155">
 	<uses-sdk android:minSdkVersion="28" android:targetSdkVersion="32" />
 	<uses-permission android:name="oculus.permission.handtracking" />
 	<uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
