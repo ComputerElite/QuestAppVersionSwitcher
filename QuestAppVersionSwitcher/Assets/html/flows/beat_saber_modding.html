@@ -631,8 +631,8 @@
                 }
             }).then(mods => {
                 // For each mod's download link, perform a POST request
-                mods.forEach(url => {
-                    fetch(start + "/api/mods/installfromurl", {
+                mods.forEach(async url => {
+                    await fetch(start + "/api/mods/installfromurl", {
                         method: "POST",
                         body: url
                     })
