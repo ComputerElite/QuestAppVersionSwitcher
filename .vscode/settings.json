@@ -1,3 +1,6 @@
 {
-    "dotnet.preferCSharpExtension": true
+    "dotnet.preferCSharpExtension": true,
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ]
 }
