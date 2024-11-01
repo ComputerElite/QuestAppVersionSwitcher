@@ -631,19 +631,21 @@
                 }
             }).then(mods => {
                 // For each mod's download link, perform a POST request
-                mods.forEach(async url => {
-                    await fetch(start + "/api/mods/installfromurl", {
-                        method: "POST",
-                        body: url
-                    })
-                    .then(postRes => {
-                        if (!postRes.ok) {
-                            console.error(`Failed to post link: ${postRes.status} ${postRes.statusText}`);
-                        } else {
-                            console.log(`Successfully posted link: ${url}`);
-                        }
-                    })
-                    .catch(error => console.error("Error posting link:", error));
+                mods.forEach((url, index) => {
+                    setTimeout(() => {
+                        fetch(start + "/api/mods/installfromurl", {
+                            method: "POST",
+                            body: url
+                        })
+                        .then(postRes => {
+                            if (!postRes.ok) {
+                                console.error(`Failed to post link: ${postRes.status} ${postRes.statusText}`);
+                            } else {
+                                console.log(`Successfully posted link: ${url}`);
+                            }
+                        })
+                        .catch(error => console.error("Error posting link:", error));
+                    }, 200 * index);
                 });
             }).then(() => {
                 localStorage.openMainDefault = true
