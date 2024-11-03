@@ -123,31 +123,24 @@ export function GetWSFullURL(port?: number, route?: string,): string {
 
 // Get android version name from sdk version
 export function GetAndroidVersionName(sdkVersion: number): string {
-    if (sdkVersion > 34) {
-        return ">14";
+    switch (sdkVersion) {
+        case 35: return "15";
+        case 34: return "14";
+        case 33: return "13";
+        case 32: return "12L";
+        case 31: return "12";
+        case 30: return "11";
+        case 29: return "10";
+        default: {
+            if (sdkVersion > 35) {
+                return `>15 (SDK: ${sdkVersion})`;
+            }
+            if (sdkVersion < 29) {
+                return `<10 (SDK: ${sdkVersion})`;
+            }
+            return `Unknown (SDK: ${sdkVersion})`;
+        };
     }
-    if (sdkVersion > 34) {
-        return "14";
-    }
-    if (sdkVersion == 33) {
-        return "13";
-    }
-    if (sdkVersion == 32) {
-        return "12L";
-    }
-    if (sdkVersion == 31) {
-        return "12";
-    }
-    if (sdkVersion == 30) {
-        return "11";
-    }
-    if (sdkVersion == 29) {
-        return "10";
-    }
-    if (sdkVersion < 29) {
-        return "<10";
-    }
-    return "Unknown";
 }
 
 let VersionUnderscoreRegex = /(\_\d*)/g;

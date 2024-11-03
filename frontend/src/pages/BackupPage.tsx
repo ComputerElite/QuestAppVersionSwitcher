@@ -1,15 +1,12 @@
-import { Title, Link, Meta } from '@solidjs/meta';
+import { Title } from '@solidjs/meta';
 import { config } from '../store';
 import { backupList, refetchBackups } from '../state/backups';
-import { showChangeGameModal } from '../modals/ChangeGameModal';
 import { For, createEffect, createSignal, on, onMount } from 'solid-js';
-import { Box, Button, IconButton, List, ListItem, Typography } from '@suid/material';
-import { IBackup, deleteBackup, restoreAppBackup } from '../api/backups';
-import { FaSolidWindowRestore } from 'solid-icons/fa';
+import { Box, IconButton, List, ListItem, Typography } from '@suid/material';
+import { IBackup, deleteBackup } from '../api/backups';
 import { FiTrash } from 'solid-icons/fi'
 const [selectedBackup, setSelectedBackup] = createSignal<IBackup | undefined>(undefined);
 import { showConfirmModal } from '../modals/ConfirmModal';
-// import UploadRounded from '@suid/icons-material/UploadRounded';
 import PageLayout from '../Layouts/PageLayout';
 import RunButton from '../components/Buttons/RunButton';
 import { PlusIcon, RestoreIcon } from '../assets/Icons';
