@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "test": "jest"
+    "test": "jest",
+    "format": "prettier --write ."
   },
   "license": "MIT",
   "devDependencies": {
@@ -18,7 +19,8 @@
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
-    "vite-plugin-solid": "^2.10.2"
+    "vite-plugin-solid": "^2.10.2",
+    "prettier": "^3.3.3"
   },
   "browserslist": [
     "defaults",

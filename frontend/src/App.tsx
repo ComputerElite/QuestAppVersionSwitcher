@@ -1,32 +1,34 @@
-import { Component, createEffect, createSignal } from 'solid-js';
-import toast, { Toaster } from 'solid-toast';
+import { Component, createEffect, createSignal } from "solid-js";
+import toast, { Toaster } from "solid-toast";
 
-import "normalize.css"
+import "normalize.css";
 import "./global.scss";
-import Sidebar from './components/Sidebar';
-import { Route, HashRouter , Navigate } from "@solidjs/router";
-import BackupPage from './pages/BackupPage';
-import DowngradePage from './pages/DowngradePage';
-import DownloadProgressPage from './pages/DownloadProgressPage';
-import GetModsPage from './pages/GetModsPage';
-import CosmeticsPage from './pages/CosmeticsPage';
-import ModsPage from './pages/ModsPage';
-import PatchingPage from './pages/PatchingPage';
-import ToolsPage from './pages/ToolsPage';
-import { MetaProvider } from '@solidjs/meta';
-import ModalContainer from './modals/ModalContainer';
+import Sidebar from "./components/Sidebar";
+import { Route, HashRouter, Navigate } from "@solidjs/router";
+import BackupPage from "./pages/BackupPage";
+import DowngradePage from "./pages/DowngradePage";
+import DownloadProgressPage from "./pages/DownloadProgressPage";
+import GetModsPage from "./pages/GetModsPage";
+import CosmeticsPage from "./pages/CosmeticsPage";
+import ModsPage from "./pages/ModsPage";
+import PatchingPage from "./pages/PatchingPage";
+import ToolsPage from "./pages/ToolsPage";
+import { MetaProvider } from "@solidjs/meta";
+import ModalContainer from "./modals/ModalContainer";
 
-
-import style from "./App.module.scss"
-import { ThemeProvider } from '@suid/material';
-import { theme } from './theme';
-import { refetchAppInfo, refetchCosmeticTypes, refetchModdingStatus } from './store';
-
+import style from "./App.module.scss";
+import { ThemeProvider } from "@suid/material";
+import { theme } from "./theme";
+import {
+  refetchAppInfo,
+  refetchCosmeticTypes,
+  refetchModdingStatus,
+} from "./store";
 
 // Font roboto
-import '@fontsource/roboto';
-import { InitWS } from './state/eventBus';
-import GetBeatSabersModsPage from './pages/BeatSaber/GetBeatSaberMods';
+import "@fontsource/roboto";
+import { InitWS } from "./state/eventBus";
+import GetBeatSabersModsPage from "./pages/BeatSaber/GetBeatSaberMods";
 
 const Root: Component = (props: any) => {
   // Load app info on startup
@@ -34,25 +36,21 @@ const Root: Component = (props: any) => {
     await refetchAppInfo();
     await refetchModdingStatus();
     await refetchCosmeticTypes();
-  })
+  });
 
   return (
     <MetaProvider>
-     <ThemeProvider theme={theme}>
-  
-        <div class={style['AppRoot']}>
+      <ThemeProvider theme={theme}>
+        <div class={style["AppRoot"]}>
           <Sidebar />
           <div class={style.content}>
             {/* <Routes> */}
-              {props.children}
+            {props.children}
             {/* </Routes> */}
           </div>
         </div>
-        <Toaster
-          gutter={8}
-          position="bottom-left"
-        />
-        <ModalContainer/>
+        <Toaster gutter={8} position="bottom-left" />
+        <ModalContainer />
       </ThemeProvider>
     </MetaProvider>
   );
@@ -71,6 +69,6 @@ const App = () => (
     <Route path="/tools" component={ToolsPage} />
     <Route path="/bsmods" component={GetBeatSabersModsPage} />
   </HashRouter>
-)
+);
 
 export default App;

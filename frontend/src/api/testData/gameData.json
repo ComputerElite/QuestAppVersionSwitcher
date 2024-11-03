@@ -53,10 +53,7 @@
       "displayName": "Beat Saber",
       "display_name": "Beat Saber",
       "display_long_description": "Beat Saber is a unique VR rhythm game where your goal is to slash the beats (represented by small cubes) as they are coming at you. \n\nEvery beat indicates which saber you need to use and also the direction you need to match. All the music is composed to perfectly fit the handmade levels. \n\nOur goal is to make players almost dance while cutting the cubes and avoiding obstacles.\n\nEach cut is strongly supported by great sound and visual effects to emphasize the rhythm.",
-      "genre_names": [
-        "Music & Rhythm",
-        "Casual"
-      ],
+      "genre_names": ["Music & Rhythm", "Casual"],
       "has_in_app_ads": false,
       "id": "2448060205267927",
       "is_approved": false,
@@ -255,16 +252,8 @@
         ]
       },
       "release_date": 1558459800,
-      "supported_hmd_platforms": [
-        "MONTEREY",
-        "HOLLYWOOD",
-        "SEACLIFF"
-      ],
-      "supported_hmd_platforms_enum": [
-        1,
-        2,
-        6
-      ],
+      "supported_hmd_platforms": ["MONTEREY", "HOLLYWOOD", "SEACLIFF"],
+      "supported_hmd_platforms_enum": [1, 2, 6],
       "website_url": "http://beatsaber.com/"
     }
   ],

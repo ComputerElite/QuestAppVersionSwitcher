@@ -8,278 +8,280 @@ import { GetWSFullURL } from "../util";
 import { refetchBackups } from "./backups";
 import { IAPIDownloadsResponse } from "../api/downloads";
 
-
 enum WebSocketStatus {
-    CONNECTING = 0,
-    CONNECTED = 1,
-    DISCONNECTED = 2,
-    ERROR = 3,
+  CONNECTING = 0,
+  CONNECTED = 1,
+  DISCONNECTED = 2,
+  ERROR = 3,
 }
 
 /**
  * The task manager is used to keep track of all the tasks that are currently running.
- * 
+ *
  * We have a list of tasks, and we can add, remove, get, and get all tasks.
  */
 
 let [tasks, setTasks] = createStore<ModTask[]>([]);
-let [socketStatus, setSocketStatus] = createSignal<WebSocketStatus>(WebSocketStatus.CONNECTING);
+let [socketStatus, setSocketStatus] = createSignal<WebSocketStatus>(
+  WebSocketStatus.CONNECTING,
+);
 
-type TaskType = "tasks-done" | "task-done" | "task-new" | "patch-progress" | "backup-progress" | "download-progress";
+type TaskType =
+  | "tasks-done"
+  | "task-done"
+  | "task-new"
+  | "patch-progress"
+  | "backup-progress"
+  | "download-progress";
 
 class BackendEventsClass extends EventTarget {
-    constructor() {
-        super();
-    }
+  constructor() {
+    super();
+  }
 
-    emitTasksDone() {
-        const event = new CustomEvent('tasks-done');
-        this.dispatchEvent(event);
-    }
+  emitTasksDone() {
+    const event = new CustomEvent("tasks-done");
+    this.dispatchEvent(event);
+  }
 
-    emitTaskDone(task: ModTask) {
-        const event = new CustomEvent('task-done', { detail: task });
-        this.dispatchEvent(event);
-    }
+  emitTaskDone(task: ModTask) {
+    const event = new CustomEvent("task-done", { detail: task });
+    this.dispatchEvent(event);
+  }
 
-    emitNewTask(task: ModTask) {
-        const event = new CustomEvent('task-new', { detail: task });
-        this.dispatchEvent(event);
-    }
+  emitNewTask(task: ModTask) {
+    const event = new CustomEvent("task-new", { detail: task });
+    this.dispatchEvent(event);
+  }
 
-    emitPatchingProgress(task: PatchingProgressData) {
-        const event = new CustomEvent('patch-progress', { detail: task });
-        this.dispatchEvent(event);
-    }
+  emitPatchingProgress(task: PatchingProgressData) {
+    const event = new CustomEvent("patch-progress", { detail: task });
+    this.dispatchEvent(event);
+  }
 
-    emitBackupProgress(task: BackupProgressData) {
-        const event = new CustomEvent('backup-progress', { detail: task });
-        this.dispatchEvent(event);
-    }
+  emitBackupProgress(task: BackupProgressData) {
+    const event = new CustomEvent("backup-progress", { detail: task });
+    this.dispatchEvent(event);
+  }
 
+  emitDownloadProgress(task: IAPIDownloadsResponse) {
+    const event = new CustomEvent("download-progress", { detail: task });
+    this.dispatchEvent(event);
+  }
 
-    emitDownloadProgress(task: IAPIDownloadsResponse) {
-        const event = new CustomEvent('download-progress', { detail: task });
-        this.dispatchEvent(event);
-    }
+  addEventListener(
+    type: TaskType,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions | undefined,
+  ): void {
+    super.addEventListener(type, callback, options);
+  }
 
-    addEventListener(type: TaskType, callback: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions | undefined): void {
-        super.addEventListener(type, callback, options);
-    }
-
-    removeEventListener(type: TaskType, callback: EventListenerOrEventListenerObject | null, options?: boolean | EventListenerOptions | undefined): void {
-        super.removeEventListener(type, callback, options);
-    }
+  removeEventListener(
+    type: TaskType,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions | undefined,
+  ): void {
+    super.removeEventListener(type, callback, options);
+  }
 }
-
-
 
 export const BackendEvents = new BackendEventsClass();
 
-
-
-let [operationsInProgress, setOperationsInProgress] = createSignal<boolean>(false);
+let [operationsInProgress, setOperationsInProgress] =
+  createSignal<boolean>(false);
 
 export function addTask(task: ModTask) {
-    setTasks([...tasks, task]);
+  setTasks([...tasks, task]);
 }
 
 export function removeTask(operationId: number) {
-    setTasks(tasks.filter((task) => task.operationId !== operationId));
+  setTasks(tasks.filter((task) => task.operationId !== operationId));
 }
 
 export function getTask(operationId: number) {
-    return tasks.find((task) => task.operationId === operationId);
+  return tasks.find((task) => task.operationId === operationId);
 }
 
 export function getTasks() {
-    return tasks;
+  return tasks;
 }
 
 BackendEvents.addEventListener("task-done", async (e) => {
-    let task = (e as CustomEvent).detail as ModTask;
+  let task = (e as CustomEvent).detail as ModTask;
 
-    if (task.type == QAVSModOperationType.Error) {
-        toast.error(`${task.name}`);
-    } else {
-        toast.success(`${task.name} `);
-    }
-    await refetchModdingStatus();
-    await refetchMods();
+  if (task.type == QAVSModOperationType.Error) {
+    toast.error(`${task.name}`);
+  } else {
+    toast.success(`${task.name} `);
+  }
+  await refetchModdingStatus();
+  await refetchMods();
 });
 
 BackendEvents.addEventListener("task-new", async (e) => {
-    let task = (e as CustomEvent).detail as ModTask;
-    toast(`${task.name}`);
+  let task = (e as CustomEvent).detail as ModTask;
+  toast(`${task.name}`);
 });
-
 
 BackendEvents.addEventListener("tasks-done", async (e) => {
-    toast.success(`All tasks are done!`);
-    await refetchModdingStatus();
-    await refetchMods();
+  toast.success(`All tasks are done!`);
+  await refetchModdingStatus();
+  await refetchMods();
 });
 
-
 export interface PatchingProgressData {
-    backupName: string;
-    currentOperation: string;
-    done: boolean;
-    doneOperations: number;
-    error: boolean;
-    errorText: string;
-    progress: number;
-    progressString: string;
-    totalOperations: number;
+  backupName: string;
+  currentOperation: string;
+  done: boolean;
+  doneOperations: number;
+  error: boolean;
+  errorText: string;
+  progress: number;
+  progressString: string;
+  totalOperations: number;
 }
 
 export interface BackupProgressData {
-    backupName: string;
-    currentOperation: string;
-    done: boolean;
-    doneOperations: number;
-    error: boolean;
-    errorText: string;
-    progress: number;
-    progressString: string;
-    totalOperations: number;
+  backupName: string;
+  currentOperation: string;
+  done: boolean;
+  doneOperations: number;
+  error: boolean;
+  errorText: string;
+  progress: number;
+  progressString: string;
+  totalOperations: number;
 }
 
 // Websocket connection
 let ws: WebSocket | null = null;
 
 export async function InitWS(port?: number, attempts: number = 0) {
-    // Close the old websocket
-    if (ws) {
-        ws.close();
+  // Close the old websocket
+  if (ws) {
+    ws.close();
+  }
+  ws = new WebSocket(GetWSFullURL(port));
+  // connect to websocket one port higher than the server
+  ws.onerror = function (error) {
+    setSocketStatus(WebSocketStatus.ERROR);
+    console.log("WebSocket Error: " + error + ". Reconnecting...");
+
+    if (attempts > 5) {
+      console.error("Failed to connect to websocket after 5 attempts");
+      return;
     }
-    ws = new WebSocket(GetWSFullURL(port));
-    // connect to websocket one port higher than the server
-    ws.onerror = function (error) {
-        setSocketStatus(WebSocketStatus.ERROR);
-        console.log("WebSocket Error: " + error + ". Reconnecting...");
+    // reconnect
+    InitWS(port, attempts + 1);
+  };
 
-        if (attempts > 5) {
-            console.error("Failed to connect to websocket after 5 attempts");
-            return;
-        }
-        // reconnect
-        InitWS(port, attempts + 1);
+  ws.onclose = function (e) {
+    setSocketStatus(WebSocketStatus.DISCONNECTED);
+    console.log("WebSocket closed. Reconnecting...");
+    // reconnect
+    if (attempts > 5) {
+      console.error("Failed to connect to websocket after 5 attempts");
+      return;
     }
+    InitWS(port, attempts + 1);
+  };
 
-    ws.onclose = function (e) {
-        setSocketStatus(WebSocketStatus.DISCONNECTED);
-        console.log("WebSocket closed. Reconnecting...");
-        // reconnect
-        if (attempts > 5) {
-            console.error("Failed to connect to websocket after 5 attempts");
-            return;
-        }
-        InitWS(port, attempts + 1);
+  ws.onopen = function (e) {
+    console.log("WebSocket connected");
+    setSocketStatus(WebSocketStatus.CONNECTED);
+    attempts = 0;
+  };
+
+  ws.onmessage = function (e) {
+    // TODO: We need to handle chunked messages here too, because the data can be split up into multiple messages if it's too big
+    try {
+      var data = JSON.parse(e.data);
+      console.log("WS Data", data);
+
+      if (data.route == "/api/mods/mods") {
+        updateTasks(data.data.operations);
+        refetchMods();
+      } else if (data.route == "/api/patching/patchstatus") {
+        refetchModdingStatus();
+        BackendEvents.emitPatchingProgress(data.data);
+      } else if (data.route == "/api/backupstatus") {
+        refetchBackups();
+        BackendEvents.emitBackupProgress(data.data);
+      } else if (data.route == "/api/downloads") {
+        BackendEvents.emitDownloadProgress(data.data);
+        console.log("Download progress", data.data);
+      }
+    } catch (error) {
+      console.warn("Invalid WS Data", e.data);
+      return;
     }
-
-    ws.onopen = function (e) {
-        console.log("WebSocket connected");
-        setSocketStatus(WebSocketStatus.CONNECTED);
-        attempts = 0;
-    }
-
-    ws.onmessage = function (e) {
-        // TODO: We need to handle chunked messages here too, because the data can be split up into multiple messages if it's too big
-        try {
-            var data = JSON.parse(e.data);
-            console.log("WS Data", data);
-            
-            if (data.route == "/api/mods/mods") {
-                updateTasks(data.data.operations);
-                refetchMods();
-            } else if (data.route == "/api/patching/patchstatus") {
-                refetchModdingStatus();
-                BackendEvents.emitPatchingProgress(data.data);
-            } else if (data.route == "/api/backupstatus") {
-                refetchBackups();
-                BackendEvents.emitBackupProgress(data.data);
-            } else if (data.route == "/api/downloads") {
-                BackendEvents.emitDownloadProgress(data.data)
-                console.log("Download progress", data.data);
-            }
-
-            
-        }
-        catch (error) {
-            console.warn("Invalid WS Data", e.data);
-            return;
-        }
-
-    }
+  };
 }
 
-
 export async function updateTasks(newState: ModTask[]) {
-    try {
-        let resp: ModTask[] = newState;
-        
-        // // Flags 
-        // let hasTasksInProgress = false;
+  try {
+    let resp: ModTask[] = newState;
 
-       
-        // Analyze tasks that we have and tasks that we got from the backend
-        resp.forEach((task) => {
-            // If we have a task that is not in the list, add it
-            // if (!hasTasksInProgress && !task.isDone) {
-            //     hasTasksInProgress = true;
-            // }
+    // // Flags
+    // let hasTasksInProgress = false;
 
-            // Compare status of old task and new task
-            let oldTask = getTask(task.operationId);
-            if (!oldTask) {
-                // if (task.isDone) {
-                //     hasTasksInProgress = true;
-                // }
-                if (task.isDone) {
-                    BackendEvents.emitTaskDone(task);
-                } else {
-                    BackendEvents.emitNewTask(task);
-                }
+    // Analyze tasks that we have and tasks that we got from the backend
+    resp.forEach((task) => {
+      // If we have a task that is not in the list, add it
+      // if (!hasTasksInProgress && !task.isDone) {
+      //     hasTasksInProgress = true;
+      // }
 
-            } else {
-                // We assume that the task cannot go from done to not done
-                if (oldTask.isDone !== task.isDone) {
-                    BackendEvents.emitTaskDone(task);
-                }
-            }
-        });
-
-        // Track operations in progress
-        // if (!hasTasksInProgress && operationsInProgress()) {
-        //     setOperationsInProgress(false);
-        //     BackendEvents.emitTasksDone();
-        // } else if (hasTasksInProgress && !operationsInProgress()) {
-        //     setOperationsInProgress(true);
+      // Compare status of old task and new task
+      let oldTask = getTask(task.operationId);
+      if (!oldTask) {
+        // if (task.isDone) {
+        //     hasTasksInProgress = true;
         // }
+        if (task.isDone) {
+          BackendEvents.emitTaskDone(task);
+        } else {
+          BackendEvents.emitNewTask(task);
+        }
+      } else {
+        // We assume that the task cannot go from done to not done
+        if (oldTask.isDone !== task.isDone) {
+          BackendEvents.emitTaskDone(task);
+        }
+      }
+    });
 
+    // Track operations in progress
+    // if (!hasTasksInProgress && operationsInProgress()) {
+    //     setOperationsInProgress(false);
+    //     BackendEvents.emitTasksDone();
+    // } else if (hasTasksInProgress && !operationsInProgress()) {
+    //     setOperationsInProgress(true);
+    // }
 
-
-        // Set the tasks
-        setTasks(resp);
-    } catch (e) {
-        console.error(e);
-    }
+    // Set the tasks
+    setTasks(resp);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 // Fetch the mod operations on page load
 createEffect(async () => {
-    try {
-        let operations = await getModOperations();
-        setTasks(operations);
-    } catch (e) {
-        console.error(e);
-    }   
+  try {
+    let operations = await getModOperations();
+    setTasks(operations);
+  } catch (e) {
+    console.error(e);
+  }
 });
 
-createEffect(on(config, async (config, prevConfig) => {
+createEffect(
+  on(config, async (config, prevConfig) => {
     // If the websocket port changes, we need to reconnect
     if (prevConfig?.wsPort != config?.wsPort) {
-        InitWS(config?.wsPort);
+      InitWS(config?.wsPort);
     }
-}))
+  }),
+);
