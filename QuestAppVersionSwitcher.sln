@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuestAppVersionSwitcher", "QuestAppVersionSwitcher\QuestAppVersionSwitcher.csproj", "{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils.Android", "ComputerUtils\ComputerUtils.Android\ComputerUtils.Android.csproj", "{D4B84F1A-A999-482F-8253-D6761AA93E24}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiffCreator", "DiffCreator\DiffCreator.csproj", "{5B57879B-170B-4804-B220-8CB11D332AD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils", "ComputerUtils\ComputerUtils\ComputerUtils.csproj", "{21D96B62-FF5D-4E84-A13D-7EA1CE172A78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QAVS-MAUI", "QAVS-MAUI\QAVS-MAUI.csproj", "{E8B08119-BC27-430B-82D8-DD06FF0C7632}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComputerUtils", "ComputerUtils\ComputerUtils\ComputerUtils.csproj", "{EAC24A4C-6389-4B66-90BF-BF1E401BEF0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,24 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD0429C4-DC83-4ECE-BABA-B1134C1AECA4}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{D4B84F1A-A999-482F-8253-D6761AA93E24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4B84F1A-A999-482F-8253-D6761AA93E24}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4B84F1A-A999-482F-8253-D6761AA93E24}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4B84F1A-A999-482F-8253-D6761AA93E24}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5B57879B-170B-4804-B220-8CB11D332AD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5B57879B-170B-4804-B220-8CB11D332AD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B57879B-170B-4804-B220-8CB11D332AD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B57879B-170B-4804-B220-8CB11D332AD9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{21D96B62-FF5D-4E84-A13D-7EA1CE172A78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{21D96B62-FF5D-4E84-A13D-7EA1CE172A78}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{21D96B62-FF5D-4E84-A13D-7EA1CE172A78}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{21D96B62-FF5D-4E84-A13D-7EA1CE172A78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8B08119-BC27-430B-82D8-DD06FF0C7632}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8B08119-BC27-430B-82D8-DD06FF0C7632}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8B08119-BC27-430B-82D8-DD06FF0C7632}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8B08119-BC27-430B-82D8-DD06FF0C7632}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAC24A4C-6389-4B66-90BF-BF1E401BEF0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAC24A4C-6389-4B66-90BF-BF1E401BEF0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAC24A4C-6389-4B66-90BF-BF1E401BEF0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAC24A4C-6389-4B66-90BF-BF1E401BEF0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

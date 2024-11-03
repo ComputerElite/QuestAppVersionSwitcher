@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OEoswpOuxAsxIqFFCHBjKQFJd0VDTTN0QwosOL6kYOvYl/p9ueALe+JY8cSRGtUGLVjgMCsQvCBLY15YqP1V6w==",
+  "dgSpecHash": "n9O+HMewpm4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ComputerElite\\Documents\\rider\\QAVS\\DiffCreator\\DiffCreator.csproj",
+  "projectFilePath": "C:\\Users\\ComputerElite\\Downloads\\QAVS\\DiffCreator\\DiffCreator.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ComputerElite\\.nuget\\packages\\aforge\\2.2.5\\aforge.2.2.5.nupkg.sha512",
     "C:\\Users\\ComputerElite\\.nuget\\packages\\aforge.video\\2.2.5\\aforge.video.2.2.5.nupkg.sha512",
@@ -13,7 +13,11 @@
     "C:\\Users\\ComputerElite\\.nuget\\packages\\qrcoder\\1.4.3\\qrcoder.1.4.3.nupkg.sha512",
     "C:\\Users\\ComputerElite\\.nuget\\packages\\questpatcher.axml\\1.0.2\\questpatcher.axml.1.0.2.nupkg.sha512",
     "C:\\Users\\ComputerElite\\.nuget\\packages\\sewer56.vcdiff\\3.4.0\\sewer56.vcdiff.3.4.0.nupkg.sha512",
-    "C:\\Users\\ComputerElite\\.nuget\\packages\\system.drawing.common\\6.0.0\\system.drawing.common.6.0.0.nupkg.sha512"
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\system.drawing.common\\6.0.0\\system.drawing.common.6.0.0.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.33\\microsoft.netcore.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.33\\microsoft.windowsdesktop.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.33\\microsoft.aspnetcore.app.ref.6.0.33.nupkg.sha512",
+    "C:\\Users\\ComputerElite\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.33\\microsoft.netcore.app.host.win-x64.6.0.33.nupkg.sha512"
   ],
   "logs": [
     {
