@@ -5,7 +5,6 @@
 ### Requirements
 
 - [Node.js](https://nodejs.org/en/) (v18.0.0 or higher)
-- [Yarn](https://yarnpkg.com/) (v1.22.10 or higher)
 - [Visual Studio](https://visualstudio.microsoft.com/)
 - [Xamarin](https://visualstudio.microsoft.com/xamarin/)
 - [Android SDK](https://developer.android.com/studio) (API Level 32 - Android 12L)
@@ -26,8 +25,8 @@ It will create a folder next to this project called `ComputerUtils`.
 
 ```bash
 cd frontend/
-yarn install
-yarn build
+npm install
+npm run build
 ```
 
 ### Build the debug apk from command line
