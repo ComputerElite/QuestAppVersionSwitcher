@@ -1,0 +1,1049 @@
+{
+  "applications": [
+    {
+      "__lastUpdated": "2023-05-12T19:27:17.199Z",
+      "__OculusDBType": "Application",
+      "hmd": 2,
+      "appName": "Beat Saber",
+      "baseline_offer": {
+        "end_time": 0,
+        "id": "759821042388261",
+        "show_timer": false,
+        "price": {
+          "offset_amount": "2999",
+          "currency": "USD",
+          "formatted": "$0.00"
+        },
+        "promo_benefit": null,
+        "strikethrough_price": {
+          "offset_amount": "0",
+          "currency": "USD",
+          "formatted": "$0.00"
+        }
+      },
+      "canonicalName": "beat-games-beat-saber-android6d0f",
+      "current_gift_offer": {
+        "end_time": 0,
+        "id": "759821042388261",
+        "show_timer": false,
+        "price": {
+          "offset_amount": "0",
+          "currency": "USD",
+          "formatted": "$0.00"
+        },
+        "promo_benefit": null,
+        "strikethrough_price": {
+          "offset_amount": "0",
+          "currency": "USD",
+          "formatted": "$0.00"
+        }
+      },
+      "current_offer": {
+        "end_time": 0,
+        "id": "759821042388261",
+        "show_timer": false,
+        "price": {
+          "offset_amount": "2999",
+          "currency": "EUR",
+          "formatted": "€29.99"
+        },
+        "promo_benefit": null,
+        "strikethrough_price": null
+      },
+      "displayName": "Beat Saber",
+      "display_name": "Beat Saber",
+      "display_long_description": "Beat Saber is a unique VR rhythm game where your goal is to slash the beats (represented by small cubes) as they are coming at you. \n\nEvery beat indicates which saber you need to use and also the direction you need to match. All the music is composed to perfectly fit the handmade levels. \n\nOur goal is to make players almost dance while cutting the cubes and avoiding obstacles.\n\nEach cut is strongly supported by great sound and visual effects to emphasize the rhythm.",
+      "genre_names": [
+        "Music & Rhythm",
+        "Casual"
+      ],
+      "has_in_app_ads": false,
+      "id": "2448060205267927",
+      "is_approved": false,
+      "is_concept": false,
+      "is_enterprise_enabled": false,
+      "organization": {
+        "id": "",
+        "is_authorized_for_quest": false
+      },
+      "platform": "ANDROID_6DOF",
+      "publisher_name": "Beat Games",
+      "quality_rating_aggregate": 4.5636440054639,
+      "img": "",
+      "packageName": "com.beatgames.beatsaber",
+      "imageLink": "/cdn/images/2448060205267927",
+      "release_channels": {
+        "count": 3,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          },
+          {
+            "id": "2138352146368342",
+            "channel_name": "unity_beta",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          },
+          {
+            "id": "955480635770075",
+            "channel_name": "legacy1.29.0_unity_ver2019.4.28f1",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "release_date": 1558459800,
+      "supported_hmd_platforms": [
+        "MONTEREY",
+        "HOLLYWOOD",
+        "SEACLIFF"
+      ],
+      "supported_hmd_platforms_enum": [
+        1,
+        2,
+        6
+      ],
+      "website_url": "http://beatsaber.com/"
+    }
+  ],
+  "versions": [
+    {
+      "__lastUpdated": "2023-05-12T19:27:25.056Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "9277859962287883",
+      "version": "1.29.4_4821066007",
+      "alias": null,
+      "changeLog": "",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 705,
+      "created_date": 1682608718,
+      "lastScrape": "2023-05-12T19:27:25.056Z",
+      "lastPriorityScrape": "2023-05-11T21:43:34.983Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          },
+          {
+            "id": "2138352146368342",
+            "channel_name": "unity_beta",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:27:32.749Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "9231771993563347",
+      "version": "1.29.3_4742271532",
+      "alias": null,
+      "changeLog": "",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 681,
+      "created_date": 1681903068,
+      "lastScrape": "2023-05-12T19:27:32.749Z",
+      "lastPriorityScrape": "2023-05-12T02:17:41.241Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "2138352146368342",
+            "channel_name": "unity_beta",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:27:53.283Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "9071137989626749",
+      "version": "1.29.0_4466478251",
+      "alias": null,
+      "changeLog": "Panic! At The Disco Music Pack is getting supercharged with 6 new singles. The update brings hits like 'Hey Look Ma, I Made It', 'Say Amen (Saturday Night)' and more. The upgraded Music Pack includes advanced in-game environment and lighting, new colors, and revamped original levels, featuring Arc & Chain Notes. The 6 new singles and expanded Music Pack are available now for purchase as additional content for the game.\n",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 617,
+      "created_date": 1679305764,
+      "lastScrape": "2023-05-12T19:27:53.283Z",
+      "lastPriorityScrape": "2023-05-12T02:32:27.267Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "955480635770075",
+            "channel_name": "legacy1.29.0_unity_ver2019.4.28f1",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          },
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:28:16.471Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "8838143419592875",
+      "version": "1.28.0_4124311467",
+      "alias": null,
+      "changeLog": "Imagine Dragons Music Pack got an upgrade! Expand your music library with chart-topping hits 'Enemy' and 'Bones' from the award-winning Pop Rock band Imagine Dragons. Don't own the Imagine Dragons Music Pack yet? Get the updated 12-song Imagine Dragons Music Pack together with an advanced in-game environment and lighting, new colors and revamped original levels including Arc & Chain Notes! Imagine Dragons Music Pack and new singles are now available for purchase as additional content for the game.\n",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 545,
+      "created_date": 1675867023,
+      "lastScrape": "2023-05-12T19:28:16.471Z",
+      "lastPriorityScrape": "2023-05-12T02:41:32.073Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:28:34.332Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "8489744774432743",
+      "version": "1.27.0_3631150051",
+      "alias": null,
+      "changeLog": "Ready to rock? Take the stage with the Rock Mixtape featuring 8 heart-bumping hits from Nirvana, Guns N’ Roses, The White Stripes, KISS and more, \nwith a fresh new environment included! For the first time ever, play nearly nine minutes long track “Free Bird” by Lynyrd Skynyrd - the longest song ever released in Beat Saber. \nLET'S GO! Rock Mixtape is now available for purchase as additional content for the game.",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 490,
+      "created_date": 1670345902,
+      "lastScrape": "2023-05-12T19:28:34.332Z",
+      "lastPriorityScrape": "2023-05-12T09:19:09.717Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:28:42.558Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "8431056353634919",
+      "version": "1.26.2",
+      "alias": null,
+      "changeLog": "Disabling the promo",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 465,
+      "created_date": 1669288084,
+      "lastScrape": "2023-05-12T19:28:42.558Z",
+      "lastPriorityScrape": "2023-05-12T09:22:19.476Z",
+      "obbList": [],
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    },
+    {
+      "__lastUpdated": "2023-05-12T19:28:48.591Z",
+      "__OculusDBType": "Version",
+      "parentApplication": {
+        "id": "2448060205267927",
+        "canonicalName": "beat-games-beat-saber-android6d0f",
+        "displayName": "Beat Saber",
+        "hmd": 2
+      },
+      "id": "8383106801763208",
+      "version": "1.26.1",
+      "alias": null,
+      "changeLog": "Flash Sale: All Beat Saber in-game songs are now half the price! Grab your favorites from 136 hit tracks by chart-topping artists. Sale ends December 6 at 8:00 AM PST.\n\nRelease Notes:\n- Added filtering by Not Purchased Yet songs",
+      "platform": "",
+      "file_name": "beat-saber.apk",
+      "versionCode": 447,
+      "created_date": 1668453638,
+      "lastScrape": "2023-05-12T19:28:48.591Z",
+      "lastPriorityScrape": "2023-05-12T09:24:33.143Z",
+      "obbList": null,
+      "binary_release_channels": {
+        "count": 0,
+        "nodes": [
+          {
+            "id": "703449633385683",
+            "channel_name": "LIVE",
+            "latest_supported_binary": {
+              "binary_application": null,
+              "id": "",
+              "version": "",
+              "platform": "",
+              "package_name": null,
+              "file_name": "",
+              "uri": "",
+              "change_log": null,
+              "changeLog": null,
+              "richChangeLog": "",
+              "firewall_exceptions_required": false,
+              "is_2d_mode_supported": false,
+              "launch_file": "",
+              "launch_file_2d": null,
+              "launch_parameters": "",
+              "launch_parameters_2d": null,
+              "Platform": "PC",
+              "release_notes_plain_text": "",
+              "required_space": "0",
+              "required_space_numerical": 0,
+              "size": "0",
+              "size_numerical": 0,
+              "status": "DRAFT",
+              "supported_hmd_platforms": [],
+              "supported_hmd_platforms_enum": [],
+              "__isAppBinary": "",
+              "__isAppBinaryWithFileAsset": "",
+              "version_code": 0,
+              "versionCode": 0,
+              "created_date": 0,
+              "binary_release_channels": null,
+              "lastIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "firstIapItems": {
+                "count": 0,
+                "edges": [],
+                "page_info": {
+                  "end_cursor": "",
+                  "start_cursor": ""
+                }
+              },
+              "asset_files": {
+                "count": 0,
+                "nodes": []
+              },
+              "obb_binary": null,
+              "__typename": ""
+            }
+          }
+        ]
+      },
+      "downloadable": true,
+      "firstIapItems": {
+        "count": 0,
+        "edges": [],
+        "page_info": {
+          "end_cursor": "",
+          "start_cursor": ""
+        }
+      }
+    }
+  ]
+}
