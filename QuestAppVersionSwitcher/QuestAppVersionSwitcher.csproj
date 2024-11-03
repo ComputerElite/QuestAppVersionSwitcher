@@ -62,6 +62,7 @@
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
     <BundleAssemblies>false</BundleAssemblies>
     <MandroidI18n>West</MandroidI18n>
+    <AndroidSupportedAbis>arm64-v8a;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Fleck">
@@ -346,4 +347,14 @@
     <Target Name="AfterBuild">
     </Target>
   -->
+  <ItemGroup>
+    <ReactOutput Include="../frontend/dist/**/*" />
+  </ItemGroup>
+  <Target Name="CopyReactOutputToAssets" BeforeTargets="PrepareForBuild">
+    <Message Text="Copying React output to assets..." Importance="high" />
+    <Copy SourceFiles="@(ReactOutput)" DestinationFiles="@(ReactOutput->'$(MSBuildProjectDirectory)/Assets/new/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <ItemGroup>
+        <AndroidAsset Include="@(ReactOutput->'$(MSBuildProjectDirectory)/Assets/new/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+</Target>
 </Project>

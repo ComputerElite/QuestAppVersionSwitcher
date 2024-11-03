@@ -718,6 +718,8 @@ namespace QuestAppVersionSwitcher
             server.AddRouteFile("/style.css", "html/style.css");
             server.AddRouteFile("/newstyle.css", "html/newstyle.css");
             server.AddRouteFolderWithFiles("/images", "html/images");
+            server.AddRouteFile("/new/", "new/index.html");
+            server.AddRouteFolderWithFiles("/new/assets/", "new/assets", false, false, false);
             server.AddRoute("GET", "/api/android/installedapps", serverRequest =>
             {
                 serverRequest.SendString(JsonSerializer.Serialize(AndroidService.GetInstalledApps()), "application/json");

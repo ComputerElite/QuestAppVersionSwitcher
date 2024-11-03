@@ -30,7 +30,6 @@ namespace QuestAppVersionSwitcher
         WebView webView;
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
@@ -46,7 +45,7 @@ namespace QuestAppVersionSwitcher
             AndroidCore.activity = this;
             AndroidCore.assetManager = this.Assets;
             AndroidCore.installLauncher = RegisterForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                new InstallLaucherResult());
+                 new InstallLaucherResult());
             
             FolderPermission.l = AndroidCore.activity.RegisterForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(), new FolderPermissionCallback());

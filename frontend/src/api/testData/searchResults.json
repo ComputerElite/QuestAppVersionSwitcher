@@ -1,0 +1,339 @@
+[
+  {
+    "__lastUpdated": "2023-05-12T19:02:54.113Z",
+    "__OculusDBType": "Application",
+    "hmd": 2,
+    "appName": "Beat Saber - Demo",
+    "baseline_offer": {
+      "end_time": 0,
+      "id": "1966498486732616",
+      "show_timer": false,
+      "price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      },
+      "promo_benefit": null,
+      "strikethrough_price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      }
+    },
+    "canonicalName": "beat-games-beat-saber-demo-android6d0f",
+    "current_gift_offer": null,
+    "current_offer": {
+      "end_time": 0,
+      "id": "1966498486732616",
+      "show_timer": false,
+      "price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      },
+      "promo_benefit": null,
+      "strikethrough_price": null
+    },
+    "displayName": "Beat Saber - Demo",
+    "display_name": "Beat Saber - Demo",
+    "display_long_description": "Beat Saber is a unique VR rhythm game where your goal is to slash the beats (represented by small cubes) as they are coming at you. Every beat indicates which saber you need to use and also the direction you need to match. All the music is composed to perfectly fit the handmade levels. Our goal is to make players almost dance while cutting the cubes and avoiding obstacles. Each cut is strongly supported by great sound and visual effects to emphasize the rhythm.",
+    "genre_names": ["Music \u0026 Rhythm", "Casual"],
+    "has_in_app_ads": false,
+    "id": "1758986534231171",
+    "is_approved": false,
+    "is_concept": false,
+    "is_enterprise_enabled": false,
+    "organization": { "id": "", "is_authorized_for_quest": false },
+    "platform": "ANDROID_6DOF",
+    "publisher_name": "Beat Games",
+    "quality_rating_aggregate": 3.8987341772152,
+    "img": "",
+    "packageName": "com.beatgames.beatsaber.demo",
+    "imageLink": "/cdn/images/1758986534231171",
+    "release_channels": {
+      "count": 1,
+      "nodes": [
+        {
+          "id": "2228979937330749",
+          "channel_name": "LIVE",
+          "latest_supported_binary": {
+            "binary_application": null,
+            "id": "",
+            "version": "",
+            "platform": "",
+            "package_name": null,
+            "file_name": "",
+            "uri": "",
+            "change_log": null,
+            "changeLog": null,
+            "richChangeLog": "",
+            "firewall_exceptions_required": false,
+            "is_2d_mode_supported": false,
+            "launch_file": "",
+            "launch_file_2d": null,
+            "launch_parameters": "",
+            "launch_parameters_2d": null,
+            "Platform": "PC",
+            "release_notes_plain_text": "",
+            "required_space": "0",
+            "required_space_numerical": 0,
+            "size": "0",
+            "size_numerical": 0,
+            "status": "DRAFT",
+            "supported_hmd_platforms": [],
+            "supported_hmd_platforms_enum": [],
+            "__isAppBinary": "",
+            "__isAppBinaryWithFileAsset": "",
+            "version_code": 0,
+            "versionCode": 0,
+            "created_date": 0,
+            "binary_release_channels": null,
+            "lastIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "firstIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "asset_files": { "count": 0, "nodes": [] },
+            "obb_binary": null,
+            "__typename": ""
+          }
+        }
+      ]
+    },
+    "release_date": 1558450200,
+    "supported_hmd_platforms": ["MONTEREY", "HOLLYWOOD", "SEACLIFF"],
+    "supported_hmd_platforms_enum": [1, 2, 6],
+    "website_url": "http://beatsaber.com/"
+  },
+  {
+    "__lastUpdated": "2023-05-12T19:27:17.199Z",
+    "__OculusDBType": "Application",
+    "hmd": 2,
+    "appName": "Beat Saber",
+    "baseline_offer": {
+      "end_time": 0,
+      "id": "759821042388261",
+      "show_timer": false,
+      "price": {
+        "offset_amount": "2999",
+        "currency": "USD",
+        "formatted": "$0.00"
+      },
+      "promo_benefit": null,
+      "strikethrough_price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      }
+    },
+    "canonicalName": "beat-games-beat-saber-android6d0f",
+    "current_gift_offer": {
+      "end_time": 0,
+      "id": "759821042388261",
+      "show_timer": false,
+      "price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      },
+      "promo_benefit": null,
+      "strikethrough_price": {
+        "offset_amount": "0",
+        "currency": "USD",
+        "formatted": "$0.00"
+      }
+    },
+    "current_offer": {
+      "end_time": 0,
+      "id": "759821042388261",
+      "show_timer": false,
+      "price": {
+        "offset_amount": "2999",
+        "currency": "EUR",
+        "formatted": "\u20AC29.99"
+      },
+      "promo_benefit": null,
+      "strikethrough_price": null
+    },
+    "displayName": "Beat Saber",
+    "display_name": "Beat Saber",
+    "display_long_description": "Beat Saber is a unique VR rhythm game where your goal is to slash the beats (represented by small cubes) as they are coming at you. \n\nEvery beat indicates which saber you need to use and also the direction you need to match. All the music is composed to perfectly fit the handmade levels. \n\nOur goal is to make players almost dance while cutting the cubes and avoiding obstacles.\n\nEach cut is strongly supported by great sound and visual effects to emphasize the rhythm.",
+    "genre_names": ["Music \u0026 Rhythm", "Casual"],
+    "has_in_app_ads": false,
+    "id": "2448060205267927",
+    "is_approved": false,
+    "is_concept": false,
+    "is_enterprise_enabled": false,
+    "organization": { "id": "", "is_authorized_for_quest": false },
+    "platform": "ANDROID_6DOF",
+    "publisher_name": "Beat Games",
+    "quality_rating_aggregate": 4.5636440054639,
+    "img": "",
+    "packageName": "com.beatgames.beatsaber",
+    "imageLink": "/cdn/images/2448060205267927",
+    "release_channels": {
+      "count": 3,
+      "nodes": [
+        {
+          "id": "703449633385683",
+          "channel_name": "LIVE",
+          "latest_supported_binary": {
+            "binary_application": null,
+            "id": "",
+            "version": "",
+            "platform": "",
+            "package_name": null,
+            "file_name": "",
+            "uri": "",
+            "change_log": null,
+            "changeLog": null,
+            "richChangeLog": "",
+            "firewall_exceptions_required": false,
+            "is_2d_mode_supported": false,
+            "launch_file": "",
+            "launch_file_2d": null,
+            "launch_parameters": "",
+            "launch_parameters_2d": null,
+            "Platform": "PC",
+            "release_notes_plain_text": "",
+            "required_space": "0",
+            "required_space_numerical": 0,
+            "size": "0",
+            "size_numerical": 0,
+            "status": "DRAFT",
+            "supported_hmd_platforms": [],
+            "supported_hmd_platforms_enum": [],
+            "__isAppBinary": "",
+            "__isAppBinaryWithFileAsset": "",
+            "version_code": 0,
+            "versionCode": 0,
+            "created_date": 0,
+            "binary_release_channels": null,
+            "lastIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "firstIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "asset_files": { "count": 0, "nodes": [] },
+            "obb_binary": null,
+            "__typename": ""
+          }
+        },
+        {
+          "id": "2138352146368342",
+          "channel_name": "unity_beta",
+          "latest_supported_binary": {
+            "binary_application": null,
+            "id": "",
+            "version": "",
+            "platform": "",
+            "package_name": null,
+            "file_name": "",
+            "uri": "",
+            "change_log": null,
+            "changeLog": null,
+            "richChangeLog": "",
+            "firewall_exceptions_required": false,
+            "is_2d_mode_supported": false,
+            "launch_file": "",
+            "launch_file_2d": null,
+            "launch_parameters": "",
+            "launch_parameters_2d": null,
+            "Platform": "PC",
+            "release_notes_plain_text": "",
+            "required_space": "0",
+            "required_space_numerical": 0,
+            "size": "0",
+            "size_numerical": 0,
+            "status": "DRAFT",
+            "supported_hmd_platforms": [],
+            "supported_hmd_platforms_enum": [],
+            "__isAppBinary": "",
+            "__isAppBinaryWithFileAsset": "",
+            "version_code": 0,
+            "versionCode": 0,
+            "created_date": 0,
+            "binary_release_channels": null,
+            "lastIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "firstIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "asset_files": { "count": 0, "nodes": [] },
+            "obb_binary": null,
+            "__typename": ""
+          }
+        },
+        {
+          "id": "955480635770075",
+          "channel_name": "legacy1.29.0_unity_ver2019.4.28f1",
+          "latest_supported_binary": {
+            "binary_application": null,
+            "id": "",
+            "version": "",
+            "platform": "",
+            "package_name": null,
+            "file_name": "",
+            "uri": "",
+            "change_log": null,
+            "changeLog": null,
+            "richChangeLog": "",
+            "firewall_exceptions_required": false,
+            "is_2d_mode_supported": false,
+            "launch_file": "",
+            "launch_file_2d": null,
+            "launch_parameters": "",
+            "launch_parameters_2d": null,
+            "Platform": "PC",
+            "release_notes_plain_text": "",
+            "required_space": "0",
+            "required_space_numerical": 0,
+            "size": "0",
+            "size_numerical": 0,
+            "status": "DRAFT",
+            "supported_hmd_platforms": [],
+            "supported_hmd_platforms_enum": [],
+            "__isAppBinary": "",
+            "__isAppBinaryWithFileAsset": "",
+            "version_code": 0,
+            "versionCode": 0,
+            "created_date": 0,
+            "binary_release_channels": null,
+            "lastIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "firstIapItems": {
+              "count": 0,
+              "edges": [],
+              "page_info": { "end_cursor": "", "start_cursor": "" }
+            },
+            "asset_files": { "count": 0, "nodes": [] },
+            "obb_binary": null,
+            "__typename": ""
+          }
+        }
+      ]
+    },
+    "release_date": 1558459800,
+    "supported_hmd_platforms": ["MONTEREY", "HOLLYWOOD", "SEACLIFF"],
+    "supported_hmd_platforms_enum": [1, 2, 6],
+    "website_url": "http://beatsaber.com/"
+  }
+]
