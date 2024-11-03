@@ -6,6 +6,7 @@ import legacy from '@vitejs/plugin-legacy'
 export default defineConfig({
   base: "./",
   plugins: [
+    // Allows q1 browser to work? Needs to be tested
     legacy({
       targets: ['defaults', 'not IE 11', 'chrome >= 92'],
       renderModernChunks: false,
@@ -38,7 +39,13 @@ export default defineConfig({
   css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `@import "@/assets/global.scss"; `
+          additionalData: `@import "@/assets/global.scss"; `,
+          // WARNING: If you update to dart-sass 3.0 you may need to remove this silencing
+          silenceDeprecations: [
+            "legacy-js-api",
+            "import",
+            "global-builtin",
+          ],
         }
       }
   },

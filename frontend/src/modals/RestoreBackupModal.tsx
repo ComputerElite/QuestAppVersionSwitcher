@@ -343,7 +343,6 @@ function InstallingStep(props: {
         let installed = await checkIfGameIsInstalled();
 
         if (installed) {
-            debugger
             setIsInstalled(true);
             setDone(true);
             setInProgress(false);

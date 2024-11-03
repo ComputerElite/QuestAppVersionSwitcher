@@ -81,7 +81,7 @@ enum StateOfDownload {
   Done,
 }
 
-async function cancelAppDL(item: IGameDownloadItem){
+async function cancelAppDL(item: IGameDownloadItem) {
   let sure = await showConfirmModal({
     title: "Cancel download",
     message: "Are you sure you want to cancel this download?",
@@ -103,8 +103,8 @@ function GameDownloadItem(props: { download: IGameDownloadItem }) {
   const downloadStatus = createMemo<{
     state: StateOfDownload,
     download: IGameDownloadItem,
-    manager?: IDownloadManagerInfo
-
+    manager?: IDownloadManagerInfo,
+    status?: string,
   }>(() => {
     let state = StateOfDownload.Downloading;
     let manager: IDownloadManagerInfo | undefined = undefined;
@@ -135,6 +135,7 @@ function GameDownloadItem(props: { download: IGameDownloadItem }) {
       state: state,
       download: download,
       manager: manager,
+      status: download.status,
     }
   });
 
@@ -144,8 +145,6 @@ function GameDownloadItem(props: { download: IGameDownloadItem }) {
         <div class="h-full bg-accent transition-all" style={` width: ${Math.floor(downloadStatus().manager!.percentage * 100)}%`}> </div>
       </div>
     </Show>
-
-
     <div class="p-4 flex flex-row">
       <div class="flex-grow">
         <div class="flex gap-2 items-baseline">
@@ -155,12 +154,21 @@ function GameDownloadItem(props: { download: IGameDownloadItem }) {
         <div class="text-xs ">
           <Show when={downloadStatus().state === StateOfDownload.Downloading && downloadStatus().manager}>
             <span class="text-accent">Downloading | {Math.floor(downloadStatus().manager!.percentage * 100)}% | {downloadStatus().manager!.speedString} | ETA: {downloadStatus().manager!.eTAString}</span>
+            <Show when={downloadStatus().status}>
+              <span class="text-gray-300"> | {downloadStatus().status}</span>
+            </Show>
           </Show>
           <Show when={downloadStatus().state === StateOfDownload.Canceled}>
             <span class="text-gray-300">Canceled</span>
+            <Show when={downloadStatus().status}>
+              <span class="text-gray-300"> | {downloadStatus().status}</span>
+            </Show>
           </Show>
           <Show when={downloadStatus().state === StateOfDownload.Failed}>
             <span class="text-red-500">Failed</span>
+            <Show when={downloadStatus().status}>
+              <span class="text-gray-300"> | {downloadStatus().status}</span>
+            </Show>
           </Show>
           <Show when={downloadStatus().state === StateOfDownload.Done}>
             <span class="text-accent">Done</span>
@@ -170,8 +178,7 @@ function GameDownloadItem(props: { download: IGameDownloadItem }) {
       </div>
       <div class="flex flex-row gap-2">
         <Show when={downloadStatus().state === StateOfDownload.Downloading && downloadStatus().manager}>
-          
-          <IconButton color='info' onClick={()=>cancelAppDL(props.download)} >
+          <IconButton color='info' onClick={() => cancelAppDL(props.download)} >
             <FiX />
           </IconButton>
         </Show>

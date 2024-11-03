@@ -117,12 +117,12 @@ export default function DowngradePage() {
 
   const versions = createMemo<IDisplayVersion[]>(() => {
     let versions = gameVersions();
-
+    const showBetaVersions = showBeta();
     let DisplayVersions = [];
 
     for (const version of versions) {
       if (!version.downloadable) continue;
-      if (showBeta()) {
+      if (showBetaVersions) {
         DisplayVersions.push(versionToDisplayVersion(version, beatSaberCores()));
         continue;
       } else {
@@ -294,7 +294,6 @@ function SwitchGameModal(props: { open: boolean, onClose: () => void }) {
 
   async function selectGame() {
     let game = results()?.find(x => x.id == selected());
-    debugger
     if (!game) {
       toast.error("Whaaa, tell frozen that not having a game here is possible")
       return;

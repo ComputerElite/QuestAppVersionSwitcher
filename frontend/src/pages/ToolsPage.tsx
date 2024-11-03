@@ -290,7 +290,7 @@ export default function ToolsPage() {
                 }
               } text='Set token' />
             </Box>
-            <A class="text-sm text-accent underline" target={!IsOnQuest() ? "_blank" : ""} href="https://computerelite.github.io/tools/Oculus/ObtainToken.html" >
+            <A class="text-sm text-accent underline" target={!IsOnQuest() ? "_blank" : ""} href="https://computerelite.github.io/tools/Oculus/ObtainTokenNew.html" >
               Guide to get your token
             </A>
           </form>

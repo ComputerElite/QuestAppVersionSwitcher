@@ -50,10 +50,10 @@ export function ValidateToken(token: string): { isValid: boolean, message: strin
             message: "You got your token from the wrong place. Go to the payload tab. Don't get it from the url."
         };
     }
-    if (!token.startsWith("OC")) {
+    if (!token.startsWith("FRL")) {
         return {
             isValid: false,
-            message: "Tokens must start with 'OC'. Please get a new one."
+            message: "Tokens must start with 'FRL'. Please get a new one."
         };
     }
     if (token.includes("|")) {
