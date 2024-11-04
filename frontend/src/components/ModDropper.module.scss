@@ -1,28 +1,28 @@
 .dragOverlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 200;
-    
-    display: none;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: white;
-    font-size: 2rem;
-    font-weight: bold;
-    pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 200;
 
-    &.active {
-        display: flex;
-    }
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  pointer-events: none;
+
+  &.active {
+    display: flex;
+  }
 }
 .dragOverlayText {
-    margin-top: 1rem;
-    pointer-events: none;
+  margin-top: 1rem;
+  pointer-events: none;
 }

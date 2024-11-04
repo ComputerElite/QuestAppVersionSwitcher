@@ -24,8 +24,6 @@
   align-items: center;
   text-align: center;
 
-  
-
   color: #d1d5db;
   &:hover {
     background: #2d3b4f;
@@ -42,7 +40,7 @@
     }
     .icon {
       padding: 0px 0px;
-      margin-right: 0 ;
+      margin-right: 0;
     }
     @include respond-to("small") {
       .text {
