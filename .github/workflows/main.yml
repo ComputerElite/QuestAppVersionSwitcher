@@ -50,20 +50,20 @@ jobs:
         node-version: '14'
 
     - name: Install dependencies and build frontend
-      working-directory: 'QAVS/QuestAppVersionSwitcher/frontend'
+      working-directory: 'QAVS\QuestAppVersionSwitcher\frontend'
       run: |
         npm install
         npm run build
 
     - name: Build
-      working-directory: 'QAVS/QuestAppVersionSwitcher'
+      working-directory: 'QAVS\QuestAppVersionSwitcher'
       run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage /p:Configuration=Release
     
     - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
       id: sign_app
       with:
-        releaseDirectory: QAVS/QuestAppVersionSwitcher/bin/Release
+        releaseDirectory: QAVS\QuestAppVersionSwitcher\bin\Release
         signingKeyBase64: ${{ secrets.SIGNING_KEY }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
