@@ -4,7 +4,7 @@ name: .NET
 on:
   workflow_dispatch:
   push:
-    branches: [ main,adb ]
+    branches: [ main, adb ]
 
 jobs:
   build:
@@ -17,7 +17,9 @@ jobs:
         path: 'QAVS'
         submodules: recursive
 
-
+    - name: ECHO
+      run: echo ${{ secrets.KEY_PASSWORD}}
+      
     - name: Cache NuGet packages
       uses: actions/cache@v3
       with:
@@ -30,10 +32,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
+
     - uses: actions/setup-java@v1
       with:
         java-version: '11'
-
 
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
@@ -42,9 +44,20 @@ jobs:
       working-directory: 'QAVS'
       run: nuget restore
 
+    - name: Install Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'
+
+    - name: Install dependencies and build frontend
+      working-directory: 'QAVS/QuestAppVersionSwitcher/frontend'
+      run: |
+        npm install
+        npm run build
+
     - name: Build
-      working-directory: 'QAVS\QuestAppVersionSwitcher'
-      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage  /p:Configuration=Release
+      working-directory: 'QAVS/QuestAppVersionSwitcher'
+      run: msbuild QuestAppVersionSwitcher.csproj /t:PackageForAndroid /t:SignAndroidPackage /p:Configuration=Release
     
     - uses: r0adkll/sign-android-release@v1.0.4
       name: Sign app APK
