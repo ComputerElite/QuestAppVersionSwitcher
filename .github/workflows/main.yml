@@ -47,7 +47,7 @@ jobs:
         node-version: '14'
 
     - name: Install dependencies and build frontend
-      working-directory: 'QAVS\QuestAppVersionSwitcher\frontend'
+      working-directory: 'QAVS\frontend'
       run: |
         npm install
         npm run build
