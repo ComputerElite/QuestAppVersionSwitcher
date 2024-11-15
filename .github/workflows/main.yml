@@ -16,9 +16,6 @@ jobs:
       with:
         path: 'QAVS'
         submodules: recursive
-
-    - name: ECHO
-      run: echo ${{ secrets.KEY_PASSWORD}}
       
     - name: Cache NuGet packages
       uses: actions/cache@v3
