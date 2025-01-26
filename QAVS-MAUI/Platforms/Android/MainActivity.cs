@@ -14,7 +14,7 @@ using Resource = Microsoft.Maui.Resource;
 
 namespace QuestAppVersionSwitcher;
 
-[Activity(Theme = "@style/AppTheme",MainLauncher = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
+[Activity(Theme = "@style/AppTheme",MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
 public class MainActivity : MauiAppCompatActivity
 {   
      WebView webView;

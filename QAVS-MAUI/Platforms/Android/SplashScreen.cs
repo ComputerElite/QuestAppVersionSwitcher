@@ -17,14 +17,13 @@ using WebView = Android.Webkit.WebView;
 
 namespace QuestAppVersionSwitcher
 {
-    [Activity(Theme = "@style/AppTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
+    [Activity(Theme = "@style/AppTheme", MainLauncher = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize, ScreenOrientation = ScreenOrientation.Landscape)]
     public class SplashScreen : AppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
             ComputerUtils.Logging.Logger.displayLogInConsole = true;
-            ComputerUtils.Logging.Logger.Log(this.GetType().Name);
-            ComputerUtils.Logging.Logger.Log(this.GetType().FullName);
+            ComputerUtils.Logging.Logger.Log("This is a test");
             base.OnCreate(savedInstanceState);
             SetContentView(Resource.Layout.splash);
             //this.RequestedOrientation = ScreenOrientation.Landscape;
