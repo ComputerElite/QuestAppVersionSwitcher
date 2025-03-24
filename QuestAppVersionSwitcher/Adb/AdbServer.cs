@@ -42,6 +42,7 @@ namespace DanTheMan827.OnDeviceADB
             adbInfo.WorkingDirectory = FilesDir;
             adbInfo.RedirectStandardOutput = true;
             adbInfo.RedirectStandardError = true;
+            adbInfo.UseShellExecute = false;
             adbInfo.EnvironmentVariables["HOME"] = FilesDir;
             adbInfo.EnvironmentVariables["TMPDIR"] = CacheDir;
             adbInfo.EnvironmentVariables["ADB_MDNS"] = "0";
