@@ -8,59 +8,69 @@ namespace DanTheMan827.OnDeviceADB
 {
     public class QAVSAdbInteractor
     {
-        public static AdbDevice device;
+        public static string device;
         private static bool _hasInitialized = false;
-        public static void Initialize()
+        
+        /// <summary>
+        /// Checks if we have our needed permissions by trying to set the Wi-Fi debugging state
+        /// </summary>
+        /// <returns></returns>
+        private bool HasPermission()
+        {
+            try
+            {
+                AdbWrapper.AdbWifiState = AdbWrapper.AdbWifiState;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        
+        public void Initialize()
         {
             if (!_hasInitialized)
             {
                 _hasInitialized = true;
-                AdbServer.Instance = new AdbServer();
 
                 // Kill any existing ADB server instance.
-                AdbWrapper.KillServer();
+                AdbWrapper.KillServerAsync().Wait();
 
                 // Start a new ADB server instance.
-                AdbWrapper.StartServer();
+                AdbWrapper.StartServerAsync().Wait();
 
                 // Get the list of connected devices.
-                var devices = AdbWrapper.GetDevices();
-                Logger.Log("Found " + devices.Count + " adb devices.", "AdbServer");
+                var devices = AdbWrapper.GetDevicesAsync().Result;
 
                 // If no devices are connected, enable ADB over WiFi.
-                if (devices.Count == 0)
+                if (devices.Length == 0)
                 {
                     // Store the current wireless debugging state.
                     var adbWifiState = AdbWrapper.AdbWifiState;
 
                     // Enable wireless debugging while cycling it to ensure we go from a disabled state to enabled.
-                    var port = AdbWrapper.EnableAdbWiFi(true);
+                    var port = AdbWrapper.EnableAdbWiFiAsync(true).Result;
 
                     // If the port is above 0 we were successful.
                     if (port > 0)
                     {
+                        // Disconnect all devices.
+                        AdbWrapper.DisconnectAsync().Wait();
+
                         // Connect to the loopback IP on the detected port.
-                        var device = AdbWrapper.Connect("127.0.0.1", port);
-
-                        // Switch to tcpip mode.
-                        AdbWrapper.TcpIpMode(device);
-
-                        // Kill the server to ensure it refreshes.
-                        AdbWrapper.KillServer();
-
-                        // Launch the server.
-                        AdbWrapper.StartServer();
-                        QAVSAdbInteractor.device = device;
+                        device = AdbWrapper.ConnectAsync("127.0.0.1", port).Result;
                     }
 
                     // Restore the saved wireless debugging state.
                     AdbWrapper.AdbWifiState = adbWifiState;
-                } else {
-                    QAVSAdbInteractor.device = devices[0];
                 }
 
-                // Grant necessary permissions to all connected devices.
-                AdbWrapper.GrantPermissions();
+                if (!HasPermission())
+                {
+                    // Grant necessary permissions to all connected devices (This may force quit the app!).
+                    AdbWrapper.GrantPermissionsAsync().Wait();
+                }
             }
         }
 
@@ -76,15 +86,15 @@ namespace DanTheMan827.OnDeviceADB
             
             try
             {
-                AdbWrapper.KillServer();
-                var port = AdbWrapper.EnableAdbWiFi(true);
+                AdbWrapper.KillServerAsync().Wait();
+                var port = AdbWrapper.EnableAdbWiFiAsync(true).Result;
 
                 // If the port is above 0 we were successful.
                 if (port > 0)
                 {
                     Logger.Log("Found adb port in log, connecting: " + port, "ADB Wrapper");
                     // Connect to the loopback IP on the detected port.
-                    var device = AdbWrapper.Connect("127.0.0.1", port);
+                    var device = AdbWrapper.ConnectAsync("127.0.0.1", port).Result;
                     return true;
                 }
                 else
@@ -97,11 +107,6 @@ namespace DanTheMan827.OnDeviceADB
             }
 
             return false;
-        }
-
-        public static void Connect()
-        {
-            
         }
     }
 }

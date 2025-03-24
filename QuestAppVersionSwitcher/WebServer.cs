@@ -1252,7 +1252,7 @@ namespace QuestAppVersionSwitcher
                 else
                 {
                     // Check if any adb devices are connected
-                    if (AdbWrapper.GetDevices().Count <= 0)
+                    if (AdbWrapper.GetDevicesAsync().Result.Length <= 0)
                     {
                         serverRequest.SendString(GotAccess.GetResponse("No adb devices connected", false, true), "application/json", 400);
                         return true;
@@ -1483,7 +1483,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/adb/devices", request =>
             {
-                request.SendString(JsonSerializer.Serialize(AdbWrapper.GetDevices()), "application/json");
+                request.SendString(JsonSerializer.Serialize(AdbWrapper.GetDevicesAsync().Result), "application/json");
                 return true;
             });
             server.AddRoute("POST", "/api/adb/downloadlauncher", request =>
@@ -1502,8 +1502,11 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("POST", "/api/adb/opensettings", request =>
             {
-                Intent intent = AndroidCore.context.PackageManager.GetLaunchIntentForPackage("com.android.settings");
-                intent.AddFlags(ActivityFlags.NewTask | ActivityFlags.MultipleTask | ActivityFlags.LaunchAdjacent);
+                Intent intent = new Intent();
+                intent.SetComponent(new ComponentName(
+                    "com.android.settings",
+                    "com.android.settings.Settings$DevelopmentSettingsDashboardActivity"));
+                intent.AddFlags(ActivityFlags.NewTask);
                 AndroidCore.context.StartActivity(intent);
                 request.SendString(GenericResponse.GetResponse("Opened settings", true), "application/json");
                 return true;
@@ -1513,7 +1516,7 @@ namespace QuestAppVersionSwitcher
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
                 try
                 {
-                    ExitInfo i = AdbWrapper.RunAdbCommand("pair 127.0.0.1:" + r.port + " " + r.code);
+                    ExitInfo i = AdbWrapper.RunAdbCommandAsync("pair 127.0.0.1:" + r.port + " " + r.code).Result;
                     if(i.ExitCode != 0) throw new Exception("Failed to pair: " + i);
                     request.SendString(GenericResponse.GetResponse("Paired", true), "application/json");
                 } catch (Exception e)
@@ -1524,7 +1527,7 @@ namespace QuestAppVersionSwitcher
             });
             server.AddRoute("GET", "/api/adb/port", request =>
             {
-                request.SendString(AdbWrapper.GetAdbWiFiPort().ToString());
+                request.SendString(AdbWrapper.GetAdbWiFiPortAsync().Result.ToString());
                 return true;
             });
             server.AddRoute("POST", "/api/adb/connect", request =>
@@ -1532,8 +1535,8 @@ namespace QuestAppVersionSwitcher
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
                 try
                 {
-                    ExitInfo i = AdbWrapper.RunAdbCommand("connect 127.0.0.1:" + r.port);
-                    if(i.ExitCode != 0 || AdbWrapper.GetDevices().Count <= 0) throw new Exception("Failed to connect: " + i);
+                    ExitInfo i = AdbWrapper.RunAdbCommandAsync("connect 127.0.0.1:" + r.port).Result;
+                    if(i.ExitCode != 0 || AdbWrapper.GetDevicesAsync().Result.Length <= 0) throw new Exception("Failed to connect: " + i);
                     request.SendString(GenericResponse.GetResponse("Connected with localhost ", true), "application/json");
                 }
                 catch (Exception e)
@@ -1546,7 +1549,7 @@ namespace QuestAppVersionSwitcher
             {
                 try
                 {
-                    AdbWrapper.EnableAdbWiFi(true);
+                    AdbWrapper.EnableAdbWiFiAsync(true).Wait();
                     request.SendString(GenericResponse.GetResponse("cycled wireless adb", true), "application/json");
                 }
                 catch (Exception e)
@@ -1559,7 +1562,7 @@ namespace QuestAppVersionSwitcher
             {
                 try
                 {
-                    AdbWrapper.GrantPermissions();
+                    AdbWrapper.GrantPermissionsAsync().Wait();
                     request.SendString(GenericResponse.GetResponse("Granted permissions", true), "application/json");
                 }
                 catch (Exception e)
@@ -1572,7 +1575,7 @@ namespace QuestAppVersionSwitcher
             {
                 
                 AdbRequest r = JsonSerializer.Deserialize<AdbRequest>(request.bodyString);
-                ExitInfo i = AdbWrapper.RunAdbCommand(r.command);
+                ExitInfo i = AdbWrapper.RunAdbCommandAsync(r.command).Result;
                 request.SendString(JsonSerializer.Serialize(i), "application/json");
                 return true;
             });
@@ -1619,8 +1622,7 @@ namespace QuestAppVersionSwitcher
             });
             t.Start();
             
-            singleton = new AdbServer();
-            singleton.Start();
+            AdbServer.Instance.Start();
             QAVSAdbInteractor.TryConnect();
         }
 

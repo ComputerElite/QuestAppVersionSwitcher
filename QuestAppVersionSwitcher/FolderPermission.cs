@@ -97,8 +97,8 @@ namespace QuestAppVersionSwitcher
             }
             else
             {
-                // Use adb
-                AdbWrapper.RunAdbCommand("shell cp \"" + from + "\" \"" + to + "\"", QAVSAdbInteractor.device);
+                // ToDo: react to errors
+                ExitInfo info = AdbWrapper.RunAdbCommandAsync("shell cp \"" + from + "\" \"" + to + "\"", QAVSAdbInteractor.device).Result;
                 return;
             }
             try
@@ -294,8 +294,8 @@ namespace QuestAppVersionSwitcher
             }
             else
             {
-                // Do it via adb
-                AdbWrapper.RunAdbCommand("shell cp -r \"" + sourceDirName + "\" \"" + destDirName + "\"", QAVSAdbInteractor.device);
+                // ToDo: Handle errors
+                ExitInfo info = AdbWrapper.RunAdbCommandAsync("shell cp -r \"" + sourceDirName + "\" \"" + destDirName + "\"", QAVSAdbInteractor.device).Result;
                 return;
             }
             // If the destination directory exists, delete it 
@@ -465,7 +465,7 @@ namespace QuestAppVersionSwitcher
             }
             // Use adb
             List<string> files = new List<string>();
-            string[] lines = AdbWrapper.RunAdbCommand("shell ls -1 \"" + path + "\"", QAVSAdbInteractor.device).Output.Split('\n');
+            string[] lines = AdbWrapper.RunAdbCommandAsync("shell ls -1 \"" + path + "\"", QAVSAdbInteractor.device).Result.Output.Split('\n');
             foreach (string line in lines)
             {
                 if (line == "") continue;

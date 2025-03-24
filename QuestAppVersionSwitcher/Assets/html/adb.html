@@ -231,6 +231,9 @@
     
     function InitiatePair() {
         // Check if lightning launcher is installed
+        OpenTab("pair")
+        return
+        /*
         IsLauncherInstalled().then(isInstalled => {
             if(isInstalled) {
                 OpenTab("pair")
@@ -241,6 +244,7 @@
             alert("Failed to check if Lightning Launcher is installed. I will assume that it is not.")
             OpenTab("launcher")
         })
+        */
     }
     
     function wireless() {

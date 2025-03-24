@@ -4,9 +4,7 @@ using Android.Provider;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using ComputerUtils.Android.Logging;
 using Application = Android.App.Application;
 
 namespace DanTheMan827.OnDeviceADB
@@ -17,9 +15,25 @@ namespace DanTheMan827.OnDeviceADB
     public static class AdbWrapper
     {
         /// <summary>
+        /// The command to grant the necessary permissions for the app to toggle ADB over WiFi.
+        /// </summary>
+        public static string GrantPermissionsCommand => $"(pm grant {Application.Context.PackageName} android.permission.WRITE_SECURE_SETTINGS; pm grant {Application.Context.PackageName} android.permission.READ_LOGS)";
+        public class AdbDevice
+        {
+            public readonly string Name;
+            public readonly bool Authorized;
+
+            public AdbDevice(string name, bool authorized)
+            {
+                Name = name;
+                Authorized = authorized;
+            }
+        }
+
+        /// <summary>
         /// Gets the path to the ADB executable.
         /// </summary>
-        public static string? AdbPath => AdbServer.AdbPath;
+        public static string AdbPath => AdbServer.AdbPath;
 
         /// <summary>
         /// Checks if the ADB server is running.
@@ -39,49 +53,24 @@ namespace DanTheMan827.OnDeviceADB
         /// <summary>
         /// Starts the ADB server asynchronously.
         /// </summary>
-        public static void StartServer()
+        public static async Task StartServerAsync()
         {
             AdbServer.Instance.Start();
-            Thread.Sleep(100);
+            await Task.Delay(500);
         }
 
         /// <summary>
         /// Stops the ADB server asynchronously.
         /// </summary>
-        public static async Task StopServer() => AdbServer.Instance.Stop();
+        public static async Task StopServerAsync() => await Task.Run(() => AdbServer.Instance.Stop());
 
         /// <summary>
         /// Kills the ADB server asynchronously.
         /// </summary>
-        public static void KillServer()
+        public static async Task KillServerAsync()
         {
-            RunAdbCommand("kill-server");
-            StopServer();
-        }
-        
-        public static List<AdbDevice> GetDevices() {
-            List<AdbDevice> devices = new List<AdbDevice>();
-            ExitInfo i = RunAdbCommand("devices -l");
-            string[] d = i.Output.Split("\n");
-            foreach (string l in d)
-            {
-                if (l.StartsWith("List of")) continue;
-                string[] options = l.Split(' ');
-                if (options[0].Trim() == "") continue;
-                AdbDevice device = new AdbDevice();
-                device.id = options[0];
-                foreach(string o in options)
-                {
-                    string[] p = o.Split(":");
-                    if (p[0] == "model")
-                    {
-                        device.name = p[1];
-                        break;
-                    }
-                }
-                devices.Add(device);
-            }
-            return devices;
+            await RunAdbCommandAsync("kill-server");
+            await StopServerAsync();
         }
 
         /// <summary>
@@ -89,70 +78,52 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="arguments">The arguments to pass to adb.</param>
         /// <returns>An ExitInfo object containing the exit code, error message, and output of the command.</returns>
-        public static ExitInfo RunAdbCommand(string arguments, AdbDevice? device = null)
+        public static async Task<ExitInfo> RunAdbCommandAsync(params string[] arguments)
         {
-            StartServer();
-            if(device != null) {
-                arguments = "-s \"" + device.id + "\" " + arguments;
-                if(!Logger.notAllowedStrings.ContainsKey(device.id)) Logger.notAllowedStrings.Add(device.id, "<device-id-censored>");
-            }
+            Debug.WriteLine($"RunAdbCommand -P {AdbServer.AdbPort} {String.Join(" ", arguments)}");
+            await StartServerAsync();
 
             var procStartInfo = new ProcessStartInfo(AdbPath)
             {
                 RedirectStandardError = true,
                 RedirectStandardOutput = true,
-                UseShellExecute = false,
-                Arguments = arguments
             };
-            Logger.Log("Running adb " + arguments, "AdbWrapper");
+
+            procStartInfo.ArgumentList.Add("-P");
+            procStartInfo.ArgumentList.Add(AdbServer.AdbPort.ToString());
+
+            foreach (var argument in arguments)
+            {
+                procStartInfo.ArgumentList.Add(argument);
+            }
+
             var proc = Process.Start(procStartInfo);
 
             if (proc == null)
             {
                 throw new NullReferenceException(nameof(proc));
             }
-        
+
             proc.WaitForExit();
-            string error = "";
-            try
-            {
-                error = proc.StandardError.ReadToEnd();
-            }
-            catch (Exception e)
-            {
-                error = "Internal QAVS error getting standard error: " + e;
-            }
-            string output = "";
-            try
-            {
-                output = proc.StandardOutput.ReadToEnd();
-            }
-            catch (Exception e)
-            {
-                output = "Internal QAVS error getting standard output: " + e;
-            }
-            ExitInfo i = new ExitInfo()
+
+            return new ExitInfo()
             {
                 ExitCode = proc.ExitCode,
-                Error = error,
-                Output = output
+                Error = await proc.StandardError.ReadToEndAsync(),
+                Output = await proc.StandardOutput.ReadToEndAsync()
             };
-            Logger.Log("Exit code: " + i.ExitCode + "\n Error: " + i.Error + "\n\n Output: " + i.Output, "AdbWrapper");
-
-            return i;
         }
 
         /// <summary>
         /// Gets the ADB WiFi port asynchronously.
         /// </summary>
-        /// <returns>The ADB WiFi port number.</returns>
-        public static int GetAdbWiFiPort()
+        /// <returns>The ADB last known WiFi port number, or 0.</returns>
+        public static async Task<int> GetAdbWiFiPortAsync()
         {
             var logProc = Process.Start(new ProcessStartInfo()
             {
                 FileName = "logcat",
                 Arguments = "-d -s adbd -e adbwifi*",
-                UseShellExecute = false,
                 RedirectStandardOutput = true
             });
 
@@ -163,7 +134,7 @@ namespace DanTheMan827.OnDeviceADB
 
             logProc.WaitForExit();
 
-            var output = logProc.StandardOutput.ReadToEnd();
+            var output = await logProc.StandardOutput.ReadToEndAsync();
             var matches = Regex.Matches(output, "adbwifi started on port (\\d+)");
 
             if (matches.Count > 0)
@@ -179,27 +150,27 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="cycle">Whether to cycle the ADB WiFi state.  If you need to get the port number, you probably want this to be true as it will disable and enable wireless debugging causing the port to be advertised in the log.</param>
         /// <returns>The ADB WiFi port number.</returns>
-        public static int EnableAdbWiFi(bool cycle = false)
+        public static async Task<int> EnableAdbWiFiAsync(bool cycle = false)
         {
             if (cycle && AdbWifiState == AdbWifiState.Enabled)
             {
                 AdbWifiState = AdbWifiState.Disabled;
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
 
             AdbWifiState = AdbWifiState.Enabled;
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
-            return GetAdbWiFiPort();
+            return await GetAdbWiFiPortAsync();
         }
 
         /// <summary>
         /// Disables ADB over WiFi asynchronously.
         /// </summary>
-        public static void DisableAdbWiFi()
+        public static async Task DisableAdbWiFiAsync()
         {
             AdbWifiState = AdbWifiState.Disabled;
-            Thread.Sleep(100);
+            await Task.Delay(100);
         }
 
         /// <summary>
@@ -208,11 +179,11 @@ namespace DanTheMan827.OnDeviceADB
         /// <param name="host">The host of the ADB device.</param>
         /// <param name="port">The port to connect to (default is 5555).</param>
         /// <returns>The connected host.</returns>
-        public static AdbDevice Connect(string host, int port = 5555)
+        public static async Task<string> ConnectAsync(string host, int port = 5555)
         {
-            StartServer();
+            await StartServerAsync();
 
-            var output = RunAdbCommand($"connect {host}:{port}");
+            var output = await RunAdbCommandAsync("connect", $"{host}:{port}");
             var match = Regex.Match(output.Output, "^connected to (.*)$", RegexOptions.Multiline);
 
             if (output.ExitCode != 0 || !match.Success)
@@ -220,7 +191,7 @@ namespace DanTheMan827.OnDeviceADB
                 throw new AdbException(output.Output);
             }
 
-            return new AdbDevice { id= match.Groups[1].Value.Trim()};
+            return match.Groups[1].Value.Trim();
         }
 
         /// <summary>
@@ -228,44 +199,62 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="device">The device identifier (optional).</param>
         /// <returns>True if all devices were disconnected; otherwise, false.</returns>
-        public static bool Disconnect(AdbDevice? device = null)
+        public static async Task<bool> DisconnectAsync(string? device = null)
         {
-            StartServer();
+            await StartServerAsync();
 
             if (device == null)
             {
-                return (RunAdbCommand("disconnect")).Output.Contains("disconnected everything");
+                return (await RunAdbCommandAsync("disconnect")).Output.Contains("disconnected everything");
             }
             else
             {
-                return (RunAdbCommand("disconnect " + device.id)).Output.Contains("disconnected ");
+                return (await RunAdbCommandAsync("disconnect", device)).Output.Contains("disconnected ");
             }
+        }
+
+        /// <summary>
+        /// Gets the list of connected ADB devices asynchronously.
+        /// </summary>
+        /// <returns>An array of device identifiers.</returns>
+        public static async Task<AdbDevice[]> GetDevicesAsync()
+        {
+            await StartServerAsync();
+
+            var output = await RunAdbCommandAsync("devices");
+
+            if (output.ExitCode != 0 || !output.Output.Contains("List of devices attached"))
+            {
+                throw new AdbException(output.Output);
+            }
+
+            var matches = Regex.Matches(output.Output, "^(.*?)\\t(device|unauthorized)$", RegexOptions.Multiline);
+
+            return matches.Select(match => new AdbDevice(match.Groups[1].Value.Trim(), match.Groups[2].Value == "device")).ToArray();
         }
 
         /// <summary>
         /// Grants necessary permissions to an ADB device asynchronously.
         /// </summary>
         /// <param name="device">The device identifier.</param>
-        public static void GrantPermissions(AdbDevice device)
+        public static async Task GrantPermissionsAsync(string device)
         {
-            StartServer();
-
-            RunAdbCommand("shell pm grant " + Application.Context.PackageName + " android.permission.WRITE_SECURE_SETTINGS", device);
-            RunAdbCommand("shell pm grant " + Application.Context.PackageName + " android.permission.READ_LOGS", device);
+            await StartServerAsync();
+            await RunAdbCommandAsync("-s", device, "shell", $"sh -c '{GrantPermissionsCommand}' > /dev/null 2>&1 < /dev/null &");
         }
 
         /// <summary>
         /// Grants necessary permissions to all connected ADB devices asynchronously.
         /// </summary>
-        public static void GrantPermissions()
+        public static async Task GrantPermissionsAsync()
         {
-            StartServer();
+            await StartServerAsync();
 
-            var devices = GetDevices();
+            var devices = await GetDevicesAsync();
 
-            foreach (var device in devices)
+            foreach (var device in devices.Where(d => d.Authorized))
             {
-                GrantPermissions(device);
+                await GrantPermissionsAsync(device.Name);
             }
         }
 
@@ -274,47 +263,68 @@ namespace DanTheMan827.OnDeviceADB
         /// </summary>
         /// <param name="device">The device identifier (optional).</param>
         /// <param name="port">The port to use (default is 5555).</param>
-        public static void TcpIpMode(AdbDevice? device = null, int port = 5555)
+        public static async Task TcpIpMode(string? device = null, int port = 5555)
         {
-            StartServer();
-                
+            await StartServerAsync();
+
             if (device == null)
             {
-                RunAdbCommand("tcpip " + port.ToString());
+                await RunAdbCommandAsync("tcpip", port.ToString());
             }
             else
             {
-                RunAdbCommand("tcpip" + port.ToString(), device);
-                Disconnect(device);
+                await RunAdbCommandAsync("-s", device, "tcpip", port.ToString());
+                await DisconnectAsync(device);
             }
 
-            Thread.Sleep(100);
+            await Task.Delay(1000);
         }
 
         /// <summary>
         /// Sets ADB to TCP/IP mode asynchronously.
         /// </summary>
         /// <param name="port">The port to use (default is 5555).</param>
-        public static void TcpIpMode(int port = 5555) => TcpIpMode(null, port);
-    }
-    
-    
-    public class AdbDevice
-    {
-        public string id { get; set; } = "";
-        public string name { get; set; } = "";
+        public static async Task TcpIpMode(int port = 5555) => await TcpIpMode(null, port);
 
-        public AdbDevice(string id, string name)
+        /// <summary>
+        /// Sets ADB to USB mode asynchronously.
+        /// </summary>
+        /// <param name="device">The device identifier (optional).</param>
+        public static async Task UsbMode(string? device = null)
         {
-            this.id = id;
-            this.name = name;
+            await StartServerAsync();
+
+            if (device == null)
+            {
+                await RunAdbCommandAsync($"usb");
+            }
+            else
+            {
+                await RunAdbCommandAsync("-s", device, "usb");
+                await DisconnectAsync(device);
+            }
         }
 
-        public AdbDevice() { }
-
-        public override string ToString()
+        /// <summary>
+        /// Executes an ADB shell command and returns the output.
+        /// </summary>
+        /// <param name="device">The device identifier (optional).</param>
+        /// <param name="command">The command and arguments to run.</param>
+        /// <returns></returns>
+        public static async Task<ExitInfo> RunShellCommand(string? device = null, params string[] command)
         {
-            return id + ": " + name;
+            var arguments = new List<string>();
+
+            if (device != null)
+            {
+                arguments.Add("-s");
+                arguments.Add(device);
+            }
+
+            arguments.Add("shell");
+            arguments.AddRange(command);
+
+            return await RunAdbCommandAsync(arguments.ToArray());
         }
     }
 }
